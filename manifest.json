@@ -1,6 +1,6 @@
 {
     "name": "Soulcode Browser Utils",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Soulcode Browser Utils, to improve UX on Bexio",
     "manifest_version": 3,
     "author": "Fabian Gander",
@@ -13,6 +13,17 @@
     },
     "permissions": [
         "activeTab",
-        "scripting"
+        "scripting",
+        "webNavigation"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://office.bexio.com/index.php/monitoring/edit"
+            ],
+            "js": [
+                "bexioAddTime.js"
+            ]
+        }
     ]
 }
