@@ -94,14 +94,14 @@ if (document.getElementById('SoulcodeMomo')) {
         selector.checked = checked;
     }
 
-    // Add some buttons
+    // Add some buttons into the page
     document.querySelector(".bx-flex-block.bx-halftop-margin.bx-flex-align-middle-left").insertAdjacentHTML("beforeend", `<div>
-    <button id="SoulcodeMomo">Momo</button>
-    <button id="SoulcodeMiscTeam">SoulcodeMiscTeam</button>
-    <button id="LeisterTask">LeisterTask</button>
+    <button id="SoulcodeMomo" class="btn btn-info">Momo</button>
+    <button id="SoulcodeMiscTeam" class="btn btn-info">Misc/Team</button>
+    <button id="LeisterTask" class="btn btn-danger">Leister Task</button>
 </div>`);
 
-    // Lets go!
+    // Attach functionality to the buttons
     document.getElementById('SoulcodeMomo').addEventListener('click', function () { fillForm(contact_Soulcode, project_Innovation, package_Momo, false) });
     document.getElementById('SoulcodeMiscTeam').addEventListener('click', function () { fillForm(contact_Soulcode, project_BackOffice, package_MiscTeam, false) });
     document.getElementById('LeisterTask').addEventListener('click', function () { fillForm(contact_Leister, project_Usability) });
