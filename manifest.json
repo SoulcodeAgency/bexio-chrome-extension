@@ -8,7 +8,8 @@
         "default_title": "Soulcode Browser Utils"
     },
     "permissions": [
-        "scripting"
+        "scripting",
+        "storage"
     ],
     "content_scripts": [
         {
