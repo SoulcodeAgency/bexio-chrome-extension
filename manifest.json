@@ -1,14 +1,13 @@
 {
-    "name": "Soulcode Browser Utils",
-    "version": "0.1.0",
-    "description": "Soulcode Browser Utils, to improve UX on Bexio",
+    "name": "Soulcode's Bexio Timetracking Templates",
+    "version": "0.2.1",
+    "description": "Improves your time tracking within office.bexio.com. This extension adds saving and loading of form data within bexios time tracking page.",
     "manifest_version": 3,
     "author": "Fabian Gander",
     "action": {
-        "default_title": "Soulcode Browser Utils"
+        "default_title": "Soulcode's Bexio Timetracking Templates"
     },
     "permissions": [
-        "scripting",
         "storage"
     ],
     "content_scripts": [
