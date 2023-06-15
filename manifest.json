@@ -1,22 +1,32 @@
 {
     "name": "Soulcode's Bexio Timetracking Templates",
-    "version": "0.2.1",
-    "description": "Improves your time tracking within office.bexio.com. This extension adds saving and loading of form data within bexios time tracking page.",
+    "version": "0.3.1",
+    "description": "This extension adds saving and loading of form data within bexios time tracking page.",
     "manifest_version": 3,
     "author": "Fabian Gander",
     "action": {
         "default_title": "Soulcode's Bexio Timetracking Templates"
     },
     "permissions": [
-        "storage"
+        "storage",
+        "tabs"
     ],
+    "icons": {
+        "16": "assets/extension_icon16.png",
+        "32": "assets/extension_icon32.png",
+        "48": "assets/extension_icon48.png",
+        "128": "assets/extension_icon128.png"
+    },
+    "background": {
+        "service_worker": "service_worker.js"
+    },
     "content_scripts": [
         {
             "matches": [
                 "https://office.bexio.com/index.php/monitoring/edit"
             ],
             "js": [
-                "bexioAddTime.js"
+                "bexioTimetrackingTemplates.js"
             ]
         }
     ]

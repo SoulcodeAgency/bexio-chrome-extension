@@ -215,7 +215,7 @@ async function addButtonsToHtml() {
     const breadcrumDivs = document.querySelectorAll(".bx-breadcrumb-container .bx-flex-wrap > div");
 
     breadcrumDivs[1].insertAdjacentHTML("beforeend", `<div id="SoulcodeExtensionTemplates">
-    <div id="bexioAddTime-entries" style="display: flex; flex-wrap: wrap; gap: 4px;">
+    <div id="bexioTimetrackingTemplates-entries" style="display: flex; flex-wrap: wrap; gap: 4px;">
         ${buttons}
     </div>
     </div>`);
@@ -229,7 +229,7 @@ async function addButtonsToHtml() {
     }
 
     // Attach functionality to the buttons
-    const domButtons = document.getElementById('bexioAddTime-entries').querySelectorAll("button.entry");
+    const domButtons = document.getElementById('bexioTimetrackingTemplates-entries').querySelectorAll("button.entry");
     domButtons.forEach(button => button.addEventListener('click', function () { fillForm(button.id) }));
 
     // Special action buttons
