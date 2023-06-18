@@ -1,6 +1,6 @@
 {
     "name": "Soulcode's Bexio Timetracking Templates",
-    "version": "0.3.1",
+    "version": "0.4.0",
     "description": "This extension adds saving and loading of form data within bexios time tracking page.",
     "manifest_version": 3,
     "author": "Fabian Gander",
@@ -8,8 +8,7 @@
         "default_title": "Soulcode's Bexio Timetracking Templates"
     },
     "permissions": [
-        "storage",
-        "tabs"
+        "storage"
     ],
     "icons": {
         "16": "assets/extension_icon16.png",
