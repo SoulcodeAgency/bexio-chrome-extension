@@ -168,10 +168,23 @@ async function readFormData() {
     const project = await readTextFromSelect2(projectField);
     const package = await readTextFromSelect2(packageField);
     const billable = billableCheckbox.checked;
+    const templateName = trimAll(package) || trimAll(project) || trimAll(contact) || null;
 
-    const id = trimAll(package) || trimAll(project) || trimAll(contact) || null;
-    if (id === null) return;
-    const formEntry = { id, work, status, contact, project, package, billable, contactPerson };
+    const formEntry = { work, status, contact, project, package, billable, contactPerson, templateName };
+
+    // Ask user for a template Name, prefilled with the suggested one
+    let userInput = prompt("Name of the template:", templateName);
+    if (userInput !== null) {
+        formEntry.templateName = userInput;
+    } else {
+        alert("Please enter a name for the template");
+        return;
+    }
+
+    // Create the entry and a hash for saving it
+    const jsonString = JSON.stringify(formEntry);
+    const hash = await generateHash(jsonString);
+    formEntry.id = hash;
 
     // Save formEntries into our existing entries
     const allEntries = await chrome.storage.local.get(["entries"]).then((result) => {
@@ -184,30 +197,49 @@ async function readFormData() {
     allEntries.push(formEntry);
     chrome.storage.local.set({ entries: allEntries }).then(async () => {
         console.log("Entry is saved", formEntry);
-        await init();
+        await initializeExtension();
     });
 }
 
-// Clear the entries
-async function clearEntries() {
-    chrome.storage.local.clear();
+// DeleteTemplate
+async function deleteTemplate(id) {
+    // chrome.storage.local.clear();
+    // Iterate over the chrome storage and remove the entry with the given id
+    const filteredEntries = await chrome.storage.local.get(["entries"]).then((result) => {
+        if (result.entries && Array.isArray(result.entries)) {
+            return result.entries.filter(entry => entry.id !== id);
+        }
+        return [];
+    });
+    chrome.storage.local.set({ entries: filteredEntries }).then(async () => {
+        console.log("Only the right entry is hopefully removed", id);
+        await initializeExtension();
+    });
+
 }
 
 async function confirmDeletion() {
-    if (confirm("Are you sure you want to delete all your existing buttons?")) {
-        clearEntries();
-        init();
+    const activeButton = document.querySelector(".template-button--active") ?? undefined;
+    const activeTemplateName = activeButton?.textContent ?? undefined;
+    const activeTemplateId = activeButton?.id ?? undefined;
+    if (activeTemplateId !== undefined) {
+        if (confirm(`Are you sure you want to delete the active template "${activeTemplateName}"?`)) {
+            deleteTemplate(activeTemplateId);
+            initializeExtension();
+        }
+    } else {
+        alert("Sorry - There is no active template to delete or something went wrong! Please select first the template you want to delete. Thanks.");
     }
 }
 
-async function addButtonsToHtml() {
+async function renderHtml() {
     // Add some buttons into the page
     let buttons = '';
     if (entries) {
-        entries.map(entry => buttons += `<button id="${entry.id}" class="entry btn btn-info" style="margin-right: 2px">${entry.id}</button>`);
+        entries.map(entry => buttons += `<button id="${entry.id}" class="entry btn btn-info template-button" style="margin-right: 2px">${entry.templateName ?? entry.id}</button>`);
     }
 
-    // Delete the templates, if it already exists
+    // Remove the templates HTML, if it already exists
     const templates = document.getElementById("SoulcodeExtensionTemplates");
     if (templates) {
         templates.remove();
@@ -218,15 +250,17 @@ async function addButtonsToHtml() {
         ${buttons}
     </div>`;
     const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px;">
-            <button id="AddNew" class="btn btn-info">+ Add as Template</button>
-            <button id="Clear" class="btn btn-danger">Delete Templates</button>
+            <button id="AddNewTemplate" class="btn btn-info">+ Add as Template</button>
+            <button id="DeleteTemplate" class="btn btn-danger">Delete Template</button>
         </div>`;
 
     // Place the html into the DOM
     templatePlacement.insertAdjacentHTML("beforeend", `<div id="SoulcodeExtensionTemplates" class="row-fluid">
         <hr>
-        <div class="bx-formular-header"><h2>Templates</h2></div>
-        ${htmlActions}
+        <div class="bx-formular-header" style="display: flex; justify-content: space-between">
+            <h2>Templates</h2>
+            ${htmlActions}
+        </div>
         <hr>
         ${htmlTemplateButtons}
     </div>`);
@@ -236,21 +270,42 @@ async function addButtonsToHtml() {
     domButtons.forEach(button => button.addEventListener('click', function (e) {
         e.preventDefault();
         fillForm(button.id)
+
+        // Handle active template button
+        const parent = e.target.parentNode;
+        const siblings = parent.querySelectorAll(".template-button");
+
+        siblings.forEach((sibling) => {
+            sibling.classList.remove("template-button--active");
+        });
+
+        e.target.classList.add("template-button--active");
     }));
 
     // Special action buttons
-    document.getElementById('AddNew').addEventListener('click', function () { readFormData() });
-    document.getElementById('Clear').addEventListener('click', function () { confirmDeletion() });
+    document.getElementById('AddNewTemplate').addEventListener('click', function (e) { e.preventDefault(); readFormData() });
+    document.getElementById('DeleteTemplate').addEventListener('click', function (e) { e.preventDefault(); confirmDeletion() });
 }
 
-async function init() {
+async function initializeExtension() {
     // Get all entries in storage and initialize the page
     chrome.storage.local.get(["entries"]).then((result) => {
         entries = result.entries;
-        console.log(entries);
-        addButtonsToHtml();
+        console.log("🚀 ~ file: bexioTimetrackingTemplates.js:280 ~ chrome.storage.local.get ~ entries:", entries)
+        renderHtml();
     })
 }
 
+// Hash generation
+async function generateHash(string) {
+    const utf8 = new TextEncoder().encode(string);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+        .map((bytes) => bytes.toString(16).padStart(2, '0'))
+        .join('');
+    return hashHex;
+}
+
 let entries = [];
-init();
+initializeExtension();

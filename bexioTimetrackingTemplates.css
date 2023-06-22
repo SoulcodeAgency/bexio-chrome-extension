@@ -1,0 +1,12 @@
+:root {
+  --soulcodeGreen: #33b7a3;
+  --soulcodeBlue: #3276b4;
+}
+.template-button {
+    background-color: var(--soulcodeBlue) !important;
+}
+.template-button--active {
+    font-weight: bold !important;
+    box-shadow: inset rgba(0, 0, 0, 0.5) 0 0 2px 2px !important;
+    background-color: var(--soulcodeGreen) !important;
+}
