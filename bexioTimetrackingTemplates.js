@@ -19,8 +19,8 @@ const billableCheckbox = document.querySelector(billableCheckboxID);
 
 // Fill form
 async function fillForm(id) {
-
-    const entry = entries.find(entry => entry.id === id);
+    const templateEntries = await loadLocalTemplateEntries();
+    const entry = templateEntries.find(entry => entry.id === id);
     const { contact, contactPerson = null, project = null, package = null, status = null, billable = true } = entry
 
     await triggerField(workFieldID, "work");
@@ -145,7 +145,10 @@ async function readTextFromSelect2(selector) {
 }
 
 function trimAll(str) {
-    return str.replace(/\s+/g, "");
+    if (str !== undefined && str.length > 0) {
+        return str.replace(/\s+/g, "");
+    }
+    return "";
 }
 
 // Read form data
@@ -168,7 +171,7 @@ async function readFormData() {
     const project = await readTextFromSelect2(projectField);
     const package = await readTextFromSelect2(packageField);
     const billable = billableCheckbox.checked;
-    const templateName = trimAll(package) || trimAll(project) || trimAll(contact) || trimAll(workField) || null;
+    const templateName = trimAll(package) || trimAll(project) || trimAll(contact) || trimAll(workField) || "New Template";
 
     const formEntry = { work, status, contact, project, package, billable, contactPerson, templateName };
 
@@ -189,13 +192,8 @@ async function readFormData() {
         const hash = await generateHash(jsonString);
         formEntry.id = hash;
 
-        // Load all entries (refresh)
-        allEntries = await chrome.storage.local.get(["entries"]).then((result) => {
-            if (result.entries && Array.isArray(result.entries)) {
-                return result.entries;
-            }
-            return [];
-        });
+        // Load all templateEntries (refresh)
+        allEntries = await loadLocalTemplateEntries();
 
         // Check if the hash already exists
         const existingEntry = allEntries.find(entry => entry.id === hash);
@@ -211,13 +209,22 @@ async function readFormData() {
         }
     } while (notReadyToSave);
 
-    if (allEntries === undefined) throw new Error("No entries found");
+    if (allEntries === undefined) throw new Error("No template entries found");
 
     // Push the new entry to the array and save it
     allEntries.push(formEntry);
     chrome.storage.local.set({ entries: allEntries }).then(async () => {
         console.log("Entry is saved", formEntry);
         await initializeExtension();
+    });
+}
+
+async function loadLocalTemplateEntries() {
+    return await chrome.storage.local.get(["entries"]).then((result) => {
+        if (result.entries && Array.isArray(result.entries)) {
+            return result.entries;
+        }
+        return [];
     });
 }
 
@@ -250,11 +257,17 @@ async function confirmDeletion() {
     }
 }
 
-async function renderHtml() {
+// handle template name
+function getTemplateName(entry) {
+    return entry.templateName ?? entry.id ?? "unknown template name"; // Note: id was the template name in version 0.4.x - where no templateName did exist
+}
+
+// Renders all the html code for placing buttons to interact with
+async function renderHtml(templateEntries) {
     // Add some buttons into the page
     let buttons = '';
-    if (entries) {
-        entries.map(entry => buttons += `<button id="${entry.id}" class="entry btn btn-info template-button" style="margin-right: 2px">${entry.templateName ?? entry.id}</button>`);
+    if (templateEntries) {
+        templateEntries.map(entry => buttons += `<button id="${entry.id}" class="entry btn btn-info template-button" style="margin-right: 2px">${getTemplateName(entry)}</button>`);
     }
 
     // Remove the templates HTML, if it already exists
@@ -267,7 +280,7 @@ async function renderHtml() {
     const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="display: flex; flex-wrap: wrap; gap: 4px;">
         ${buttons}
     </div>`;
-    const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px;">
+    const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px;">
             <button id="AddNewTemplate" class="btn btn-info">+ Add as Template</button>
             <button id="DeleteTemplate" class="btn btn-danger">Delete Template</button>
         </div>`;
@@ -279,7 +292,6 @@ async function renderHtml() {
             <h2>Templates</h2>
             ${htmlActions}
         </div>
-        <hr>
         ${htmlTemplateButtons}
     </div>`);
 
@@ -306,12 +318,11 @@ async function renderHtml() {
 }
 
 async function initializeExtension() {
-    // Get all entries in storage and initialize the page
-    chrome.storage.local.get(["entries"]).then((result) => {
-        entries = result.entries;
-        console.log("🚀 ~ file: bexioTimetrackingTemplates.js:280 ~ chrome.storage.local.get ~ entries:", entries)
-        renderHtml();
-    })
+    // Get all templateEntries in storage and initialize the page
+    const templateEntries = await loadLocalTemplateEntries();
+    // Sort the templateEntries according to the template name
+    templateEntries.sort((a, b) => getTemplateName(a).localeCompare(getTemplateName(b)));
+    renderHtml(templateEntries);
 }
 
 // Hash generation
@@ -325,5 +336,4 @@ async function generateHash(string) {
     return hashHex;
 }
 
-let entries = [];
 initializeExtension();
