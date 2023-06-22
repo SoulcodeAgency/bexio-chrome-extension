@@ -19,6 +19,7 @@ const billableCheckbox = document.querySelector(billableCheckboxID);
 
 // Fill form
 async function fillForm(id) {
+
     const entry = entries.find(entry => entry.id === id);
     const { contact, contactPerson = null, project = null, package = null, status = null, billable = true } = entry
 
@@ -212,25 +213,30 @@ async function addButtonsToHtml() {
         templates.remove();
     }
 
-    const breadcrumDivs = document.querySelectorAll(".bx-breadcrumb-container .bx-flex-wrap > div");
-
-    breadcrumDivs[1].insertAdjacentHTML("beforeend", `<div id="SoulcodeExtensionTemplates">
-    <div id="bexioTimetrackingTemplates-entries" style="display: flex; flex-wrap: wrap; gap: 4px;">
+    const templatePlacement = document.getElementById("pr_package").parentNode.parentNode.parentNode;
+    const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="display: flex; flex-wrap: wrap; gap: 4px;">
         ${buttons}
-    </div>
-    </div>`);
-
-    const actions = document.getElementById("SoulcodeExtensionActions");
-    if (!actions) {
-        breadcrumDivs[2].insertAdjacentHTML("beforeend", `<div id="SoulcodeExtensionActions" style="margin-left: 4px;">
+    </div>`;
+    const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px;">
             <button id="AddNew" class="btn btn-info">+ Add as Template</button>
             <button id="Clear" class="btn btn-danger">Delete Templates</button>
-        </div>`);
-    }
+        </div>`;
+
+    // Place the html into the DOM
+    templatePlacement.insertAdjacentHTML("beforeend", `<div id="SoulcodeExtensionTemplates" class="row-fluid">
+        <hr>
+        <div class="bx-formular-header"><h2>Templates</h2></div>
+        ${htmlActions}
+        <hr>
+        ${htmlTemplateButtons}
+    </div>`);
 
     // Attach functionality to the buttons
     const domButtons = document.getElementById('bexioTimetrackingTemplates-entries').querySelectorAll("button.entry");
-    domButtons.forEach(button => button.addEventListener('click', function () { fillForm(button.id) }));
+    domButtons.forEach(button => button.addEventListener('click', function (e) {
+        e.preventDefault();
+        fillForm(button.id)
+    }));
 
     // Special action buttons
     document.getElementById('AddNew').addEventListener('click', function () { readFormData() });
