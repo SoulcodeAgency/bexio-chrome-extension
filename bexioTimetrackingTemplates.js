@@ -168,32 +168,52 @@ async function readFormData() {
     const project = await readTextFromSelect2(projectField);
     const package = await readTextFromSelect2(packageField);
     const billable = billableCheckbox.checked;
-    const templateName = trimAll(package) || trimAll(project) || trimAll(contact) || null;
+    const templateName = trimAll(package) || trimAll(project) || trimAll(contact) || trimAll(workField) || null;
 
     const formEntry = { work, status, contact, project, package, billable, contactPerson, templateName };
 
-    // Ask user for a template Name, prefilled with the suggested one
-    let userInput = prompt("Name of the template:", templateName);
-    if (userInput !== null) {
-        formEntry.templateName = userInput;
-    } else {
-        alert("Please enter a name for the template");
-        return;
-    }
-
-    // Create the entry and a hash for saving it
-    const jsonString = JSON.stringify(formEntry);
-    const hash = await generateHash(jsonString);
-    formEntry.id = hash;
-
-    // Save formEntries into our existing entries
-    const allEntries = await chrome.storage.local.get(["entries"]).then((result) => {
-        if (result.entries && Array.isArray(result.entries)) {
-            return result.entries;
+    let allEntries = undefined;
+    let notReadyToSave = true;
+    do {
+        // Ask user for a template Name, prefilled with the suggested one
+        let userInput = prompt("Name of the template:", templateName);
+        if (userInput !== null) {
+            formEntry.templateName = userInput;
+        } else {
+            alert("Please enter a name for the template");
+            return;
         }
-        return [];
-    });
 
+        // Create the entry and a hash for saving it
+        const jsonString = JSON.stringify(formEntry);
+        const hash = await generateHash(jsonString);
+        formEntry.id = hash;
+
+        // Load all entries (refresh)
+        allEntries = await chrome.storage.local.get(["entries"]).then((result) => {
+            if (result.entries && Array.isArray(result.entries)) {
+                return result.entries;
+            }
+            return [];
+        });
+
+        // Check if the hash already exists
+        const existingEntry = allEntries.find(entry => entry.id === hash);
+        if (existingEntry !== undefined) {
+            if (confirm(`This entry already exists, or there was a hash conflict, Try again?`)) {
+                // yes
+            } else {
+                // no
+                return;
+            }
+        } else {
+            notReadyToSave = false;
+        }
+    } while (notReadyToSave);
+
+    if (allEntries === undefined) throw new Error("No entries found");
+
+    // Push the new entry to the array and save it
     allEntries.push(formEntry);
     chrome.storage.local.set({ entries: allEntries }).then(async () => {
         console.log("Entry is saved", formEntry);
@@ -203,7 +223,6 @@ async function readFormData() {
 
 // DeleteTemplate
 async function deleteTemplate(id) {
-    // chrome.storage.local.clear();
     // Iterate over the chrome storage and remove the entry with the given id
     const filteredEntries = await chrome.storage.local.get(["entries"]).then((result) => {
         if (result.entries && Array.isArray(result.entries)) {
@@ -212,7 +231,6 @@ async function deleteTemplate(id) {
         return [];
     });
     chrome.storage.local.set({ entries: filteredEntries }).then(async () => {
-        console.log("Only the right entry is hopefully removed", id);
         await initializeExtension();
     });
 
