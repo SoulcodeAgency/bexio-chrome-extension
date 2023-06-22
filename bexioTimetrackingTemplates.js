@@ -1,3 +1,7 @@
+// CONST
+const VERSION = "0.5.0";
+const DATE = "23.06.2023";
+
 // Delay
 const delay = ms => new Promise(res => setTimeout(res, ms));
 // Enter event
@@ -32,6 +36,8 @@ async function fillForm(id) {
     await triggerField(projectFieldID, project);
     await triggerField(packageFieldID, package);
     await triggerCheckbox(billableCheckbox, billable);
+
+    // TODO: Loading indicator - to know when the process is done.
 }
 
 //
@@ -118,7 +124,7 @@ async function triggerContactField(value) {
     await waitForContacts();
     contactField.dispatchEvent(pressEnter);
     // TODO: Improve the following delay to really check if contacts are gone
-    await delay(500);
+    await delay(1000);
 }
 
 // Trigger general fields with search box
@@ -173,11 +179,14 @@ async function readFormData() {
     const billable = billableCheckbox.checked;
     const templateName = trimAll(package) || trimAll(project) || trimAll(contact) || trimAll(workField) || "New Template";
 
-    const formEntry = { work, status, contact, project, package, billable, contactPerson, templateName };
+    let formEntry;
 
     let allEntries = undefined;
     let notReadyToSave = true;
     do {
+        // Note: make sure a generated id is not part of the base entry to create the hash
+        formEntry = { work, status, contact, project, package, billable, contactPerson, templateName };
+
         // Ask user for a template Name, prefilled with the suggested one
         let userInput = prompt("Name of the template:", templateName);
         if (userInput !== null) {
@@ -289,7 +298,10 @@ async function renderHtml(templateEntries) {
     templatePlacement.insertAdjacentHTML("beforeend", `<div id="SoulcodeExtensionTemplates" class="row-fluid">
         <hr>
         <div class="bx-formular-header" style="display: flex; justify-content: space-between">
-            <h2>Templates</h2>
+            <h2 title="Last update: ${DATE}">
+            Templates
+            <span style="font-size: 0.9rem">(v${VERSION})</span>
+            </h2>
             ${htmlActions}
         </div>
         ${htmlTemplateButtons}
