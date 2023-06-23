@@ -1,0 +1,18 @@
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+table tr {
+  border-bottom: 1px solid black;
+}
+
+table td, table th {
+  border-right: 1px solid black;
+  padding: 5px;
+}
+
+table th {
+  text-align: left;
+  background-color: #eee;
+}
