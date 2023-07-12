@@ -26,7 +26,9 @@ const billableCheckbox = document.querySelector(billableCheckboxID) as HTMLInput
 async function fillForm(id) {
     const templateEntries = await loadLocalTemplateEntries();
     const entry = templateEntries.find(entry => entry.id === id);
-    const { contact, contactPerson = null, project = null, package = null, status = null, billable = true } = entry
+    const { contact, contactPerson = null, project = null, status = null, billable = true } = entry;
+    // Workaround because "package" is actually a reserved word
+    entry["package"] = entry.package ?? null;
 
     await triggerField(workFieldID, "work");
     await triggerField(statusFieldID, status);
@@ -35,7 +37,8 @@ async function fillForm(id) {
     await triggerContactField(contact);
     await triggerField(contactPersonID, contactPerson);
     await triggerField(projectFieldID, project);
-    await triggerField(packageFieldID, package);
+
+    await triggerField(packageFieldID, packageValue);
     await triggerCheckbox(billableCheckbox, billable);
 
     // TODO: Loading indicator - to know when the process is done.
@@ -176,9 +179,11 @@ async function readFormData() {
 
     const contactPerson = await readTextFromSelect2(contactPersonField);
     const project = await readTextFromSelect2(projectField);
-    const package = await readTextFromSelect2(packageField);
+
+    const packageValue = await readTextFromSelect2(packageField);
     const billable = billableCheckbox.checked;
-    const templateName = trimAll(package) || trimAll(project) || trimAll(contact) || trimAll(workField) || "New Template";
+
+    const templateName = trimAll(packageValue) || trimAll(project) || trimAll(contact) || trimAll(workField) || "New Template";
 
     let formEntry;
 
@@ -186,7 +191,8 @@ async function readFormData() {
     let notReadyToSave = true;
     do {
         // Note: make sure a generated id is not part of the base entry to create the hash
-        formEntry = { work, status, contact, project, package, billable, contactPerson, templateName };
+
+        formEntry = { work, status, contact, project, packageValue, billable, contactPerson, templateName };
 
         // Ask user for a template Name, prefilled with the suggested one
         let userInput = prompt("Name of the template:", templateName);
