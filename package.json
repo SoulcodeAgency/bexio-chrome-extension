@@ -1,10 +1,14 @@
 {
     "name": "bexio-chrome-extension",
-    "version": "0.7.0",
+    "version": "0.8.1",
     "description": "This extension adds saving and loading of form data within bexios time tracking page.",
     "scripts": {
         "buildPackage": "powershell -ExecutionPolicy Bypass -File createPackage.ps1",
-        "cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\""
+        "cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\"",
+        "version:patch": "npm --no-git-tag-version version patch",
+        "version:minor": "npm --no-git-tag-version version minor",
+        "version:major": "npm --no-git-tag-version version major",
+        "postversion": "node updateManifest.js"
     },
     "repository": {
         "type": "git",
@@ -23,5 +27,8 @@
     "bugs": {
         "url": "https://github.com/SoulcodeAgency/bexio-chrome-extension/issues"
     },
-    "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme"
+    "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
+    "devDependencies": {
+        "fs-extra": "^11.1.1"
+    }
 }

@@ -1,7 +1,9 @@
 import loadLocalTemplateEntries from "../../shared/loadLocalTemplateEntries";
+import * as packageInfo from '../../package.json';
+
 // CONST
-const VERSION = "0.5.0";
-const DATE = "23.06.2023";
+const VERSION = packageInfo.version;
+const DATE = "12.07.2023";
 
 // Delay
 const delay = ms => new Promise(res => setTimeout(res, ms));

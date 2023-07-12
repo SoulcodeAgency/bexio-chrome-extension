@@ -5,7 +5,8 @@
         "lib": [
             "ES2017",
             "DOM"
-        ]
+        ],
+        "resolveJsonModule": true
     },
     "include": [
         "src/**/*.ts"
