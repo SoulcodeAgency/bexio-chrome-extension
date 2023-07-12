@@ -18,8 +18,8 @@ const packageFieldID = "#s2id_monitoring_pr_package_id";
 const billableCheckboxID = "#monitoring_allowable_bill";
 const contactPersonID = "#s2id_monitoring_sub_contact_id";
 
-const contactField = document.querySelector(contactFieldID);
-const billableCheckbox = document.querySelector(billableCheckboxID);
+const contactField = document.querySelector(contactFieldID) as HTMLInputElement;
+const billableCheckbox = document.querySelector(billableCheckboxID) as HTMLInputElement;
 
 // Fill form
 async function fillForm(id) {
@@ -46,9 +46,9 @@ async function fillForm(id) {
 
 // Check that the select has any values
 async function waitForSelectOptions(selector) {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
         const waitForSelectBox = () => {
-            const selectSelector = document.querySelector(`${selector}+select`);
+            const selectSelector = document.querySelector(`${selector}+select`) as HTMLSelectElement;
             if (selectSelector !== null && selectSelector.options.length > 1) {
                 resolve();
             } else {
@@ -77,7 +77,7 @@ async function waitForSearchBoxField() {
 
 // Waits until Search box is gone
 async function waitForSearchBoxFieldToBeRemoved() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
         const waitForRemoval = () => {
             const searchBox = document.querySelector("#select2-drop input");
             if (searchBox === null) {
@@ -93,7 +93,7 @@ async function waitForSearchBoxFieldToBeRemoved() {
 
 // Waits until contacts items show up
 async function waitForContacts() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
         const waitForContacts = () => {
             const contacts = document.querySelector(".ac_results");
             if (contacts === null) {
@@ -130,11 +130,11 @@ async function triggerContactField(value) {
 // Trigger general fields with search box
 async function triggerField(selector, value) {
     if (value === null || value.trim() === "") return;
-    const inputSelector = document.querySelector(`${selector} input`);
+    const inputSelector = document.querySelector(`${selector} input`) as HTMLInputElement;
     await waitForSelectOptions(selector);
     inputSelector.value = value;
     inputSelector.dispatchEvent(pressEnter);
-    const searchBoxField = await waitForSearchBoxField();
+    const searchBoxField = await waitForSearchBoxField() as HTMLInputElement;
     searchBoxField.value = value;
     searchBoxField.dispatchEvent(pressEnter);
     await waitForSearchBoxFieldToBeRemoved();
@@ -285,7 +285,7 @@ async function renderHtml(templateEntries) {
         templates.remove();
     }
 
-    const templatePlacement = document.getElementById("pr_package").parentNode.parentNode.parentNode;
+    const templatePlacement = document.getElementById("pr_package").parentNode.parentNode.parentNode as HTMLElement;
     const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="display: flex; flex-wrap: wrap; gap: 4px;">
         ${buttons}
     </div>`;
@@ -314,14 +314,14 @@ async function renderHtml(templateEntries) {
         fillForm(button.id)
 
         // Handle active template button
-        const parent = e.target.parentNode;
+        const parent = (e.target as HTMLElement).parentNode as HTMLElement;
         const siblings = parent.querySelectorAll(".template-button");
 
         siblings.forEach((sibling) => {
             sibling.classList.remove("template-button--active");
         });
 
-        e.target.classList.add("template-button--active");
+        (e.target as HTMLElement).classList.add("template-button--active");
     }));
 
     // Special action buttons

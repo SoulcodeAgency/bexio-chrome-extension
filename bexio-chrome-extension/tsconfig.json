@@ -1,7 +1,11 @@
 {
     "compilerOptions": {
         "target": "es5",
-        "outDir": "../package/"
+        "outDir": "../unpacked/",
+        "lib": [
+            "ES2017",
+            "DOM"
+        ]
     },
     "include": [
         "src/**/*.ts"

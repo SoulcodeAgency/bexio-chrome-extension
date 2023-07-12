@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react-swc'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "/sidePanel-import/dist/",
+  base: "/sidePanel-import/",
   build: {
-    outDir: '../package/import-app',
+    outDir: '../unpacked/sidePanel-import',
   }
 })

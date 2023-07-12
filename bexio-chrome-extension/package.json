@@ -1,13 +1,10 @@
 {
   "name": "bexio-chrome-extension",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "This extension adds saving and loading of form data within bexios time tracking page.",
-  "main": "bexioTimetrackingTemplates.js",
+  "main": "src/bexioTimetrackingTemplates.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "vite",
-    "build": "vite build",
-    "package": "powershell \"Compress-Archive -Path $PWD.path -DestinationPath packages/bexio-chrome-extension.zip -Force\""
+    "build": "vite build"
   },
   "repository": {
     "type": "git",
@@ -28,6 +25,7 @@
   },
   "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
   "devDependencies": {
+    "@types/chrome": "^0.0.241",
     "typescript": "^5.1.6",
     "vite": "^4.4.3"
   }

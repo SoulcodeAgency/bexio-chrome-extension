@@ -1,13 +1,19 @@
 export default {
   build: {
-    assetsDir: "public",
+    assetsDir: "", // otherwise the scripts will be placed into the named assetsDir folder
     rollupOptions: {
       input: {
-        main: "src/bexioTimetrackingTemplates.ts",
+        bexioTimetrackingTemplates: "src/bexioTimetrackingTemplates.ts",
+      },
+      output: {
+        dir: "../unpacked",
+        assetFileNames: "[name].[ext]",
+        chunkFileNames: "[name].[ext]",
+        entryFileNames: "[name].js", // Removes the hash of the entry file
       },
     },
     exclude: [/\.html$/],
-    outDir: "../package",
-    emptyOutDir: true,
+    outDir: "../unpacked",
+    emptyOutDir: false,
   },
 };
