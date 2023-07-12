@@ -10,10 +10,10 @@ chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.create({ url: BEXIO_MONITORING_TIMETRACKING });
 });
 
-// // Allows users to open the side panel by clicking on the action toolbar icon
-// chrome.sidePanel
-//     .setPanelBehavior({ openPanelOnActionClick: true })
-//     .catch((error) => console.error(error));
+// Allows users to open the side panel by clicking on the action toolbar icon
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error(error));
 
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   if (!tab.url) return;
