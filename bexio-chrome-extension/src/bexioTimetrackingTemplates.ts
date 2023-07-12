@@ -1,3 +1,4 @@
+import loadLocalTemplateEntries from "../../shared/loadLocalTemplateEntries";
 // CONST
 const VERSION = "0.5.0";
 const DATE = "23.06.2023";
@@ -225,15 +226,6 @@ async function readFormData() {
     chrome.storage.local.set({ entries: allEntries }).then(async () => {
         console.log("Entry is saved", formEntry);
         await initializeExtension();
-    });
-}
-
-async function loadLocalTemplateEntries() {
-    return await chrome.storage.local.get(["entries"]).then((result) => {
-        if (result.entries && Array.isArray(result.entries)) {
-            return result.entries;
-        }
-        return [];
     });
 }
 

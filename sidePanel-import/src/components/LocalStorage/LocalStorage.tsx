@@ -1,17 +1,7 @@
 import { useState, useEffect } from "react";
-import loadLocalTemplateEntries from "../../utils/loadLocalTemplateEntries.js";
+import loadLocalTemplateEntries from "../../../../shared/loadLocalTemplateEntries.js";
+import { TemplateEntry } from "../../../../types";
 import "./LocalStorage.css";
-
-export type TemplateEntry = {
-  billable: boolean;
-  contact: string;
-  contactPerson: string;
-  id: string;
-  package: string;
-  project: string;
-  status: string;
-  work: string;
-};
 
 function LocalStorage() {
   const [storage, setStorage] = useState<TemplateEntry[]>([]);
