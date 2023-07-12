@@ -30,7 +30,7 @@ async function fillForm(id) {
     const entry = templateEntries.find(entry => entry.id === id);
     const { contact, contactPerson = null, project = null, status = null, billable = true } = entry;
     // Workaround because "package" is actually a reserved word
-    entry["package"] = entry.package ?? null;
+    const packageValue = entry.package ?? null;
 
     await triggerField(workFieldID, "work");
     await triggerField(statusFieldID, status);
