@@ -1,4 +1,10 @@
 # Creates a package for the chrome extension
+[CmdletBinding()]
+Param (
+    [switch]
+    $CreatePackage
+)
+
 # variables
 $source = "unpacked"
 $dist = "dist"
@@ -33,20 +39,22 @@ finally {
     Pop-Location
 }
 
-# build the package
-Write-Host ""
-Write-Host "Creating package..."
-try {
-    # create dist folder
-    if (-not(Test-Path -Path $dist)) {
-        New-Item -ItemType Directory -Path $dist -Force
-        Write-Host "OK Creating dist folder" -ForegroundColor Green
-    }
-    # zip folder
-    Compress-Archive -Path $packageDirectorySource -DestinationPath $packageDirectoryDestination -Force
-    Write-Host "OK Package built at: $packageDirectoryDestination" -ForegroundColor Green
+if ($CreatePackage) {
+    # build the package
     Write-Host ""
-}
-catch {
-    Write-Host "FAILED " -ForegroundColor Red
+    Write-Host "Creating package..."
+    try {
+        # create dist folder
+        if (-not(Test-Path -Path $dist)) {
+            New-Item -ItemType Directory -Path $dist -Force
+            Write-Host "OK Creating dist folder" -ForegroundColor Green
+        }
+        # zip folder
+        Compress-Archive -Path $packageDirectorySource -DestinationPath $packageDirectoryDestination -Force
+        Write-Host "OK Package built at: $packageDirectoryDestination" -ForegroundColor Green
+        Write-Host ""
+    }
+    catch {
+        Write-Host "FAILED " -ForegroundColor Red
+    }
 }

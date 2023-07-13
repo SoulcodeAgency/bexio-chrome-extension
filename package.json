@@ -3,7 +3,8 @@
     "version": "0.8.4",
     "description": "This extension adds saving and loading of form data within bexios time tracking page.",
     "scripts": {
-        "buildPackage": "powershell -ExecutionPolicy Bypass -File createPackage.ps1",
+        "buildProject": "powershell -File createPackage.ps1",
+        "createPackage": "npm run buildProject -- -createPackage",
         "cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\"",
         "version:patch": "npm --no-git-tag-version version patch",
         "version:minor": "npm --no-git-tag-version version minor",
