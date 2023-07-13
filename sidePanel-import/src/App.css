@@ -45,3 +45,15 @@
 .read-the-docs {
   color: #888;
 }
+
+h2 {
+  text-transform: uppercase;
+  color: #3276b4;
+}
+.content {
+  padding: 0 20px 30px;
+}
+
+textarea {
+  width: 100%;
+}

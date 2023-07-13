@@ -1,0 +1,10 @@
+.error {
+  background-color: rgb(230, 88, 88);
+  color: white;
+  padding: 1px 20px;
+}
+
+.importDataTable tr:last-child td {
+  font-weight: bold;
+  background-color: lightgrey;
+}
