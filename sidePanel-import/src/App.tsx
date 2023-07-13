@@ -1,11 +1,11 @@
 import "./App.css";
-import LocalStorage from "./components/LocalStorage/LocalStorage";
+import TemplateEntries from "./components/TemplateEntries/TemplateEntries";
 
 function App() {
   return (
     <>
       <div style={{ textAlign: "left" }}>
-        <LocalStorage />
+        <TemplateEntries />
       </div>
     </>
   );

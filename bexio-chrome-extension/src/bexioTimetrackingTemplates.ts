@@ -1,4 +1,4 @@
-import loadLocalTemplateEntries from "../../shared/loadLocalTemplateEntries";
+import { loadTemplateEntries } from "../../shared/chromeStorageTemplateEntries";
 import * as packageInfo from '../../package.json';
 
 // CONST
@@ -26,7 +26,7 @@ const billableCheckbox = document.querySelector(billableCheckboxID) as HTMLInput
 
 // Fill form
 async function fillForm(id) {
-    const templateEntries = await loadLocalTemplateEntries();
+    const templateEntries = await loadTemplateEntries();
     const entry = templateEntries.find(entry => entry.id === id);
     const { contact, contactPerson = null, project = null, status = null, billable = true } = entry;
     // Workaround because "package" is actually a reserved word
@@ -211,7 +211,7 @@ async function readFormData() {
         formEntry.id = hash;
 
         // Load all templateEntries (refresh)
-        allEntries = await loadLocalTemplateEntries();
+        allEntries = await loadTemplateEntries();
 
         // Check if the hash already exists
         const existingEntry = allEntries.find(entry => entry.id === hash);
@@ -331,7 +331,7 @@ async function renderHtml(templateEntries) {
 
 async function initializeExtension() {
     // Get all templateEntries in storage and initialize the page
-    const templateEntries = await loadLocalTemplateEntries();
+    const templateEntries = await loadTemplateEntries();
     // Sort the templateEntries according to the template name
     templateEntries.sort((a, b) => getTemplateName(a).localeCompare(getTemplateName(b)));
     renderHtml(templateEntries);
