@@ -48,8 +48,27 @@ function ImportEntries() {
     console.log(importData);
   }
 
-  function runTemplate(template: string) {
-    console.log(template);
+  function applyImportEntry(date: string, timeAmount: string) {
+    // Take the first 5 characters of the time, we only need hh:mm from the hh:mm:ss signature
+    timeAmount = timeAmount.slice(0, 5);
+
+    (async () => {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        lastFocusedWindow: true,
+      });
+      if (tab.id) {
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          mode: "time+duration",
+          duration: timeAmount,
+          date: date,
+        });
+        // do something with response here, not outside the function
+        console.log(response);
+      } else {
+        throw new Error("No tab found");
+      }
+    })();
   }
 
   return (
@@ -102,6 +121,9 @@ function ImportEntries() {
                       columnHeader={importHeader[index]}
                       fieldValue={entryField}
                       key={entryField + index}
+                      onButtonClick={() =>
+                        applyImportEntry(importHeader[index], entryField)
+                      }
                     />
                   ))}
                 </tr>

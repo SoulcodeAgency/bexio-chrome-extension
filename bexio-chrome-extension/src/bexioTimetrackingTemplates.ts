@@ -20,9 +20,26 @@ const projectFieldID = "#s2id_monitoring_pr_project_id";
 const packageFieldID = "#s2id_monitoring_pr_package_id";
 const billableCheckboxID = "#monitoring_allowable_bill";
 const contactPersonID = "#s2id_monitoring_sub_contact_id";
+const durationFieldId = "#monitoring_duration";
+const dateFieldId = "#monitoring_date";
 
+const durationField = document.querySelector(durationFieldId) as HTMLInputElement;
+const dateField = document.querySelector(dateFieldId) as HTMLInputElement;
 const contactField = document.querySelector(contactFieldID) as HTMLInputElement;
 const billableCheckbox = document.querySelector(billableCheckboxID) as HTMLInputElement;
+
+// Listen to messages from the side panel
+chrome.runtime.onMessage.addListener(
+    function (request, sender, sendResponse) {
+        if (request.greeting === "hello") {
+            sendResponse({ farewell: "goodbye" });
+        }
+        if (request.mode === "time+duration") {
+            triggerDuration(request.duration);
+            triggerDate(request.date);
+        }
+    }
+);
 
 // Fill form
 async function fillForm(id) {
@@ -149,6 +166,18 @@ async function triggerField(selector, value) {
 // Trigger checkbox
 async function triggerCheckbox(selector, checked = true) {
     selector.checked = checked;
+}
+
+// Trigger duration
+async function triggerDuration(value: string) {
+    durationField.value = value;
+    durationField.dispatchEvent(pressEnter);
+}
+
+// Trigger date
+async function triggerDate(value: string) {
+    dateField.value = value;
+    dateField.dispatchEvent(pressEnter);
 }
 
 // Read value from select2

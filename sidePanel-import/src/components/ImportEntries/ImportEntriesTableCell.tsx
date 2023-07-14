@@ -1,6 +1,7 @@
 type ImportEntriesTableCellProps = {
   columnHeader: string;
   fieldValue: string;
+  onButtonClick: () => void;
 };
 const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
   const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
@@ -13,7 +14,7 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
     tableCell = (
       <td>
         {props.fieldValue}
-        <button>▶️</button>
+        <button onClick={props.onButtonClick}>▶️</button>
       </td>
     );
   } else if (entryIsEmpty) {
