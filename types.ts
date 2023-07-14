@@ -1,4 +1,5 @@
 export type TemplateEntry = {
+    templateName: string;
     billable: boolean;
     contact: string;
     contactPerson: string;

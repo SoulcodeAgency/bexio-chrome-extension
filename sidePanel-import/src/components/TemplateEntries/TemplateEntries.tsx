@@ -24,6 +24,7 @@ function TemplateEntries() {
           <thead>
             <tr>
               <th>#</th>
+              <th>Template Name</th>
               <th>Contact</th>
               <th>Project</th>
               <th>Package</th>
@@ -37,6 +38,7 @@ function TemplateEntries() {
             {storage.map((entry: TemplateEntry, index) => (
               <tr key={entry.id}>
                 <td>{index + 1}</td>
+                <td>{entry.templateName}</td>
                 <td>{entry.contact}</td>
                 <td>{entry.project}</td>
                 <td>{entry.package}</td>
