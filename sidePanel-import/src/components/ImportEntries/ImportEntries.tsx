@@ -2,26 +2,29 @@ import { useRef, useState } from "react";
 // import loadLocalImportEntries from "../../../../shared/loadLocalImportEntries.js";
 // import { TemplateEntry } from "../../../../types.js";
 import "./ImportEntries.css";
+import ImportEntriesTableCell from "./ImportEntriesTableCell";
 
-type ImportHeader = string[];
-type ImportData = string[][];
+type ImportRow = string[];
+type ImportData = ImportRow[];
 
 function ImportEntries() {
   const [clipboardStatus, setClipboardStatus] = useState("");
-  const [importHeaders, setImportHeaders] = useState<ImportHeader>([]);
+  const [importHeader, setImportHeader] = useState<ImportRow>([]);
+  const [importFooter, setImportFooter] = useState<ImportRow>([]);
   const [importData, setImportData] = useState<ImportData>([]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
 
   function resetImportState() {
-    setImportHeaders([]);
+    setImportHeader([]);
     setImportData([]);
   }
 
   function convertImportData(csvString: string) {
     const rows = csvString.split("\n");
-    const importHeaders = rows[0].split("\t");
+    const importHeader = rows[0].split("\t");
+    const importFooter = rows[rows.length - 1].split("\t");
 
-    if (importHeaders.find((column) => column === "Tag 1") === undefined) {
+    if (importHeader.find((column) => column === "Tag 1") === undefined) {
       const errorMessage =
         "Clipboard data could not be parsed correctly. Make sure you have atleast a column called 'Tag 1'";
       setClipboardStatus(errorMessage);
@@ -33,14 +36,20 @@ function ImportEntries() {
 
     const importData = rows
       .slice(1)
+      .slice(0, -1)
       .map((row) => row.replace(/\r/g, ""))
       .map((row: string) => row.split("\t"));
 
-    setImportHeaders(importHeaders);
+    setImportFooter(importFooter);
+    setImportHeader(importHeader);
     setImportData(importData);
 
-    console.log(importHeaders);
+    console.log(importHeader);
     console.log(importData);
+  }
+
+  function runTemplate(template: string) {
+    console.log(template);
   }
 
   return (
@@ -79,7 +88,7 @@ function ImportEntries() {
             <thead>
               <tr>
                 <th>#</th>
-                {importHeaders.map((field) => (
+                {importHeader.map((field) => (
                   <th key={field}>{field}</th>
                 ))}
               </tr>
@@ -87,24 +96,22 @@ function ImportEntries() {
             <tbody>
               {importData.map((entry, index) => (
                 <tr key={index}>
-                  {index !== importData.length - 1 ? (
-                    <td>{index + 1}</td>
-                  ) : (
-                    <td></td>
-                  )}
+                  <td>{index + 1}</td>
                   {entry.map((entryField, index) => (
-                    <td key={entryField + index}>
-                      {entryField}
-                      {/*
-                      we need to be carefull with inputs and keeping state in sync
-                      <input
-                        key={"input_" + entryField + index}
-                        defaultValue={entryField}
-                      /> */}
-                    </td>
+                    <ImportEntriesTableCell
+                      columnHeader={importHeader[index]}
+                      fieldValue={entryField}
+                      key={entryField + index}
+                    />
                   ))}
                 </tr>
               ))}
+              <tr>
+                <td></td>
+                {importFooter.map((field, index) => (
+                  <td key={importHeader[index]}>{field}</td>
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>
