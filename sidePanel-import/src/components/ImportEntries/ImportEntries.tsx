@@ -49,8 +49,8 @@ function ImportEntries() {
   }
 
   function applyImportEntry(date: string, timeAmount: string) {
-    // Take the first 5 characters of the time, we only need hh:mm from the hh:mm:ss signature
-    timeAmount = timeAmount.slice(0, 5);
+    // Take the first 2 number blocks of the time, we only need hh:mm from the hh:mm:ss signature
+    timeAmount = timeAmount.split(":").slice(0, 2).join(":");
 
     (async () => {
       const [tab] = await chrome.tabs.query({
