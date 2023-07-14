@@ -31,12 +31,18 @@ const billableCheckbox = document.querySelector(billableCheckboxID) as HTMLInput
 // Listen to messages from the side panel
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
+        // Example
         if (request.greeting === "hello") {
             sendResponse({ farewell: "goodbye" });
         }
+        // Time + Duration
         if (request.mode === "time+duration") {
             triggerDuration(request.duration);
             triggerDate(request.date);
+        }
+        // Template
+        if (request.mode === "template") {
+            fillForm(request.templateId);
         }
     }
 );

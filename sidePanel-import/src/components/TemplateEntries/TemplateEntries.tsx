@@ -16,6 +16,25 @@ function TemplateEntries() {
     fetchData();
   }, []);
 
+  function applyTemplate(templateId: string) {
+    (async () => {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        lastFocusedWindow: true,
+      });
+      if (tab.id) {
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          mode: "template",
+          templateId: templateId,
+        });
+        // do something with response here, not outside the function
+        console.log(response);
+      } else {
+        throw new Error("No tab found");
+      }
+    })();
+  }
+
   return (
     <>
       <h2>Saved templates</h2>
@@ -35,9 +54,11 @@ function TemplateEntries() {
             </tr>
           </thead>
           <tbody>
-            {storage.map((entry: TemplateEntry, index) => (
+            {storage.map((entry: TemplateEntry) => (
               <tr key={entry.id}>
-                <td>{index + 1}</td>
+                <td>
+                  <button onClick={() => applyTemplate(entry.id)}>▶️</button>
+                </td>
                 <td>{entry.templateName}</td>
                 <td>{entry.contact}</td>
                 <td>{entry.project}</td>
