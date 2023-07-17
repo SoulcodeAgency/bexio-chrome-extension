@@ -26,3 +26,15 @@ export async function remove<T>(id: string, key = defaultKey): Promise<any> {
 export async function save<T>(entries: T[], key = defaultKey): Promise<any> {
     return chrome.storage.local.set({ [key]: entries });
 }
+
+// Update an entry in chrome local storage
+export async function update<T>(updatedEntry: T & { [index: string]: string }, key = defaultKey, idKey = "id"): Promise<any> {
+    // Iterate over the chrome storage and update the entry with the given id
+    const entries = await chrome.storage.local.get(key);
+
+    if (entries[key] && Array.isArray(entries[key])) {
+        const entryIndex = entries[key].findIndex((entry: T & { [index: string]: string }) => entry[idKey] !== updatedEntry[idKey]);
+        entries[key][entryIndex] = { ...updatedEntry }
+    };
+    return save(entries as T[]);
+}
