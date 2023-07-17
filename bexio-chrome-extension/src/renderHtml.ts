@@ -9,7 +9,7 @@ async function renderHtml(templateEntries) {
     // Add some buttons into the page
     let buttons = '';
     if (templateEntries) {
-        templateEntries.map(entry => buttons += `<button id="${entry.id}" class="entry btn btn-info template-button" style="margin-right: 2px">${getTemplateName(entry)}</button>`);
+        templateEntries.map(entry => buttons += `<button type="button" id="${entry.id}" class="entry btn btn-info template-button" style="margin-right: 2px">${getTemplateName(entry)}</button>`);
     }
 
     // Remove the templates HTML, if it already exists
@@ -23,8 +23,8 @@ async function renderHtml(templateEntries) {
         ${buttons}
     </div>`;
     const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px;">
-            <button id="AddNewTemplate" class="btn btn-info">+ Add as Template</button>
-            <button id="DeleteTemplate" class="btn btn-danger">Delete Template</button>
+            <button type="button" id="AddNewTemplate" class="btn btn-info">+ Add as Template</button>
+            <button type="button" id="DeleteTemplate" class="btn btn-danger">Delete Template</button>
         </div>`;
 
     // Place the html into the DOM
