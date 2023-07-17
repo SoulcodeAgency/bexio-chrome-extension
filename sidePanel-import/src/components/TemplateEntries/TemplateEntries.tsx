@@ -1,43 +1,15 @@
-import { useState, useEffect } from "react";
-import { loadTemplates } from "../../../../shared/chromeStorageTemplateEntries.js";
 import { TemplateEntry } from "../../../../types.js";
+import { TemplateContext } from "../../TemplateContext.js";
+import applyTemplate from "../../utils/applyTemplate.js";
 import "./TemplateEntries.css";
+import { useContext } from "react";
 
 function TemplateEntries() {
-  const [storage, setStorage] = useState<TemplateEntry[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const templateEntries = await loadTemplates();
-
-      setStorage(templateEntries);
-    };
-
-    fetchData();
-  }, []);
-
-  function applyTemplate(templateId: string) {
-    (async () => {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        lastFocusedWindow: true,
-      });
-      if (tab.id) {
-        const response = await chrome.tabs.sendMessage(tab.id, {
-          mode: "template",
-          templateId: templateId,
-        });
-        // do something with response here, not outside the function
-        console.log(response);
-      } else {
-        throw new Error("No tab found");
-      }
-    })();
-  }
+  const templateEntries = useContext<TemplateEntry[]>(TemplateContext);
 
   return (
     <>
-      <h2>Saved templates</h2>
+      <h2>Bexio Templates</h2>
       <div className="content">
         <table>
           <thead>
@@ -54,7 +26,7 @@ function TemplateEntries() {
             </tr>
           </thead>
           <tbody>
-            {storage.map((entry: TemplateEntry) => (
+            {templateEntries.map((entry: TemplateEntry) => (
               <tr key={entry.id}>
                 <td>
                   <button onClick={() => applyTemplate(entry.id)}>▶️</button>
