@@ -6,10 +6,10 @@ export async function loadTemplates(): Promise<TemplateEntry[]> {
     return load<TemplateEntry>(templateEntriesKey);
 }
 
-export async function deleteTemplate(id) {
-    return remove(id, templateEntriesKey);
+export async function deleteTemplate(id: string): Promise<any> {
+    return remove<TemplateEntry>(id, templateEntriesKey);
 }
 
-export async function saveTemplates(entries) {
-    return save(entries, templateEntriesKey);
+export async function saveTemplates(entries: TemplateEntry[]): Promise<any> {
+    return save<TemplateEntry>(entries, templateEntriesKey);
 }

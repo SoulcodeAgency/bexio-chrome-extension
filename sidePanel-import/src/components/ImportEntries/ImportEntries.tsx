@@ -1,8 +1,7 @@
-import { useRef, useState } from "react";
-// import loadLocalImportEntries from "../../../../shared/loadLocalImportEntries.js";
-// import { TemplateEntry } from "../../../../types.js";
+import { useEffect, useRef, useState } from "react";
 import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
+import { load, save } from "../../../../shared/chromeStorage";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];
@@ -17,6 +16,19 @@ function ImportEntries() {
   function resetImportState() {
     setImportHeader([]);
     setImportData([]);
+    setImportFooter([]);
+  }
+
+  function removeImportData() {
+    resetImportState();
+    save([], "importHeader");
+    save([], "importData");
+    save([], "importFooter");
+  }
+
+  function clearTextarea() {
+    importDataRef!.current!.value = "";
+    setClipboardStatus("");
   }
 
   function convertImportData(csvString: string) {
@@ -71,6 +83,28 @@ function ImportEntries() {
     })();
   }
 
+  function saveImport() {
+    save(importHeader, "importHeader");
+    save(importData, "importData");
+    save(importFooter, "importFooter");
+  }
+
+  function loadImportData() {
+    load<string>("importHeader").then((data) => {
+      setImportHeader(data ?? []);
+    });
+    load<ImportRow>("importData").then((data) => {
+      setImportData(data ?? []);
+    });
+    load<string>("importFooter").then((data) => {
+      setImportFooter(data ?? []);
+    });
+  }
+
+  useEffect(() => {
+    loadImportData();
+  }, []);
+
   return (
     <>
       <h2>Import entries</h2>
@@ -90,9 +124,8 @@ function ImportEntries() {
             onChange={(e) => convertImportData(e.target.value)}
           />
         </div>
-        <button onClick={() => (importDataRef!.current!.value = "")}>
-          Clear textarea
-        </button>
+
+        <button onClick={clearTextarea}>Clear textarea</button>
 
         {clipboardStatus && (
           <div className="error">
@@ -101,8 +134,27 @@ function ImportEntries() {
         )}
 
         <h3>Imported data</h3>
-        <button onClick={() => resetImportState()}>Clear imported data</button>
         <div className="content">
+          <p>Note: You can also save the imported data for later use.</p>
+          <button
+            style={{ backgroundColor: "#4291a8", color: "white" }}
+            onClick={saveImport}
+          >
+            Save this import
+          </button>
+          <button
+            style={{ backgroundColor: "#3276b4", color: "white" }}
+            onClick={loadImportData}
+          >
+            Reload stored imported data
+          </button>
+          <button
+            style={{ backgroundColor: "red", color: "white" }}
+            onClick={removeImportData}
+          >
+            Delete imported data
+          </button>
+
           <table className="importDataTable">
             <thead>
               <tr>
