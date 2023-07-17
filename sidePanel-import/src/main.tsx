@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import soulcodeLogo from "./assets/SoulCode_Logo_OC_Complete.svg";
+import soulcodeLogo from "./assets/soulcode-logo.png";
 import * as packageInfo from "../../package.json";
 // eslint-disable-next-line react-refresh/only-export-components
 const VERSION = packageInfo.version;
