@@ -1,12 +1,15 @@
-import { TemplateEntry } from "../types";
+import { ImportData } from "../types";
+import { load, remove, save } from "./chromeStorage";
+const importDataKey = "importData";
 
-// TODO: Update importData type
-export async function loadImportData(): Promise<TemplateEntry[]> {
-    // @ts-ignore
-    return await chrome.storage.local.get(["importData"]).then((result) => {
-        if (result.entries && Array.isArray(result.entries)) {
-            return result.entries as TemplateEntry[];
-        }
-        return [];
-    });
+export async function loadTemplates(): Promise<ImportData[]> {
+    return load<ImportData>(importDataKey);
+}
+
+export async function deleteTemplate(id) {
+    return remove(id, importDataKey);
+}
+
+export async function saveTemplates(entries) {
+    return save(entries, importDataKey);
 }

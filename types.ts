@@ -9,3 +9,5 @@ export type TemplateEntry = {
     status: string;
     work: string;
 };
+
+export type ImportData = string[];

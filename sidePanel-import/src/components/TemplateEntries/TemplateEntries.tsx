@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { loadTemplateEntries } from "../../../../shared/chromeStorageTemplateEntries.js";
+import { loadTemplates } from "../../../../shared/chromeStorageTemplateEntries.js";
 import { TemplateEntry } from "../../../../types.js";
 import "./TemplateEntries.css";
 
@@ -8,7 +8,7 @@ function TemplateEntries() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const templateEntries = await loadTemplateEntries();
+      const templateEntries = await loadTemplates();
 
       setStorage(templateEntries);
     };
