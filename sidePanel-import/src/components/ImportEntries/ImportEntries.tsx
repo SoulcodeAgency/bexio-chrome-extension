@@ -20,6 +20,7 @@ function ImportEntries() {
     setImportHeader([]);
     setImportData([]);
     setImportFooter([]);
+    setImportTemplates([]);
   }
 
   function removeImportData() {
@@ -27,6 +28,7 @@ function ImportEntries() {
     save([], "importHeader");
     save([], "importData");
     save([], "importFooter");
+    save([], "importTemplates");
   }
 
   function clearTextarea() {
@@ -58,9 +60,6 @@ function ImportEntries() {
     setImportFooter(importFooter);
     setImportHeader(importHeader);
     setImportData(importData);
-
-    console.log(importHeader);
-    console.log(importData);
   }
 
   function applyImportEntry(
@@ -86,11 +85,10 @@ function ImportEntries() {
         // Check if this entry has a template
         const templateId = importTemplates[entryIndex];
         if (templateId.length) {
-          console.log("applying template with id: " + templateId);
           applyTemplate(templateId);
         }
         // do something with response here, not outside the function
-        console.log(response);
+        // console.log(response);
       } else {
         throw new Error("No tab found");
       }
@@ -123,7 +121,6 @@ function ImportEntries() {
   }, []);
 
   function onChangeTemplate(templateId: string, index: number) {
-    console.log("onChangeTemplate", templateId, index);
     const importTemplatesCopy = [...importTemplates];
     importTemplatesCopy[index] = templateId;
     setImportTemplates(importTemplatesCopy);

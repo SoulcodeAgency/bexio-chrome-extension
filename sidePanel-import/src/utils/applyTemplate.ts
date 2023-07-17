@@ -10,7 +10,7 @@ function applyTemplate(templateId: string) {
                 templateId: templateId,
             });
             // do something with response here, not outside the function
-            console.log(response);
+            // console.log(response);
         } else {
             throw new Error("No tab found");
         }
