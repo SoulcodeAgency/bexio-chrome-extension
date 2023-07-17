@@ -175,7 +175,7 @@ function ImportEntries() {
             style={{ backgroundColor: "#3276b4", color: "white" }}
             onClick={loadImportData}
           >
-            Reload stored imported data
+            Reload imported data from storage
           </button>
           <button
             style={{ backgroundColor: "red", color: "white" }}
