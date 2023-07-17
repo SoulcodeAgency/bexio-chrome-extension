@@ -60,6 +60,7 @@ function ImportEntries() {
     setImportFooter(importFooter);
     setImportHeader(importHeader);
     setImportData(importData);
+    setImportTemplates([]);
   }
 
   function applyImportEntry(
@@ -134,10 +135,12 @@ function ImportEntries() {
         <p>
           This lets you import entries from <b>ManicTime</b> - directly from
           your clipboard. Use the "Copy to clipboard" function in ManicTime's
-          TimeSheet Summary, and make sure you have at least a "Tag 1" column
-          (e.g. Tag 1, Tag 2, Tag 3)
+          TimeSheet Summary, and make sure you have at least a "Tag 1" column.
         </p>
-        <p>Paste the data into the following field:</p>
+        <p>
+          Paste the data into the following field (Note: it will import and
+          override already imported data below)
+        </p>
         <div>
           <textarea
             ref={importDataRef}
@@ -158,10 +161,6 @@ function ImportEntries() {
         <h3>Imported data</h3>
         <div className="content">
           <p>Note: You can also save the imported data for later use.</p>
-          <ol>
-            <li>Select the template to use</li>
-            <li>Click on the button next to the time you want to track</li>
-          </ol>
           <button
             style={{ backgroundColor: "#4291a8", color: "white" }}
             onClick={saveImport}
@@ -181,6 +180,17 @@ function ImportEntries() {
             Delete imported data
           </button>
 
+          <ol>
+            <li>
+              Select the <strong>template</strong> to use for every row
+              (templates will be saved automatically)
+            </li>
+            <li>Click on the ▶️-button next to the time you want to track</li>
+            <li>
+              Date, Time and if selected also the Template will magically fill
+              the form. 🥳
+            </li>
+          </ol>
           <br />
           <br />
 
@@ -196,7 +206,7 @@ function ImportEntries() {
             </thead>
             <tbody>
               {importData.map((entry, entryIndex) => (
-                <tr key={entryIndex}>
+                <tr key={entry[0] + entryIndex + importTemplates[entryIndex]}>
                   <td>{entryIndex + 1}</td>
                   <td>
                     <TemplateSelect
