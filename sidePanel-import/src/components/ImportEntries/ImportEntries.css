@@ -8,3 +8,11 @@
   font-weight: bold;
   background-color: lightgrey;
 }
+
+.content button {
+  margin-right: 10px;
+}
+
+select {
+  padding: 5px;
+}

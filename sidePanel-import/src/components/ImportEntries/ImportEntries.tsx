@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
 import { load, save } from "../../../../shared/chromeStorage";
+import TemplateSelect from "../TemplateSelect/TemplateSelect";
+import applyTemplate from "../../utils/applyTemplate";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];
@@ -11,6 +13,7 @@ function ImportEntries() {
   const [importHeader, setImportHeader] = useState<ImportRow>([]);
   const [importFooter, setImportFooter] = useState<ImportRow>([]);
   const [importData, setImportData] = useState<ImportData>([]);
+  const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
 
   function resetImportState() {
@@ -60,7 +63,11 @@ function ImportEntries() {
     console.log(importData);
   }
 
-  function applyImportEntry(date: string, timeAmount: string) {
+  function applyImportEntry(
+    date: string,
+    timeAmount: string,
+    entryIndex: number
+  ) {
     // Take the first 2 number blocks of the time, we only need hh:mm from the hh:mm:ss signature
     timeAmount = timeAmount.split(":").slice(0, 2).join(":");
 
@@ -75,6 +82,13 @@ function ImportEntries() {
           duration: timeAmount,
           date: date,
         });
+
+        // Check if this entry has a template
+        const templateId = importTemplates[entryIndex];
+        if (templateId.length) {
+          console.log("applying template with id: " + templateId);
+          applyTemplate(templateId);
+        }
         // do something with response here, not outside the function
         console.log(response);
       } else {
@@ -99,23 +113,34 @@ function ImportEntries() {
     load<string>("importFooter").then((data) => {
       setImportFooter(data ?? []);
     });
+    load<string>("importTemplates").then((data) => {
+      setImportTemplates(data ?? []);
+    });
   }
 
   useEffect(() => {
     loadImportData();
   }, []);
 
+  function onChangeTemplate(templateId: string, index: number) {
+    console.log("onChangeTemplate", templateId, index);
+    const importTemplatesCopy = [...importTemplates];
+    importTemplatesCopy[index] = templateId;
+    setImportTemplates(importTemplatesCopy);
+    save(importTemplatesCopy, "importTemplates");
+  }
+
   return (
     <>
-      <h2>Import entries</h2>
+      <h2>ManicTime import</h2>
       <div className="content">
         <p>
-          This lets you import entries from tools like <b>ManicTime</b> -
-          directly from your clipboard. Use the "Copy to clipboard" function in
-          ManicTime's TimeSheet Summary, and make sure you have columns for your
-          tags. (e.g. Tag 1, Tag 2, Tag 3)
+          This lets you import entries from <b>ManicTime</b> - directly from
+          your clipboard. Use the "Copy to clipboard" function in ManicTime's
+          TimeSheet Summary, and make sure you have at least a "Tag 1" column
+          (e.g. Tag 1, Tag 2, Tag 3)
         </p>
-        <p>Paste the data into the following field</p>
+        <p>Paste the data into the following field:</p>
         <div>
           <textarea
             ref={importDataRef}
@@ -136,6 +161,10 @@ function ImportEntries() {
         <h3>Imported data</h3>
         <div className="content">
           <p>Note: You can also save the imported data for later use.</p>
+          <ol>
+            <li>Select the template to use</li>
+            <li>Click on the button next to the time you want to track</li>
+          </ol>
           <button
             style={{ backgroundColor: "#4291a8", color: "white" }}
             onClick={saveImport}
@@ -155,26 +184,42 @@ function ImportEntries() {
             Delete imported data
           </button>
 
+          <br />
+          <br />
+
           <table className="importDataTable">
             <thead>
               <tr>
                 <th>#</th>
+                <th title="Select the template to apply">Template</th>
                 {importHeader.map((field) => (
                   <th key={field}>{field}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {importData.map((entry, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
+              {importData.map((entry, entryIndex) => (
+                <tr key={entryIndex}>
+                  <td>{entryIndex + 1}</td>
+                  <td>
+                    <TemplateSelect
+                      selectedTemplate={importTemplates[entryIndex]}
+                      onChange={(templateId: string) =>
+                        onChangeTemplate(templateId, entryIndex)
+                      }
+                    />
+                  </td>
                   {entry.map((entryField, index) => (
                     <ImportEntriesTableCell
                       columnHeader={importHeader[index]}
                       fieldValue={entryField}
                       key={entryField + index}
                       onButtonClick={() =>
-                        applyImportEntry(importHeader[index], entryField)
+                        applyImportEntry(
+                          importHeader[index],
+                          entryField,
+                          entryIndex
+                        )
                       }
                     />
                   ))}
