@@ -61,6 +61,11 @@ if ($CreatePackage) {
         Compress-Archive -Path $packageDirectorySource -DestinationPath $packageDirectoryDestination -Force
         Write-Host "OK Package built at: $packageDirectoryDestination" -ForegroundColor Green
         Write-Host ""
+
+        # Open a specific webpage
+        Start-Process "https://chrome.google.com/u/1/webstore/devconsole/7ec9c1b5-988c-4cef-84b5-50b85d0fb0d0/nbmjdligmcfaeebdihmgbdpahdfddlhm/edit/package?hl=de"
+        # Open explorer with the dist folder containing the package
+        Invoke-Item -Path "./dist"
     }
     catch {
         Write-Host "FAILED " -ForegroundColor Red
