@@ -8,7 +8,7 @@ export default defineConfig({
   base: "/sidePanel-import/",
   build: {
     outDir: '../unpacked/sidePanel-import',
-    emptyOutDir: false,
+    emptyOutDir: true,
   },
   server: {
     fs: {
