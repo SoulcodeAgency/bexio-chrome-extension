@@ -1,4 +1,4 @@
-import { TemplateEntry } from "../types";
+import { TemplateEntry } from "./types";
 import { load, remove, save } from "./chromeStorage";
 const templateEntriesKey = "entries";
 

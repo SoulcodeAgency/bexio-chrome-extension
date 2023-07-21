@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
-import { load, save } from "../../../../shared/chromeStorage";
-import TemplateSelect from "../TemplateSelect/TemplateSelect";
-import applyTemplate from "../../utils/applyTemplate";
+import { load, save } from "@shared/chromeStorage";
+import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
+import applyTemplate from "~/utils/applyTemplate";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];

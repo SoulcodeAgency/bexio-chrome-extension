@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { TemplateEntry } from "../../../../types";
-import { TemplateContext } from "../../TemplateContext";
+import { TemplateEntry } from "@shared/types";
+import { TemplateContext } from "~/TemplateContext";
 
 type TemplateSelectProps = {
   selectedTemplate: string;

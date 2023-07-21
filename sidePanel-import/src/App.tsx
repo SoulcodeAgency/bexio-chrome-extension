@@ -3,8 +3,8 @@ import TemplateEntries from "./components/TemplateEntries/TemplateEntries";
 import ImportEntries from "./components/ImportEntries/ImportEntries";
 import { TemplateContext } from "./TemplateContext";
 import { useEffect, useState } from "react";
-import { loadTemplates } from "../../shared/chromeStorageTemplateEntries";
-import { TemplateEntry } from "../../types";
+import { loadTemplates } from "@shared/chromeStorageTemplateEntries";
+import { TemplateEntry } from "@shared/types";
 
 function App() {
   const [templates, setTemplates] = useState<TemplateEntry[]>([]);

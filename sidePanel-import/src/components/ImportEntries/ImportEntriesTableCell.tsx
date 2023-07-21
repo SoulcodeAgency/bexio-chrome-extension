@@ -1,5 +1,5 @@
 import { useState } from "react";
-import openBexioTimeTrackingPage from "../../utils/openBexioTimeTrackingPage";
+import openBexioTimeTrackingPage from "~/utils/openBexioTimeTrackingPage";
 
 type ImportEntriesTableCellProps = {
   columnHeader: string;
