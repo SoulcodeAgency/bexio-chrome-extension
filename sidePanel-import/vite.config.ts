@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path';
-import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,14 +8,14 @@ export default defineConfig({
   base: "/sidePanel-import/",
   resolve: {
     alias: {
-      '~': fileURLToPath(new URL('./src', import.meta.url))
+      '~': path.resolve(__dirname, 'src'),
     }
   },
   build: {
     outDir: '../unpacked/sidePanel-import',
     emptyOutDir: true,
     rollupOptions: {
-      external: ["@shared/chromeStorageTemplateEntries", "@shared/chromeStorage"]
+      external: ["../shared/chromeStorageTemplateEntries", "../shared/chromeStorage"],
     }
   },
   server: {
