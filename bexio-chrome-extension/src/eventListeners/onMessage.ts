@@ -1,5 +1,6 @@
 import fillForm from "../utils/fillForm";
 import triggerDate from "../utils/triggerDate";
+import triggerDescription from "../utils/triggerDescription";
 import triggerDuration from "../utils/triggerDuration";
 
 // Listen to messages from the side panel
@@ -9,10 +10,14 @@ chrome.runtime.onMessage.addListener(
         if (request.greeting === "hello") {
             sendResponse({ farewell: "goodbye" });
         }
-        // Time + Duration
+        // Time + Duration + Description
         if (request.mode === "time+duration") {
             triggerDuration(request.duration);
             triggerDate(request.date);
+            if (request.notes !== undefined) {
+                console.log("got notes", request.notes);
+                triggerDescription(request.notes);
+            }
         }
         // Template
         if (request.mode === "template") {

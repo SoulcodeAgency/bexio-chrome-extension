@@ -18,6 +18,8 @@ function ImportEntries() {
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
 
+  const hasNotes = importHeader[importHeader.length - 1] === "Notes";
+
   function resetImportState() {
     setImportHeader([]);
     setImportData([]);
@@ -81,11 +83,23 @@ function ImportEntries() {
         lastFocusedWindow: true,
       });
       if (tab.id) {
-        const response = await chrome.tabs.sendMessage(tab.id, {
+        const data: {
+          mode: string;
+          duration: string;
+          date: string;
+          notes: undefined | string;
+        } = {
           mode: "time+duration",
           duration: timeAmount,
           date: date,
-        });
+          notes: undefined,
+        };
+        // Add notes if they exist
+        if (hasNotes) {
+          data.notes = importData[entryIndex][importHeader.length - 1];
+        }
+        console.log("sending data", data);
+        const response = await chrome.tabs.sendMessage(tab.id, data);
 
         // Check if this entry has a template
         const templateId = importTemplates[entryIndex];
@@ -227,10 +241,8 @@ function ImportEntries() {
           </tr>
         </tbody>
       </table>
-
       <br />
       <br />
-
       <div>
         <button
           style={{ backgroundColor: "#3276b4", color: "white" }}
