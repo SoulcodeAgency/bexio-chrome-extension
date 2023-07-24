@@ -9,13 +9,13 @@ function App() {
   const items: TabsProps["items"] = [
     {
       key: "1",
-      label: `Templates`,
-      children: <TemplateEntries />,
+      label: `Bexio import`,
+      children: <ImportEntries />,
     },
     {
       key: "2",
-      label: `Bexio import`,
-      children: <ImportEntries />,
+      label: `Templates`,
+      children: <TemplateEntries />,
     },
   ];
 

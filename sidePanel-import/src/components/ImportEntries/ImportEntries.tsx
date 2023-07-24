@@ -4,6 +4,7 @@ import ImportEntriesTableCell from "./ImportEntriesTableCell";
 import { load, save } from "~/../../shared/chromeStorage";
 import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
+import { Collapse, CollapseProps } from "antd";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];
@@ -14,6 +15,7 @@ function ImportEntries() {
   const [importFooter, setImportFooter] = useState<ImportRow>([]);
   const [importData, setImportData] = useState<ImportData>([]);
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
+  const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
 
   function resetImportState() {
@@ -29,6 +31,7 @@ function ImportEntries() {
     save([], "importData");
     save([], "importFooter");
     save([], "importTemplates");
+    setTabs(["import"]);
   }
 
   function clearTextarea() {
@@ -61,6 +64,7 @@ function ImportEntries() {
     setImportHeader(importHeader);
     setImportData(importData);
     setImportTemplates([]);
+    setTabs(["import", "apply"]);
   }
 
   function applyImportEntry(
@@ -100,6 +104,12 @@ function ImportEntries() {
     save(importHeader, "importHeader");
     save(importData, "importData");
     save(importFooter, "importFooter");
+    setTabs(["apply"]);
+  }
+
+  function reloadImportData() {
+    setTabs(["apply"]);
+    loadImportData();
   }
 
   function loadImportData() {
@@ -128,121 +138,148 @@ function ImportEntries() {
     save(importTemplatesCopy, "importTemplates");
   }
 
-  return (
-    <>
-      <h2>ManicTime import</h2>
-      <div className="content">
-        <p>
-          This lets you import entries from <b>ManicTime</b> - directly from
-          your clipboard. Use the "Copy to clipboard" function in ManicTime's
-          TimeSheet Summary, and make sure you have at least a "Tag 1" column.
-        </p>
-        <p>
-          Paste the data into the following field (Note: it will import and
-          override already imported data below)
-        </p>
-        <div>
-          <textarea
-            ref={importDataRef}
-            wrap="off"
-            rows={10}
-            onChange={(e) => convertImportData(e.target.value)}
-          />
-        </div>
+  function changeTabs(key: string | string[]) {
+    if (typeof key === "string") key = [key];
+    setTabs(key);
+  }
 
-        <button onClick={clearTextarea}>Clear textarea</button>
-
-        {clipboardStatus && (
-          <div className="error">
-            <p>Error: {clipboardStatus}</p>
-          </div>
-        )}
-
-        <h3>Imported data</h3>
-        <div className="content">
-          <p>Note: You can also save the imported data for later use.</p>
-          <button
-            style={{ backgroundColor: "#4291a8", color: "white" }}
-            onClick={saveImport}
-          >
-            Save this import
-          </button>
-          <button
-            style={{ backgroundColor: "#3276b4", color: "white" }}
-            onClick={loadImportData}
-          >
-            Reload imported data from storage
-          </button>
-          <button
-            style={{ backgroundColor: "red", color: "white" }}
-            onClick={removeImportData}
-          >
-            Delete imported data
-          </button>
-
-          <ol>
-            <li>
-              Select the <strong>template</strong> to use for every row
-              (templates will be saved automatically)
-            </li>
-            <li>Click on the ▶️-button next to the time you want to track</li>
-            <li>
-              Date, Time and if selected also the Template will magically fill
-              the form. 🥳
-            </li>
-          </ol>
-          <br />
-          <br />
-
-          <table className="importDataTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th title="Select the template to apply">Template</th>
-                {importHeader.map((field) => (
-                  <th key={field}>{field}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {importData.map((entry, entryIndex) => (
-                <tr key={entry[0] + entryIndex + importTemplates[entryIndex]}>
-                  <td>{entryIndex + 1}</td>
-                  <td>
-                    <TemplateSelect
-                      selectedTemplate={importTemplates[entryIndex]}
-                      onChange={(templateId: string) =>
-                        onChangeTemplate(templateId, entryIndex)
-                      }
-                    />
-                  </td>
-                  {entry.map((entryField, index) => (
-                    <ImportEntriesTableCell
-                      columnHeader={importHeader[index]}
-                      fieldValue={entryField}
-                      key={entryField + index}
-                      onButtonClick={() =>
-                        applyImportEntry(
-                          importHeader[index],
-                          entryField,
-                          entryIndex
-                        )
-                      }
-                    />
-                  ))}
-                </tr>
-              ))}
-              <tr>
-                <td></td>
-                {importFooter.map((field, index) => (
-                  <td key={importHeader[index]}>{field}</td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+  const manicTimeImport = (
+    <div className="content">
+      <p>
+        This lets you import entries from <b>ManicTime</b> - directly from your
+        clipboard. Use the "Copy to clipboard" function in ManicTime's TimeSheet
+        Summary, and make sure you have at least a "Tag 1" column.
+      </p>
+      <p>
+        Paste the data into the following field (Note: it will import and
+        override already imported data below)
+      </p>
+      <div>
+        <textarea
+          ref={importDataRef}
+          wrap="off"
+          rows={10}
+          onChange={(e) => convertImportData(e.target.value)}
+        />
       </div>
-    </>
+
+      <button onClick={clearTextarea}>Clear textarea</button>
+      <button
+        style={{ backgroundColor: "#4291a8", color: "white" }}
+        onClick={saveImport}
+      >
+        Save this import
+      </button>
+
+      {clipboardStatus && (
+        <div className="error">
+          <p>Error: {clipboardStatus}</p>
+        </div>
+      )}
+    </div>
+  );
+
+  const importDataHTML = (
+    <div className="content">
+      <table className="importDataTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th title="Select the template to apply">Template</th>
+            {importHeader.map((field) => (
+              <th key={field}>{field}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {importData.map((entry, entryIndex) => (
+            <tr key={entry[0] + entryIndex + importTemplates[entryIndex]}>
+              <td>{entryIndex + 1}</td>
+              <td>
+                <TemplateSelect
+                  selectedTemplate={importTemplates[entryIndex]}
+                  onChange={(templateId: string) =>
+                    onChangeTemplate(templateId, entryIndex)
+                  }
+                />
+              </td>
+              {entry.map((entryField, index) => (
+                <ImportEntriesTableCell
+                  columnHeader={importHeader[index]}
+                  fieldValue={entryField}
+                  key={entryField + index}
+                  onButtonClick={() =>
+                    applyImportEntry(
+                      importHeader[index],
+                      entryField,
+                      entryIndex
+                    )
+                  }
+                />
+              ))}
+            </tr>
+          ))}
+          <tr>
+            <td></td>
+            {importFooter.map((field, index) => (
+              <td key={importHeader[index]}>{field}</td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+
+      <br />
+      <br />
+
+      <div>
+        <button
+          style={{ backgroundColor: "#3276b4", color: "white" }}
+          onClick={reloadImportData}
+        >
+          Reload saved data
+        </button>
+        <button
+          style={{ backgroundColor: "red", color: "white" }}
+          onClick={removeImportData}
+        >
+          Delete saved data
+        </button>
+
+        <ol>
+          <li>
+            Select the <strong>template</strong> to use for every row (template
+            selection will be saved automatically)
+          </li>
+          <li>Click on the ▶️-button next to the time you want to track</li>
+          <li>
+            Date, Time and if selected also the Template will magically fill the
+            form. 🥳
+          </li>
+        </ol>
+      </div>
+    </div>
+  );
+
+  const items: CollapseProps["items"] = [
+    {
+      key: "import",
+      label: "ManicTime import",
+      children: <div>{manicTimeImport}</div>,
+    },
+    {
+      key: "apply",
+      label: "Apply imported data",
+      children: <div>{importDataHTML}</div>,
+    },
+  ];
+
+  return (
+    <Collapse
+      items={items}
+      defaultActiveKey={tabs}
+      activeKey={tabs}
+      onChange={changeTabs}
+    />
   );
 }
 
