@@ -3,7 +3,7 @@
   padding: 2rem;
   text-align: center;
   box-sizing: border-box;
-  width: 100%;
+  min-width: 100%;
 }
 
 @keyframes logo-spin {

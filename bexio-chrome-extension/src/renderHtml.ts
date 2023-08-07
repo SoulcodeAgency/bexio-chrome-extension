@@ -38,6 +38,21 @@ async function renderHtml(templateEntries) {
             ${htmlActions}
         </div>
         ${htmlTemplateButtons}
+        <div id="SoulcodeExtensionLoader" style="position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #3176b4;
+        z-index: 10000000000;
+        opacity: 0.6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 10vw;
+        display: none;">
+            <div style="color: white">☕Loading...</div>
+        </div>
     </div>`);
 
     // Attach functionality to the buttons
