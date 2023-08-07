@@ -1,4 +1,5 @@
 import { useState } from "react";
+import openBexioTimeTrackingPage from "~/utils/openBexioTimeTrackingPage";
 
 type ImportEntriesTableCellProps = {
   columnHeader: string;
@@ -12,8 +13,10 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
   const entryIsEmpty = emptyDateRegex.test(props.fieldValue);
   const [clicked, setClicked] = useState(false);
 
-  function clickHandler() {
+  async function clickHandler() {
+    await openBexioTimeTrackingPage();
     props.onButtonClick();
+    // Change button state to clicked, so we have a visual feedback
     setClicked(true);
   }
 

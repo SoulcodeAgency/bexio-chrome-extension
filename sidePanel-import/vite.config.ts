@@ -6,9 +6,17 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   base: "/sidePanel-import/",
+  resolve: {
+    alias: {
+      '~': path.resolve(__dirname, 'src'),
+    }
+  },
   build: {
     outDir: '../unpacked/sidePanel-import',
     emptyOutDir: true,
+    rollupOptions: {
+      external: ["../shared/chromeStorageTemplateEntries", "../shared/chromeStorage"],
+    }
   },
   server: {
     fs: {
