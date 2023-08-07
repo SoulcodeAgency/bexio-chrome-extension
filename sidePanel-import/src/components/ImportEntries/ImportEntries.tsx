@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
 import { load, save } from "~/../../shared/chromeStorage";
 import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
-import { Collapse, CollapseProps } from "antd";
+import { Alert, Collapse, CollapseProps } from "antd";
+import { TemplateContext } from "~/TemplateContext";
+import { TemplateEntry } from "~/../../shared/types";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];
@@ -17,7 +19,9 @@ function ImportEntries() {
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
+  const templateEntries = useContext<TemplateEntry[]>(TemplateContext);
 
+  // TODO: Instead of relying on the last column being "Notes", we could check where the columns exists and use that index instead
   const hasNotes = importHeader[importHeader.length - 1] === "Notes";
 
   function resetImportState() {
@@ -126,6 +130,86 @@ function ImportEntries() {
     loadImportData();
   }
 
+  const tagColumnIndexes = importHeader.reduce(
+    (acc: number[], column, index) => {
+      if (column.startsWith("Tag")) {
+        acc.push(index);
+      }
+      return acc;
+    },
+    []
+  );
+
+  function autoMapTemplates() {
+    const importTemplateAssignment: string[] = [];
+    importData.forEach((row, rowIndex) => {
+      const mappingResult: { [key: string]: string } = {};
+      const tagColumnsContent = tagColumnIndexes.map((index) => row[index]);
+      // Split content of every tag column by space to search for every word
+      tagColumnsContent.forEach((tagColumn, columnIndex) => {
+        const tagWords = tagColumn.split(" ");
+        // Count how many times each word occurs in the templateEntries and count them up
+        tagWords.map((tagWord) => {
+          if (tagWord === "") return;
+          tagWord = tagWord.toLowerCase();
+          templateEntries.map((entry) => {
+            let matches = 0;
+            // Give points for the following columns if they match the tagWord
+            entry.templateName.toLowerCase().includes(tagWord)
+              ? matches++
+              : null;
+            entry.contact
+              ? entry.contact.toLowerCase().includes(tagWord)
+                ? matches++
+                : null
+              : null;
+            entry.project
+              ? entry.project.toLowerCase().includes(tagWord)
+                ? matches++
+                : null
+              : null;
+            entry.package
+              ? entry.package.toLowerCase().includes(tagWord)
+                ? matches++
+                : null
+              : null;
+            entry.contactPerson
+              ? entry.contactPerson.toLowerCase().includes(tagWord)
+                ? matches++
+                : null
+              : null;
+
+            // Make the count weight increase for every column: For the first tag column *1, second tag column *2, third tag column *3 etc.
+            const countIncrease = matches * (columnIndex + 1);
+            mappingResult[entry.id] =
+              (mappingResult[entry.id] ?? 0) + countIncrease;
+          });
+        });
+      });
+      // Get the key(template id) of the mappingResult which has the highest value
+      const templateId = Object.keys(mappingResult).reduce((a, b) =>
+        // TODO: We might have to handle the case when the mapping has the same value for multiple templates = no real highest value
+        mappingResult[a] > mappingResult[b] ? a : b
+      );
+      // Assign the template id to the importTemplates
+      importTemplateAssignment[rowIndex] = templateId;
+
+      console.log(
+        "Auto mapping template: Row " +
+          rowIndex +
+          ", TemplateId: " +
+          templateId,
+        "content",
+        tagColumnsContent
+      );
+      console.table(mappingResult);
+    });
+
+    // Save the auto mapped templates
+    setImportTemplates(importTemplateAssignment);
+    save(importTemplateAssignment, "importTemplates");
+  }
+
   function loadImportData() {
     load<string>("importHeader").then((data) => {
       setImportHeader(data ?? []);
@@ -195,6 +279,15 @@ function ImportEntries() {
 
   const importDataHTML = (
     <div className="content">
+      <button
+        style={{ backgroundColor: "#3276b4", color: "white" }}
+        onClick={autoMapTemplates}
+      >
+        Auto map templates
+      </button>
+      <br />
+      <br />
+
       <table className="importDataTable">
         <thead>
           <tr>
@@ -235,6 +328,7 @@ function ImportEntries() {
           ))}
           <tr>
             <td></td>
+            <td></td>
             {importFooter.map((field, index) => (
               <td key={importHeader[index]}>{field}</td>
             ))}
@@ -257,17 +351,31 @@ function ImportEntries() {
           Delete saved data
         </button>
 
-        <ol>
-          <li>
-            Select the <strong>template</strong> to use for every row (template
-            selection will be saved automatically)
-          </li>
-          <li>Click on the ▶️-button next to the time you want to track</li>
-          <li>
-            Date, Time and if selected also the Template will magically fill the
-            form. 🥳
-          </li>
-        </ol>
+        <br />
+        <br />
+        <Alert
+          showIcon
+          type="info"
+          message="How to use this:"
+          description={
+            <ol>
+              <li>
+                Select a <strong>template</strong> to use for every row, or try
+                out the "Auto-map templates"-feature above and correct wrong
+                ones.
+              </li>
+              <li>Click on the ▶️-button next to the time you want to track</li>
+              <li>
+                Date, Time and if selected also the Template with its values
+                will auto-magically fill the form. 🥳
+              </li>
+              <li>
+                Submit the form, and click the next time entry, to automatically
+                open the time tracking page and auto fill again.
+              </li>
+            </ol>
+          }
+        />
       </div>
     </div>
   );

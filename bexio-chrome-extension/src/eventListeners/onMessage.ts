@@ -6,16 +6,14 @@ import triggerDuration from "../utils/triggerDuration";
 // Listen to messages from the side panel
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
-        // Example
-        if (request.greeting === "hello") {
-            sendResponse({ farewell: "goodbye" });
-        }
+        // if (request.greeting === "hello") {
+        //     sendResponse({ farewell: "goodbye" });
+        // }
         // Time + Duration + Description
         if (request.mode === "time+duration") {
             triggerDuration(request.duration);
             triggerDate(request.date);
             if (request.notes !== undefined) {
-                console.log("got notes", request.notes);
                 triggerDescription(request.notes);
             }
         }

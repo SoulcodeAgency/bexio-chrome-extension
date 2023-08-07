@@ -14,7 +14,7 @@ function TemplateEntries() {
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th></th>
               <th>Template Name</th>
               <th>Contact</th>
               <th>Project</th>

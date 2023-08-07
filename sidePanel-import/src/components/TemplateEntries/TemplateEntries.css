@@ -1,18 +1,31 @@
 table {
   border-collapse: separate;
   border-spacing: 0;
+  border: 4px solid #3176b4;
 }
 
 table tr {
+  background-color: #dae6f1;
   border-bottom: 1px solid black;
 }
 
 table td, table th {
-  border-right: 1px solid black;
+  border-right: 1px solid;
+  border-color: #3176b4;
   padding: 5px;
+}
+
+table td:last-child, table th:last-child {
+  border-right: 0;
 }
 
 table th {
   text-align: left;
-  background-color: #eee;
+  background-color: #33b7a2;
+  color: white;
+}
+
+table thead {
+  position: sticky;
+  top: 0;
 }

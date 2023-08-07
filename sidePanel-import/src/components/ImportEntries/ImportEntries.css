@@ -6,11 +6,12 @@
 
 .importDataTable tr:last-child td {
   font-weight: bold;
-  background-color: lightgrey;
+  background-color: #33b7a2;
+  color: white;
 }
 
 tr:nth-child(even) {
-  background-color: #e3e3e3;
+  background-color: #3276b44a;
 }
 
 .content button {

@@ -13,3 +13,6 @@ export const packageField = document.querySelector(`${packageFieldID} input`);
 
 export const contactPersonID = "#s2id_monitoring_sub_contact_id";
 export const contactPersonField = document.querySelector(`${contactPersonID} input`);
+
+export const loaderId = "SoulcodeExtensionLoader";
+export const getLoader = () => document.getElementById(loaderId);

@@ -1,6 +1,6 @@
 {
     "name": "bexio-chrome-extension",
-    "version": "0.10.0",
+    "version": "0.11.0",
     "description": "This extension adds saving and loading of form data within bexios time tracking page.",
     "scripts": {
         "devRelease": "npm run version:patch && npm run buildProject",
