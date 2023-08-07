@@ -10,7 +10,6 @@ import triggerField from "./triggerField";
 interface CustomDocument extends Document {
     startViewTransition: (callback: () => void) => void;
 }
-const document = new Document() as CustomDocument;
 
 function swapDisplayStyle(show = true) {
     const loader = getLoader();
@@ -19,12 +18,12 @@ function swapDisplayStyle(show = true) {
 
 function toggleDisplayLoader(show = true) {
     // Fallback for browsers that don't support this API:
-    if (!document.startViewTransition) {
+    if (!(document as CustomDocument).startViewTransition) {
         swapDisplayStyle(show);
         return;
     }
     // With a transition:
-    document.startViewTransition(() => swapDisplayStyle(show));
+    (document as CustomDocument).startViewTransition(() => swapDisplayStyle(show));
 }
 
 // Fill form
