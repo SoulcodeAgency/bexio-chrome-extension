@@ -151,12 +151,36 @@ function ImportEntries() {
         // Count how many times each word occurs in the templateEntries and count them up
         tagWords.map((tagWord) => {
           if (tagWord === "") return;
-          const templateEntriesWithTag = templateEntries.filter((entry) =>
-            entry.templateName.toLowerCase().includes(tagWord.toLowerCase())
-          );
-          templateEntriesWithTag.map((entry) => {
-            // Make the count increase for the first tag column +1, second tag column +2, third tag column +3 etc.
-            const countIncrease = columnIndex + 1;
+          tagWord = tagWord.toLowerCase();
+          templateEntries.map((entry) => {
+            let matches = 0;
+            // Give points for the following columns if they match the tagWord
+            entry.templateName.toLowerCase().includes(tagWord)
+              ? matches++
+              : null;
+            entry.contact
+              ? entry.contact.toLowerCase().includes(tagWord)
+                ? matches++
+                : null
+              : null;
+            entry.project
+              ? entry.project.toLowerCase().includes(tagWord)
+                ? matches++
+                : null
+              : null;
+            entry.package
+              ? entry.package.toLowerCase().includes(tagWord)
+                ? matches++
+                : null
+              : null;
+            entry.contactPerson
+              ? entry.contactPerson.toLowerCase().includes(tagWord)
+                ? matches++
+                : null
+              : null;
+
+            // Make the count weight increase for every column: For the first tag column *1, second tag column *2, third tag column *3 etc.
+            const countIncrease = matches * (columnIndex + 1);
             mappingResult[entry.id] =
               (mappingResult[entry.id] ?? 0) + countIncrease;
           });
@@ -175,13 +199,13 @@ function ImportEntries() {
           rowIndex +
           ", TemplateId: " +
           templateId,
-        tagColumnsContent,
-        mappingResult
+        "content",
+        tagColumnsContent
       );
+      console.table(mappingResult);
     });
 
     // Save the auto mapped templates
-    // TODO: Currently we just override already assigned templates, Clarify if we should ignore them ?!
     setImportTemplates(importTemplateAssignment);
     save(importTemplateAssignment, "importTemplates");
   }

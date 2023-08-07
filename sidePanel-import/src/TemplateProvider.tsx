@@ -8,13 +8,13 @@ function TemplateProvider({ children }: { children: ReactNode }) {
   const defaultTemplates = development
     ? [
         {
-          templateName: "Soulcode Misc",
+          templateName: "SouliMouli",
           billable: false,
-          contact: "",
+          contact: "Soulcode AG",
           contactPerson: "",
           id: "ScMisc",
-          package: "",
-          project: "",
+          package: "Misc / Team",
+          project: "Soulcode - Back Office",
           status: "",
           work: "",
         },
