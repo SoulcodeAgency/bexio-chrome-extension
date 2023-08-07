@@ -4,7 +4,7 @@ import ImportEntriesTableCell from "./ImportEntriesTableCell";
 import { load, save } from "~/../../shared/chromeStorage";
 import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
-import { Collapse, CollapseProps } from "antd";
+import { Alert, Collapse, CollapseProps } from "antd";
 import { TemplateContext } from "~/TemplateContext";
 import { TemplateEntry } from "~/../../shared/types";
 
@@ -262,6 +262,7 @@ function ImportEntries() {
         Auto map templates
       </button>
       <br />
+      <br />
 
       <table className="importDataTable">
         <thead>
@@ -303,6 +304,7 @@ function ImportEntries() {
           ))}
           <tr>
             <td></td>
+            <td></td>
             {importFooter.map((field, index) => (
               <td key={importHeader[index]}>{field}</td>
             ))}
@@ -325,17 +327,31 @@ function ImportEntries() {
           Delete saved data
         </button>
 
-        <ol>
-          <li>
-            Select the <strong>template</strong> to use for every row (template
-            selection will be saved automatically)
-          </li>
-          <li>Click on the ▶️-button next to the time you want to track</li>
-          <li>
-            Date, Time and if selected also the Template will magically fill the
-            form. 🥳
-          </li>
-        </ol>
+        <br />
+        <br />
+        <Alert
+          showIcon
+          type="info"
+          message="How to use this:"
+          description={
+            <ol>
+              <li>
+                Select a <strong>template</strong> to use for every row, or try
+                out the "Auto-map templates"-feature above and correct wrong
+                ones.
+              </li>
+              <li>Click on the ▶️-button next to the time you want to track</li>
+              <li>
+                Date, Time and if selected also the Template with its values
+                will auto-magically fill the form. 🥳
+              </li>
+              <li>
+                Submit the form, and click the next time entry, to automatically
+                open the time tracking page and auto fill again.
+              </li>
+            </ol>
+          }
+        />
       </div>
     </div>
   );
