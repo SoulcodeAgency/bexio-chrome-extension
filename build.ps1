@@ -50,7 +50,7 @@ if (!$IgnoreSidePanel) {
 # build the package
 if ($CreatePackage) {
     Write-Host ""
-    Write-Host "Creating package..."
+    Write-Host "Creating extension package..."
     try {
         # create dist folder
         if (-not(Test-Path -Path $dist)) {
