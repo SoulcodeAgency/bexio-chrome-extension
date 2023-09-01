@@ -1,4 +1,4 @@
-import { loadTemplates } from "../../../shared/chromeStorageTemplateEntries";
+import { chromeStorageTemplateEntries } from "shared";
 import { billableCheckbox } from "../selectors/billableCheckbox";
 import { contactField } from "../selectors/contactField";
 import { workFieldID, statusFieldID, contactPersonID, projectFieldID, packageFieldID, getLoader } from "../selectors/selectors";
@@ -29,7 +29,7 @@ function toggleDisplayLoader(show = true) {
 // Fill form
 async function fillForm(id) {
     toggleDisplayLoader();
-    const templateEntries = await loadTemplates();
+    const templateEntries = await chromeStorageTemplateEntries.loadTemplates();
     const entry = templateEntries.find(entry => entry.id === id);
     const { contact, contactPerson = null, project = null, status = null, billable = true } = entry;
     // Workaround because "package" is actually a reserved word

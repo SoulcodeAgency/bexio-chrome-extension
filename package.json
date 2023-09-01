@@ -37,6 +37,7 @@
     },
     "workspaces": [
         "bexio-chrome-extension",
-        "sidePanel-import"
+        "sidePanel-import",
+        "shared"
     ]
 }

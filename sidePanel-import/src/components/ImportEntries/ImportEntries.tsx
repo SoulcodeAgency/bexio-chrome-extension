@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, useContext } from "react";
 import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
-import { load, save } from "~/../../shared/chromeStorage";
 import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
 import { Alert, Collapse, CollapseProps } from "antd";
 import { TemplateContext } from "~/TemplateContext";
-import { TemplateEntry } from "~/../../shared/types";
+import { chromeStorage } from "shared";
+import { TemplateEntry } from "shared/types";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];
@@ -33,10 +33,10 @@ function ImportEntries() {
 
   function removeImportData() {
     resetImportState();
-    save([], "importHeader");
-    save([], "importData");
-    save([], "importFooter");
-    save([], "importTemplates");
+    chromeStorage.save([], "importHeader");
+    chromeStorage.save([], "importData");
+    chromeStorage.save([], "importFooter");
+    chromeStorage.save([], "importTemplates");
     setTabs(["import"]);
   }
 
@@ -103,7 +103,8 @@ function ImportEntries() {
           data.notes = importData[entryIndex][importHeader.length - 1];
         }
         console.log("sending data", data);
-        const response = await chrome.tabs.sendMessage(tab.id, data);
+        // const response =
+        await chrome.tabs.sendMessage(tab.id, data);
 
         // Check if this entry has a template
         const templateId = importTemplates[entryIndex];
@@ -119,9 +120,9 @@ function ImportEntries() {
   }
 
   function saveImport() {
-    save(importHeader, "importHeader");
-    save(importData, "importData");
-    save(importFooter, "importFooter");
+    chromeStorage.save(importHeader, "importHeader");
+    chromeStorage.save(importData, "importData");
+    chromeStorage.save(importFooter, "importFooter");
     setTabs(["apply"]);
   }
 
@@ -207,20 +208,20 @@ function ImportEntries() {
 
     // Save the auto mapped templates
     setImportTemplates(importTemplateAssignment);
-    save(importTemplateAssignment, "importTemplates");
+    chromeStorage.save(importTemplateAssignment, "importTemplates");
   }
 
   function loadImportData() {
-    load<string>("importHeader").then((data) => {
+    chromeStorage.load<string>("importHeader").then((data) => {
       setImportHeader(data ?? []);
     });
-    load<ImportRow>("importData").then((data) => {
+    chromeStorage.load<ImportRow>("importData").then((data) => {
       setImportData(data ?? []);
     });
-    load<string>("importFooter").then((data) => {
+    chromeStorage.load<string>("importFooter").then((data) => {
       setImportFooter(data ?? []);
     });
-    load<string>("importTemplates").then((data) => {
+    chromeStorage.load<string>("importTemplates").then((data) => {
       setImportTemplates(data ?? []);
     });
   }
@@ -233,7 +234,7 @@ function ImportEntries() {
     const importTemplatesCopy = [...importTemplates];
     importTemplatesCopy[index] = templateId;
     setImportTemplates(importTemplatesCopy);
-    save(importTemplatesCopy, "importTemplates");
+    chromeStorage.save(importTemplatesCopy, "importTemplates");
   }
 
   function changeTabs(key: string | string[]) {

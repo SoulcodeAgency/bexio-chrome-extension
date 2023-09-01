@@ -1,5 +1,5 @@
 import { load, remove, save, update } from "./chromeStorage";
-import { ImportData } from "../types";
+import { ImportData } from "./types";
 const importDataKey = "importData";
 
 // TODO: They are still unused, and need to get header and footer handlers as well.

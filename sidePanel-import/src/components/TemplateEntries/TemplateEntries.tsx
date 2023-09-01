@@ -1,4 +1,4 @@
-import { TemplateEntry } from "~/../../shared/types.js";
+import { TemplateEntry } from "shared/types";
 import { TemplateContext } from "~/TemplateContext.js";
 import applyTemplate from "~/utils/applyTemplate.js";
 import "./TemplateEntries.css";

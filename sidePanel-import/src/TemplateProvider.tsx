@@ -1,7 +1,7 @@
 import { TemplateContext } from "./TemplateContext";
 import { ReactNode, useEffect, useState } from "react";
-import { loadTemplates } from "~/../../shared/chromeStorageTemplateEntries";
-import { TemplateEntry } from "~/../../shared/types";
+import { chromeStorageTemplateEntries } from "shared";
+import { TemplateEntry } from "shared/types";
 
 function TemplateProvider({ children }: { children: ReactNode }) {
   const development = process.env.NODE_ENV === "development";

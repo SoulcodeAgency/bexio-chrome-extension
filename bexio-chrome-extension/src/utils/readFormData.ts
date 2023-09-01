@@ -1,4 +1,4 @@
-import { loadTemplates, saveTemplates } from "../../../shared/chromeStorageTemplateEntries";
+import { chromeStorageTemplateEntries } from "shared";
 import initializeExtension from "../initExtension";
 import { billableCheckbox } from "../selectors/billableCheckbox";
 import { contactField } from "../selectors/contactField";
@@ -49,7 +49,7 @@ async function readFormData() {
         formEntry.id = hash;
 
         // Load all templateEntries (refresh)
-        allEntries = await loadTemplates();
+        allEntries = await chromeStorageTemplateEntries.loadTemplates();
 
         // Check if the hash already exists
         const existingEntry = allEntries.find(entry => entry.id === hash);
@@ -70,7 +70,7 @@ async function readFormData() {
     // Push the new entry to the array and save it
     allEntries.push(formEntry);
     console.log("formEntry", formEntry);
-    saveTemplates(allEntries).then(() => initializeExtension())
+    chromeStorageTemplateEntries.saveTemplates(allEntries).then(() => initializeExtension())
 }
 
 export default readFormData;
