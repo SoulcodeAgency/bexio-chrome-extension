@@ -1,7 +1,7 @@
 import { TemplateContext } from "./TemplateContext";
 import { ReactNode, useEffect, useState } from "react";
 import { chromeStorageTemplateEntries } from "@bexio-chrome-extension/shared";
-import { TemplateEntry } from "shared/types";
+import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 function TemplateProvider({ children }: { children: ReactNode }) {
   const development = process.env.NODE_ENV === "development";

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { TemplateEntry } from "shared/types";
+import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 import { TemplateContext } from "~/TemplateContext";
 
 type TemplateSelectProps = {
