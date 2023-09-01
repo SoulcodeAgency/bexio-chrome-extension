@@ -12,7 +12,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: '../unpacked/sidePanel-import',
+    outDir: '../../unpacked/sidePanel-import',
     emptyOutDir: true,
     rollupOptions: {
       external: ["../shared/chromeStorageTemplateEntries", "../shared/chromeStorage"],

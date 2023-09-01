@@ -20,7 +20,7 @@ $packageDirectoryDestination = $PWD.path + "/$destinationFile"
 # Build bexio chrome extension
 if (!$IgnoreExtension) {
     try {
-        npm run build -w bexio-chrome-extension
+        npm run build -w @bexio-chrome-extension/chrome-extension
         Write-Host "OK Bexio chrome extension successfully built" -ForegroundColor Green
     }
     catch {
@@ -31,7 +31,7 @@ if (!$IgnoreExtension) {
 # Build sidePanel import app
 if (!$IgnoreSidePanel) {
     try {
-        npm run build -w sidePanel-import
+        npm run build -w @bexio-chrome-extension/side-panel-import
         Write-Host "OK sidePanel import app successfully built" -ForegroundColor Green
     }
     catch {

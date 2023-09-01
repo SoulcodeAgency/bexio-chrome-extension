@@ -30,6 +30,18 @@ ManicTime export support:
 Extension can be installed over the chrome webstore:
 [Soulcode's Bexio Timetracking Templates](https://chrome.google.com/webstore/detail/soulcodes-bexio-timetrack/nbmjdligmcfaeebdihmgbdpahdfddlhm)
 
+## NPM
+
+This repository uses npm's new [workspaces feature](https://docs.npmjs.com/cli/v9/using-npm/workspaces) which is a bit special!
+
+The separate sub-projects are all located in the `packages` folder.
+
+Package.json scripts are all ready for using `workspaces`:
+
+* Install all npm packages using `installProject`
+* To build a developer release use `build:devRelease`
+* For creating a new extension release use `build:newExtensionRelease`, but first make sure you update the version number, using the available `version:...` tasks. (major, minor or patch)
+
 ## Privacy
 
 [see Privacy document](PRIVACY.md)

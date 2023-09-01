@@ -5,7 +5,7 @@ import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
 import { Alert, Collapse, CollapseProps } from "antd";
 import { TemplateContext } from "~/TemplateContext";
-import { chromeStorage } from "shared";
+import { chromeStorage } from "@bexio-chrome-extension/shared";
 import { TemplateEntry } from "shared/types";
 
 type ImportRow = string[];

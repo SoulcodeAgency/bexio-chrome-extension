@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "es5",
-        "outDir": "../unpacked/",
+        "outDir": "../../unpacked/",
         "lib": [
             "ES2017",
             "DOM"

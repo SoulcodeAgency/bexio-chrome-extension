@@ -1,5 +1,5 @@
 const fs = require("fs-extra");
-const manifestFile = "./bexio-chrome-extension/public/manifest.json";
+const manifestFile = "./packages/chrome-extension/public/manifest.json";
 const packageJsonFile = "./package.json";
 
 // Read the package.json file

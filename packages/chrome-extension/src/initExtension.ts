@@ -1,4 +1,4 @@
-import { chromeStorageTemplateEntries } from "shared";
+import { chromeStorageTemplateEntries } from "@bexio-chrome-extension/shared";
 import renderHtml from "./renderHtml";
 import getTemplateName from "./utils/getTemplateName";
 

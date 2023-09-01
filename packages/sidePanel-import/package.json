@@ -1,5 +1,5 @@
 {
-  "name": "side-panel-import",
+  "name": "@bexio-chrome-extension/side-panel-import",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -31,7 +31,7 @@
     "vite": "^4.3.9"
   },
   "description": "Application which holds bexio-chrome-exntension features separate in a chrome side panel",
-  "main": "",
+  "main": "index.js",
   "author": "",
   "license": "AGPL-3.0"
 }

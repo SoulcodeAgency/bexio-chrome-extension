@@ -1,4 +1,4 @@
-import { chromeStorageTemplateEntries } from "shared";
+import { chromeStorageTemplateEntries } from "@bexio-chrome-extension/shared";
 import initializeExtension from "../initExtension";
 import { billableCheckbox } from "../selectors/billableCheckbox";
 import { contactField } from "../selectors/contactField";

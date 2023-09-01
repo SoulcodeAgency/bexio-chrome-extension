@@ -6,14 +6,14 @@ export default {
         bexioTimetrackingTemplates: "src/index.ts",
       },
       output: {
-        dir: "../unpacked",
+        dir: "../../unpacked",
         assetFileNames: "[name].[ext]",
         chunkFileNames: "[name].[ext]",
         entryFileNames: "[name].js", // Removes the hash of the entry file
       },
     },
     exclude: [/\.html$/],
-    outDir: "../unpacked",
+    outDir: "../../unpacked",
     emptyOutDir: false,
   },
 };

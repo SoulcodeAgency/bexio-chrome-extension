@@ -1,5 +1,5 @@
 {
-  "name": "shared",
+  "name": "@bexio-chrome-extension/shared",
   "version": "1.0.0",
   "description": "Shared code for bexio-chrome-extension",
   "main": "index.ts",

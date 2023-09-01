@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.scss";
 import soulcodeLogo from "./assets/soulcode-logo.png";
-import * as packageInfo from "../../package.json";
+import * as packageInfo from "../../../package.json";
 import { ConfigProvider } from "antd";
 const copyrightSymbol = "\u00A9";
 
