@@ -1,5 +1,6 @@
 const fs = require("fs-extra");
 const manifestFile = "./bexio-chrome-extension/public/manifest.json";
+const packageJsonFile = "./package.json";
 
 // Read the package.json file
 const package = require("./package.json");
@@ -17,3 +18,15 @@ const updatedManifest = manifest.replace(
 fs.writeFileSync(manifestFile, updatedManifest, "utf8");
 
 console.log("Manifest version updated successfully!");
+
+// Update date in package.json
+const packageJsonContent = fs.readFileSync(packageJsonFile, "utf8");
+const updatedPackageJson = packageJsonContent.replace(
+  /"date": ".*?"/g,
+  `"date": "${new Date().toDateString()}"`
+);
+
+// Write the updated manifest.json file
+fs.writeFileSync(packageJsonFile, updatedPackageJson, "utf8");
+
+console.log("package.json date updated successfully!");
