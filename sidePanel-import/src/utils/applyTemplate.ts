@@ -5,7 +5,8 @@ function applyTemplate(templateId: string) {
             lastFocusedWindow: true,
         });
         if (tab.id) {
-            const response = await chrome.tabs.sendMessage(tab.id, {
+            // const response = 
+            await chrome.tabs.sendMessage(tab.id, {
                 mode: "template",
                 templateId: templateId,
             });

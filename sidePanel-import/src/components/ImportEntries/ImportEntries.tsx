@@ -41,7 +41,7 @@ function ImportEntries() {
   }
 
   function clearTextarea() {
-    importDataRef!.current!.value = "";
+    importDataRef?.current && (importDataRef.current.value = "");
     setClipboardStatus("");
   }
 

@@ -46,7 +46,8 @@ function TemplateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const templateEntries = await loadTemplates();
+      const templateEntries =
+        await chromeStorageTemplateEntries.loadTemplates();
       setTemplates(templateEntries);
     };
 
