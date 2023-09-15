@@ -1,8 +1,10 @@
 import { descriptionField } from "../selectors/descriptionField";
 
-// Trigger duration
+// Trigger description field
 async function triggerDescription(value: string) {
-    descriptionField.textContent = value;
+    if (descriptionField) {
+        descriptionField.textContent = value;
+    }
 }
 
 export default triggerDescription;
