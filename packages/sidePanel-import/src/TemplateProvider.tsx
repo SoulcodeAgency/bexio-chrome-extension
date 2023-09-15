@@ -54,6 +54,17 @@ function TemplateProvider({ children }: { children: ReactNode }) {
           status: "",
           work: "",
         },
+        {
+          templateName: "Leister Commerce23 Wishlist",
+          billable: false,
+          contact: "",
+          contactPerson: "",
+          id: "LeisterCommerce23Wishlist",
+          package: "FE-Wishlist - Shopify Budget",
+          project: "Leister - Commerce 23",
+          status: "",
+          work: "",
+        },
       ]
     : [];
 
