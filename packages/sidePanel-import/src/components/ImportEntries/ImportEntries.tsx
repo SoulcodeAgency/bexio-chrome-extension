@@ -144,48 +144,51 @@ function ImportEntries() {
   function autoMapTemplates() {
     const importTemplateAssignment: string[] = [];
     importData.forEach((row, rowIndex) => {
+      console.groupCollapsed(rowIndex + 1);
       const mappingResult: { [key: string]: number } = {};
       const tagColumnsContent = tagColumnIndexes.map((index) => row[index]);
       // Split content of every tag column by space to search for every word
       tagColumnsContent.forEach((tagColumn, columnIndex) => {
-        const tagWords = tagColumn.split(" ");
+        const tagWords = tagColumn.match(/[a-zA-Z0-9]+/g);
+        console.log("tagWords:", tagWords);
         // Count how many times each word occurs in the templateEntries and count them up
-        tagWords.map((tagWord) => {
-          if (tagWord === "") return;
-          tagWord = tagWord.toLowerCase();
-          templateEntries.map((entry) => {
-            let matches = 0;
-            // Give points for the following columns if they match the tagWord
-            entry.templateName.toLowerCase().includes(tagWord)
-              ? matches++
-              : null;
-            entry.contact
-              ? entry.contact.toLowerCase().includes(tagWord)
+        tagWords?.length &&
+          tagWords.map((tagWord) => {
+            if (tagWord === "") return;
+            tagWord = tagWord.toLowerCase();
+            templateEntries.map((entry) => {
+              let matches = 0;
+              // Give points for the following columns if they match the tagWord
+              entry.templateName.toLowerCase().includes(tagWord)
                 ? matches++
-                : null
-              : null;
-            entry.project
-              ? entry.project.toLowerCase().includes(tagWord)
-                ? matches++
-                : null
-              : null;
-            entry.package
-              ? entry.package.toLowerCase().includes(tagWord)
-                ? matches++
-                : null
-              : null;
-            entry.contactPerson
-              ? entry.contactPerson.toLowerCase().includes(tagWord)
-                ? matches++
-                : null
-              : null;
+                : null;
+              entry.contact
+                ? entry.contact.toLowerCase().includes(tagWord)
+                  ? matches++
+                  : null
+                : null;
+              entry.project
+                ? entry.project.toLowerCase().includes(tagWord)
+                  ? matches++
+                  : null
+                : null;
+              entry.package
+                ? entry.package.toLowerCase().includes(tagWord)
+                  ? matches++
+                  : null
+                : null;
+              entry.contactPerson
+                ? entry.contactPerson.toLowerCase().includes(tagWord)
+                  ? matches++
+                  : null
+                : null;
 
-            // Make the count weight increase for every column: For the first tag column *1, second tag column *2, third tag column *3 etc.
-            const countIncrease = matches * (columnIndex + 1);
-            mappingResult[entry.id] =
-              (mappingResult[entry.id] ?? 0) + countIncrease;
+              // Make the count weight increase for every column: For the first tag column *1, second tag column *2, third tag column *3 etc.
+              const countIncrease = matches * (columnIndex + 1);
+              mappingResult[entry.id] =
+                (mappingResult[entry.id] ?? 0) + countIncrease;
+            });
           });
-        });
       });
       // Get the key(template id) of the mappingResult which has the highest value
       const templateId = Object.keys(mappingResult).reduce((a, b) =>
@@ -203,15 +206,11 @@ function ImportEntries() {
         importTemplateAssignment[rowIndex] = templateId;
       }
 
-      console.log(
-        "Auto mapping template: Row " +
-          rowIndex +
-          ", TemplateId: " +
-          templateId,
-        "content",
-        tagColumnsContent
-      );
       console.table(mappingResult);
+      console.log(
+        "Auto mapping template: Row " + rowIndex + ", TemplateId: " + templateId
+      );
+      console.groupEnd();
     });
 
     // Save the auto mapped templates
