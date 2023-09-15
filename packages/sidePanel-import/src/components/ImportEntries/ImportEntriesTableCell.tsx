@@ -7,10 +7,10 @@ type ImportEntriesTableCellProps = {
   onButtonClick: () => void;
 };
 const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
-  const emptyDateRegex = /^0:00:00$/;
   const dateRegex = /^\d{2}[./]\d{2}[./]\d{4}$/;
+  const noTimeToBookRegex = /^(0.00|0:00:00)$/;
   const columnIsATrackingDay = dateRegex.test(props.columnHeader);
-  const entryIsEmpty = emptyDateRegex.test(props.fieldValue);
+  const entryIsEmpty = noTimeToBookRegex.test(props.fieldValue);
   const [clicked, setClicked] = useState(false);
 
   async function clickHandler() {
