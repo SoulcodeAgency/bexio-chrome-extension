@@ -144,7 +144,7 @@ function ImportEntries() {
   function autoMapTemplates() {
     const importTemplateAssignment: string[] = [];
     importData.forEach((row, rowIndex) => {
-      const mappingResult: { [key: string]: string } = {};
+      const mappingResult: { [key: string]: number } = {};
       const tagColumnsContent = tagColumnIndexes.map((index) => row[index]);
       // Split content of every tag column by space to search for every word
       tagColumnsContent.forEach((tagColumn, columnIndex) => {
@@ -189,11 +189,19 @@ function ImportEntries() {
       });
       // Get the key(template id) of the mappingResult which has the highest value
       const templateId = Object.keys(mappingResult).reduce((a, b) =>
-        // TODO: We might have to handle the case when the mapping has the same value for multiple templates = no real highest value
         mappingResult[a] > mappingResult[b] ? a : b
       );
-      // Assign the template id to the importTemplates
-      importTemplateAssignment[rowIndex] = templateId;
+
+      // Check if there is only 1 highest value, otherwise we do not auto map and leave the decision to the user
+      const highestValue = Math.max(...Object.values(mappingResult));
+      const highestValueCount = Object.values(mappingResult).filter(
+        (value) => value === highestValue
+      ).length;
+
+      if (highestValueCount === 1) {
+        // We have a winner! Assign the template id to the row
+        importTemplateAssignment[rowIndex] = templateId;
+      }
 
       console.log(
         "Auto mapping template: Row " +
