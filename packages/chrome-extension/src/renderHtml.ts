@@ -1,6 +1,6 @@
 import confirmDeletion from "./utils/confirmTemplateDeletion";
 import fillForm from "./utils/fillForm";
-import getTemplateName from "./utils/getTemplateName";
+import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "./utils/packageInfo";
 import readFormData from "./utils/readFormData";
 
@@ -9,7 +9,7 @@ async function renderHtml(templateEntries) {
     // Add some buttons into the page
     let buttons = '';
     if (templateEntries) {
-        templateEntries.map(entry => buttons += `<button type="button" id="${entry.id}" class="entry btn btn-info template-button" style="margin-right: 2px">${getTemplateName(entry)}</button>`);
+        templateEntries.map(entry => buttons += `<button type="button" id="${entry.id}" class="entry btn btn-info template-button" style="width: 100%; margin-bottom: 2px; text-align: left;">${getTemplateName(entry)}</button>`);
     }
 
     // Remove the templates HTML, if it already exists
@@ -18,8 +18,8 @@ async function renderHtml(templateEntries) {
         templates.remove();
     }
 
-    const templatePlacement = document.getElementById("pr_package").parentNode.parentNode.parentNode as HTMLElement;
-    const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="display: flex; flex-wrap: wrap; gap: 4px;">
+    const templatePlacement = document.getElementById("pr_package")?.parentNode?.parentNode?.parentNode as HTMLElement;
+    const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="column-count: 2; column-fill: balance;">
         ${buttons}
     </div>`;
     const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px;">
@@ -56,8 +56,8 @@ async function renderHtml(templateEntries) {
     </div>`);
 
     // Attach functionality to the buttons
-    const domButtons = document.getElementById('bexioTimetrackingTemplates-entries').querySelectorAll("button.entry");
-    domButtons.forEach(button => button.addEventListener('click', function (e) {
+    const domButtons = document.getElementById('bexioTimetrackingTemplates-entries')?.querySelectorAll("button.entry");
+    domButtons && domButtons.forEach(button => button.addEventListener('click', function (e) {
         e.preventDefault();
         fillForm(button.id)
 
@@ -73,8 +73,8 @@ async function renderHtml(templateEntries) {
     }));
 
     // Special action buttons
-    document.getElementById('AddNewTemplate').addEventListener('click', function (e) { e.preventDefault(); readFormData() });
-    document.getElementById('DeleteTemplate').addEventListener('click', function (e) { e.preventDefault(); confirmDeletion() });
+    document.getElementById('AddNewTemplate')?.addEventListener('click', function (e) { e.preventDefault(); readFormData() });
+    document.getElementById('DeleteTemplate')?.addEventListener('click', function (e) { e.preventDefault(); confirmDeletion() });
 }
 
 export default renderHtml;

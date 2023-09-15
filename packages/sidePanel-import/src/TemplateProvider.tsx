@@ -1,6 +1,9 @@
 import { TemplateContext } from "./TemplateContext";
 import { ReactNode, useEffect, useState } from "react";
-import { chromeStorageTemplateEntries } from "@bexio-chrome-extension/shared";
+import {
+  chromeStorageTemplateEntries,
+  sortTemplates,
+} from "@bexio-chrome-extension/shared";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 function TemplateProvider({ children }: { children: ReactNode }) {
@@ -42,13 +45,16 @@ function TemplateProvider({ children }: { children: ReactNode }) {
         },
       ]
     : [];
-  const [templates, setTemplates] = useState<TemplateEntry[]>(defaultTemplates);
+
+  const [templates, setTemplates] = useState<TemplateEntry[]>(
+    sortTemplates(defaultTemplates)
+  );
 
   useEffect(() => {
     const fetchData = async () => {
       const templateEntries =
         await chromeStorageTemplateEntries.loadTemplates();
-      setTemplates(templateEntries);
+      setTemplates(sortTemplates(templateEntries));
     };
 
     fetchData();

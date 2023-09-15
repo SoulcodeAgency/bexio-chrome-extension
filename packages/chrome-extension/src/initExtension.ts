@@ -1,13 +1,10 @@
-import { chromeStorageTemplateEntries } from "@bexio-chrome-extension/shared";
+import { chromeStorageTemplateEntries, sortTemplates } from "@bexio-chrome-extension/shared";
 import renderHtml from "./renderHtml";
-import getTemplateName from "./utils/getTemplateName";
 
 async function initializeExtension() {
     // Get all templateEntries in storage and initialize the page
     const templateEntries = await chromeStorageTemplateEntries.loadTemplates();
-    // Sort the templateEntries according to the template name
-    templateEntries.sort((a, b) => getTemplateName(a).localeCompare(getTemplateName(b)));
-    renderHtml(templateEntries);
+    renderHtml(sortTemplates(templateEntries));
 }
 
 export default initializeExtension;
