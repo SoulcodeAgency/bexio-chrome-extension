@@ -6,7 +6,9 @@ Param (
     [switch]
     $IgnoreExtension,
     [switch]
-    $IgnoreSidePanel
+    $IgnoreSidePanel,
+    [switch]
+    $Development
 )
 
 # variables
@@ -16,11 +18,17 @@ $filename = "bexio-chrome-extension.zip"
 $destinationFile = "$dist/$filename"
 $packageDirectorySource = Join-Path $PWD.path $source
 $packageDirectoryDestination = $PWD.path + "/$destinationFile"
+if ($Development) {
+    $buildTask = "build:dev"
+}
+else {
+    $buildTask = "build"
+}
 
 # Build bexio chrome extension
 if (!$IgnoreExtension) {
     try {
-        npm run build -w @bexio-chrome-extension/chrome-extension
+        npm run $buildTask -w @bexio-chrome-extension/chrome-extension
         Write-Host "OK Bexio chrome extension successfully built" -ForegroundColor Green
     }
     catch {
@@ -31,7 +39,7 @@ if (!$IgnoreExtension) {
 # Build sidePanel import app
 if (!$IgnoreSidePanel) {
     try {
-        npm run build -w @bexio-chrome-extension/side-panel-import
+        npm run $buildTask -w @bexio-chrome-extension/side-panel-import
         Write-Host "OK sidePanel import app successfully built" -ForegroundColor Green
     }
     catch {

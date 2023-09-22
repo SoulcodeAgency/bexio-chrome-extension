@@ -5,7 +5,7 @@
     "description": "This extension adds saving and loading of form data within bexios time tracking page.",
     "scripts": {
         "installProject": "npm ci --workspaces --include-workspace-root",
-        "build:devRelease": "npm run version:patch && npm run build:project --",
+        "build:devRelease": "npm run version:patch && npm run build:project -- -Development",
         "build:devRelease:sidePanelOnly": "npm run build:devRelease -- -IgnoreExtension",
         "build:devRelease:extensionOnly": "npm run build:devRelease -- -IgnoreSidePanel",
         "build:project": "powershell -File build.ps1",
