@@ -1,3 +1,4 @@
+import { Button } from "antd";
 import { useState } from "react";
 import openBexioTimeTrackingPage from "~/utils/openBexioTimeTrackingPage";
 
@@ -21,9 +22,9 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
   }
 
   // TODO: we could even save this state into a new store (using date and entryIndex)
-  let button = <button onClick={clickHandler}>▶️</button>;
+  let button = <Button onClick={clickHandler}>▶️</Button>;
   if (clicked) {
-    button = <button onClick={() => setClicked(false)}>✅</button>;
+    button = <Button onClick={() => setClicked(false)}>✅</Button>;
   }
 
   let tableCell = <td>{props.fieldValue}</td>;

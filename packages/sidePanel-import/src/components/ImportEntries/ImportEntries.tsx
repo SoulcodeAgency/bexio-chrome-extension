@@ -3,8 +3,8 @@ import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
 import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
-import { Alert, Collapse, CollapseProps } from "antd";
 import { TemplateContext } from "~/TemplateContext";
+import { Button, Alert, Collapse, CollapseProps } from "antd";
 import { chromeStorage } from "@bexio-chrome-extension/shared";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
@@ -269,13 +269,10 @@ function ImportEntries() {
         />
       </div>
 
-      <button onClick={clearTextarea}>Clear textarea</button>
-      <button
-        style={{ backgroundColor: "#4291a8", color: "white" }}
-        onClick={saveImport}
-      >
+      <Button onClick={clearTextarea}>Clear textarea</Button>
+      <Button type="primary" onClick={saveImport}>
         Save this import
-      </button>
+      </Button>
 
       {clipboardStatus && (
         <div className="error">
@@ -287,12 +284,9 @@ function ImportEntries() {
 
   const importDataHTML = (
     <div className="content">
-      <button
-        style={{ backgroundColor: "#3276b4", color: "white" }}
-        onClick={autoMapTemplates}
-      >
+      <Button type="primary" onClick={autoMapTemplates}>
         Auto map templates
-      </button>
+      </Button>
       <br />
       <br />
 
@@ -346,18 +340,13 @@ function ImportEntries() {
       <br />
       <br />
       <div>
-        <button
-          style={{ backgroundColor: "#3276b4", color: "white" }}
-          onClick={reloadImportData}
-        >
+        {/* TODO This button is probably more confusing than helping */}
+        {/* <Button type="dashed" onClick={reloadImportData}>
           Reload saved data
-        </button>
-        <button
-          style={{ backgroundColor: "red", color: "white" }}
-          onClick={removeImportData}
-        >
+        </Button> */}
+        <Button danger onClick={removeImportData}>
           Delete saved data
-        </button>
+        </Button>
 
         <br />
         <br />
