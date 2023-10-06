@@ -1,4 +1,4 @@
-import confirmDeletion from "./utils/confirmTemplateDeletion";
+import confirmActiveTemplateDeletion from "./utils/confirmTemplateDeletion";
 import fillForm from "./utils/fillForm";
 import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "./utils/packageInfo";
@@ -74,7 +74,7 @@ async function renderHtml(templateEntries) {
 
     // Special action buttons
     document.getElementById('AddNewTemplate')?.addEventListener('click', function (e) { e.preventDefault(); readFormData() });
-    document.getElementById('DeleteTemplate')?.addEventListener('click', function (e) { e.preventDefault(); confirmDeletion() });
+    document.getElementById('DeleteTemplate')?.addEventListener('click', function (e) { e.preventDefault(); confirmActiveTemplateDeletion() });
 }
 
 export default renderHtml;
