@@ -11,6 +11,7 @@ function TemplateProvider({ children }: { children: ReactNode }) {
   const [templates, setTemplates] = useState<TemplateEntry[]>(
     sortTemplates([])
   );
+  const [reload, setReload] = useState(false);
 
   async function getDevTemplates() {
     const response = await fetch("/devTemplates.json");
@@ -26,10 +27,14 @@ function TemplateProvider({ children }: { children: ReactNode }) {
     };
 
     fetchData();
-  }, [development]);
+  }, [development, reload]);
+
+  const reloadData = () => {
+    setReload(!reload);
+  };
 
   return (
-    <TemplateContext.Provider value={templates}>
+    <TemplateContext.Provider value={{ templates, reloadData }}>
       {children}
     </TemplateContext.Provider>
   );

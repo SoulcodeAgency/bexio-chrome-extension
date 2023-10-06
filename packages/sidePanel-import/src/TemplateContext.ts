@@ -1,4 +1,14 @@
 import { createContext } from 'react';
 import { TemplateEntry } from '@bexio-chrome-extension/shared/types';
 
-export const TemplateContext = createContext<TemplateEntry[]>([]);
+export interface TemplateContextType {
+    templates: TemplateEntry[];
+    reloadData: () => void;
+}
+
+export const TemplateContext = createContext<TemplateContextType>({
+    templates: [],
+    reloadData: () => {
+        console.log("reloadData not implemented")
+    },
+});

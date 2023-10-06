@@ -1,6 +1,5 @@
 import { useContext } from "react";
-import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
-import { TemplateContext } from "~/TemplateContext";
+import { TemplateContext, TemplateContextType } from "~/TemplateContext";
 
 type TemplateSelectProps = {
   selectedTemplate: string;
@@ -8,7 +7,8 @@ type TemplateSelectProps = {
 };
 
 const TemplateSelect = (props: TemplateSelectProps) => {
-  const templateEntries = useContext<TemplateEntry[]>(TemplateContext);
+  const { templates: templateEntries } =
+    useContext<TemplateContextType>(TemplateContext);
   const handleSelectChange = (event: React.ChangeEvent) => {
     props.onChange((event.target as HTMLInputElement).value);
   };
