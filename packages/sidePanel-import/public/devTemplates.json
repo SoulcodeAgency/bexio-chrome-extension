@@ -1,0 +1,211 @@
+[
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "4602ba3cc830739177514a6b08c9b7f46278ec9f2ea63b2b9fe72a5b2134114f",
+        "packageValue": "",
+        "project": "",
+        "status": "Erledigt",
+        "templateName": "LeisterAG",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "71bda83a9dc12da3d62a4b7296dd9a2201fb035259be881bb7e7993b2d070ee5",
+        "packageValue": "",
+        "project": "Leister - Marketing & Growth 2023",
+        "status": "Erledigt",
+        "templateName": "Leister-Marketing",
+        "work": "Work"
+    },
+    {
+        "billable": false,
+        "contact": "Soulcode AG",
+        "contactPerson": "",
+        "id": "cc8b9fd1446274b6249e2e8cccee05b7b6ffb683a855e9e765a9e00fcc56ade0",
+        "packageValue": "",
+        "project": "Soulcode - Know-how",
+        "status": "Erledigt",
+        "templateName": "Soulcode-Know-how",
+        "work": "Work"
+    },
+    {
+        "billable": false,
+        "contact": "Soulcode AG",
+        "contactPerson": "Fabian Gander",
+        "id": "937c8a23ee1e20e621ac850743ecb1b2681e58d3666269fddb43ae04ebf6d619",
+        "package": "Mini-Innovations",
+        "project": "Soulcode - Innovation",
+        "status": "Erledigt",
+        "templateName": "Mini-Innovations",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "eb6a6085dcecfbbe1e5c268b5c96ea66dd5722861208449949f10b6578228d5a",
+        "package": "",
+        "project": "Leister - Usability 2023",
+        "status": "Erledigt",
+        "templateName": "Leister-Usability2023",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "44d164bd91e57d6dbda479fc5e5e094cd78503e341a42232b89392154d83ee0c",
+        "package": "",
+        "project": "Leister - Project Management and Meetings 2023",
+        "status": "Erledigt",
+        "templateName": "Leister-PM",
+        "work": "Work"
+    },
+    {
+        "billable": false,
+        "contact": "Soulcode AG",
+        "contactPerson": "",
+        "id": "40d7526156c1df8da58664abf3eeb6e8fa94b117cc875a6f9d8b8ee828a7a763",
+        "package": "Misc / Team",
+        "project": "Soulcode - Back Office",
+        "status": "Erledigt",
+        "templateName": "Misc/Team",
+        "work": "Work"
+    },
+    {
+        "billable": false,
+        "contact": "Soulcode AG",
+        "contactPerson": "Fabian Gander",
+        "id": "aca5ef8d23fc437ebaba5040351c85cbd59fe7005a45453f1164adc34e11dfe9",
+        "package": "Holidays",
+        "project": "Soulcode - Members",
+        "status": "Erledigt",
+        "templateName": "Holidays",
+        "work": "Work"
+    },
+    {
+        "billable": false,
+        "contact": "Soulcode AG",
+        "contactPerson": "",
+        "id": "a8c6124be4076abca4b4e8b8e5134913059d5834c2e629ac170c4c5984fe94a8",
+        "package": "Sales",
+        "project": "Soulcode - Back Office",
+        "status": "Erledigt",
+        "templateName": "Ergon Offering",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "b72ba6530178aac634caa65182d5c94e9237f6072297e275875426c378388701",
+        "package": "",
+        "project": "Leister - Operations 2023",
+        "status": "Erledigt",
+        "templateName": "Leister Operations",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "20f4ae171f0fa4f6d42322be601dd753b8ed46086c2b31d1acfbcd85125ecc03",
+        "package": "Device Service",
+        "project": "Leister - Product API v2",
+        "status": "Erledigt",
+        "templateName": "Leister DeviceService",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "7e11a407b12f0d9189fe71f87e90372e7c782261044f151daecf3a737e434de2",
+        "package": "FE-Wishlist - Shopify Budget",
+        "project": "Leister - Commerce 23",
+        "status": "Erledigt",
+        "templateName": "Leister Commerce23 Wishlist",
+        "work": "Work"
+    },
+    {
+        "billable": false,
+        "contact": "Soulcode AG",
+        "contactPerson": "Fabian Gander",
+        "id": "2b0767b1ca6b8be9e6d54d9a5c7cf2e952736bad3efdf3b1b2e43baaef70c128",
+        "package": "Bexio Chrome Extension",
+        "project": "Soulcode - Innovation",
+        "status": "Erledigt",
+        "templateName": "Innovation Bexio Chrome Extension",
+        "work": "Work"
+    },
+    {
+        "billable": false,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "89152ad01ee87dcef52de674a45f802df788565ecc2dea9e10b488e3cade4e34",
+        "package": "Effort Estimations / Offering",
+        "project": "Leister - Sitecore Upgrade",
+        "status": "Erledigt",
+        "templateName": "Leister SiteCore Upgrade - Estimations",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "510f4e827243fb82707a5cc63eabea0a2fad3d60d0deba0732034227cec81409",
+        "package": "Image/Video Banner Component",
+        "project": "Leister - Commerce 23",
+        "status": "Erledigt",
+        "templateName": "Leister Commerce23 Image/VideoBannerComponent",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "642b75152efc620a68beae71fb1aaacae5dcc7610d19e8bc2fd974d9a1a05857",
+        "package": "SR-Tickets Sprint18: Accessory Page Changes, Filter Sticky, Box Height Carousel",
+        "project": "Leister - Commerce 23",
+        "status": "Erledigt",
+        "templateName": "Leister Commerce23 SR-Tickets Sprint18 AccessoryPageChanges FilterSticky BoxHeightCarousel",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Garaio AG",
+        "contactPerson": "",
+        "id": "caa60f4d4650588645b3045a43dc247c9bdada6a3d7470dcb641be9dad803ea8",
+        "package": "Support Reka",
+        "project": "GARAIO - Support",
+        "status": "Erledigt",
+        "templateName": "GARAIO Support Reka",
+        "work": "Work"
+    },
+    {
+        "billable": true,
+        "contact": "Leister AG",
+        "contactPerson": "",
+        "id": "10e915fba9207edcbb4355262d896deafc1bf940b9d5ff351097bb2d614fd642",
+        "package": "",
+        "project": "Leister - Service Requests 2023",
+        "status": "Erledigt",
+        "templateName": "Leister-Service Requests",
+        "work": "Work"
+    },
+    {
+        "billable": false,
+        "contact": "Soulcode AG",
+        "contactPerson": "",
+        "id": "3b450c9fc6caa8862915eac15bac17b7d89ad827dbd7eb477fc653fd49f50707",
+        "package": "",
+        "project": "Soulcode - Technology Roadmap",
+        "status": "Erledigt",
+        "templateName": "Soulcode-Technology Roadmap Strapi Kontent.ai",
+        "work": "Work"
+    }
+]

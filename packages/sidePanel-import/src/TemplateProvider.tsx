@@ -8,79 +8,25 @@ import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 function TemplateProvider({ children }: { children: ReactNode }) {
   const development = process.env.NODE_ENV === "development";
-  const defaultTemplates = development
-    ? [
-        {
-          templateName: "ScMisc",
-          billable: false,
-          contact: "Soulcode AG",
-          contactPerson: "",
-          id: "ScMisc",
-          package: "Misc / Team",
-          project: "Soulcode - Back Office",
-          status: "",
-          work: "",
-        },
-        {
-          templateName: "ScKnowhow",
-          billable: false,
-          contact: "Soulcode AG",
-          contactPerson: "",
-          id: "ScKnowhow",
-          package: "",
-          project: "Soulcode - Know-how",
-          status: "",
-          work: "",
-        },
-        {
-          templateName: "Leister Marketing",
-          billable: false,
-          contact: "",
-          contactPerson: "",
-          id: "LeisterMarketing",
-          package: "",
-          project: "",
-          status: "",
-          work: "",
-        },
-        {
-          templateName: "Leister PM",
-          billable: false,
-          contact: "",
-          contactPerson: "",
-          id: "LeisterPM",
-          package: "",
-          project: "",
-          status: "",
-          work: "",
-        },
-        {
-          templateName: "Leister Commerce23 Wishlist",
-          billable: false,
-          contact: "",
-          contactPerson: "",
-          id: "LeisterCommerce23Wishlist",
-          package: "FE-Wishlist - Shopify Budget",
-          project: "Leister - Commerce 23",
-          status: "",
-          work: "",
-        },
-      ]
-    : [];
-
   const [templates, setTemplates] = useState<TemplateEntry[]>(
-    sortTemplates(defaultTemplates)
+    sortTemplates([])
   );
+
+  async function getDevTemplates() {
+    const response = await fetch("/devTemplates.json");
+    return await response.json();
+  }
 
   useEffect(() => {
     const fetchData = async () => {
-      const templateEntries =
-        await chromeStorageTemplateEntries.loadTemplates();
+      const templateEntries = development
+        ? await getDevTemplates()
+        : await chromeStorageTemplateEntries.loadTemplates();
       setTemplates(sortTemplates(templateEntries));
     };
 
     fetchData();
-  }, []);
+  }, [development]);
 
   return (
     <TemplateContext.Provider value={templates}>
