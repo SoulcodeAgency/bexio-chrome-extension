@@ -3,10 +3,9 @@ import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
 import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
-import { TemplateContext } from "~/TemplateContext";
 import { Button, Alert, Collapse, CollapseProps } from "antd";
+import { TemplateContext, TemplateContextType } from "~/TemplateContext";
 import { chromeStorage } from "@bexio-chrome-extension/shared";
-import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];
@@ -19,7 +18,8 @@ function ImportEntries() {
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
-  const templateEntries = useContext<TemplateEntry[]>(TemplateContext);
+  const { templates: templateEntries, reloadData } =
+    useContext<TemplateContextType>(TemplateContext);
 
   // TODO: Instead of relying on the last column being "Notes", we could check where the columns exists and use that index instead
   const hasNotes = importHeader[importHeader.length - 1] === "Notes";
