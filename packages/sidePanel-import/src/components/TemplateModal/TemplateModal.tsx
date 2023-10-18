@@ -48,6 +48,7 @@ const MyComponent: React.FC<Props> = ({ templateId, closeModal }) => {
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 14 }}
           initialValues={{
+            id: template?.id,
             templateName: template?.templateName,
             keywords: template?.keywords,
             contact: template?.contact,
@@ -60,6 +61,10 @@ const MyComponent: React.FC<Props> = ({ templateId, closeModal }) => {
           }}
         >
           <h2>Template values</h2>
+          <Form.Item name="id" hidden>
+            <Input />
+          </Form.Item>
+
           <Form.Item
             label="Template Name"
             name="templateName"

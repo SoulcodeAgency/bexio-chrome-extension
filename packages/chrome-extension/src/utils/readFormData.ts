@@ -6,6 +6,7 @@ import { workField, statusField, contactPersonField, projectField, packageField 
 import generateHash from "./generateHash";
 import readTextFromSelect2 from "./readTextFromSelect2";
 import trimAll from "./trimAll";
+import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 // Read form data
 async function readFormData() {
@@ -28,7 +29,7 @@ async function readFormData() {
 
     let formEntry;
 
-    let allEntries = undefined;
+    let allEntries: TemplateEntry[] | undefined = undefined;
     let notReadyToSave = true;
     do {
         // Note: make sure a generated id is not part of the base entry to create the hash
