@@ -9,6 +9,7 @@ import trimAll from "./trimAll";
 
 // Read form data
 async function readFormData() {
+    // TODO: Probably extract the form data reading into a own helper function.
     const work = await readTextFromSelect2(workField);
     const status = await readTextFromSelect2(statusField);
 
@@ -31,7 +32,7 @@ async function readFormData() {
     let notReadyToSave = true;
     do {
         // Note: make sure a generated id is not part of the base entry to create the hash
-
+        // TODO: this line is probably fine outside of the do loop as well
         formEntry = { work, status, contact, project, package: packageValue, billable, contactPerson, templateName };
 
         // Ask user for a template Name, prefilled with the suggested one
@@ -43,6 +44,7 @@ async function readFormData() {
             return;
         }
 
+        // TODO: extract hash logic into helper function
         // Create the entry and a hash for saving it
         const jsonString = JSON.stringify(formEntry);
         const hash = await generateHash(jsonString);
@@ -66,6 +68,7 @@ async function readFormData() {
     } while (notReadyToSave);
 
     if (allEntries === undefined) throw new Error("No template entries found");
+    // TODO: verify if this is correct, or would break an empty entries list (basically a new user)
 
     // Push the new entry to the array and save it
     allEntries.push(formEntry);

@@ -9,6 +9,7 @@ export interface TemplateContextType {
 export const TemplateContext = createContext<TemplateContextType>({
     templates: [],
     reloadData: () => {
+        // This is just a fake implementation to make TypeScript happy.
         console.log("reloadData not implemented")
     },
 });
