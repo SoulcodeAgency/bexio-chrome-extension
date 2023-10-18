@@ -182,6 +182,11 @@ function ImportEntries() {
                   ? matches++
                   : null
                 : null;
+              entry.keywords
+                ? entry.keywords.toLowerCase().includes(tagWord)
+                  ? matches++
+                  : null
+                : null;
 
               // Make the count weight increase for every column: For the first tag column *1, second tag column *2, third tag column *3 etc.
               const countIncrease = matches * (columnIndex + 1);
