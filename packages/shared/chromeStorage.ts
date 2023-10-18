@@ -4,6 +4,7 @@ const defaultKey: string = "entries";
 export async function load<T>(key = defaultKey): Promise<T[]> {
     return await chrome.storage.local.get(key).then((result) => {
         if (result[key] && Array.isArray(result[key])) {
+            console.log("templates", key, result[key]);
             return result[key] as T[];
         }
         return [];
@@ -34,7 +35,8 @@ export async function update<T>(updatedEntry: T & { [index: string]: string }, k
 
     if (entries[key] && Array.isArray(entries[key])) {
         const entryIndex = entries[key].findIndex((entry: T & { [index: string]: string }) => entry[idKey] !== updatedEntry[idKey]);
-        entries[key][entryIndex] = { ...updatedEntry }
+        entries[key][entryIndex] = { ...entries[key][entryIndex], ...updatedEntry }
+        console.log(entries[key][entryIndex]);
     };
-    return save(entries as T[]);
+    return save(entries[key] as T[]);
 }

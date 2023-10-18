@@ -2,13 +2,16 @@ import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 import { TemplateContext, TemplateContextType } from "~/TemplateContext.js";
 import applyTemplate from "~/utils/applyTemplate.js";
 import "./TemplateEntries.css";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Button, Tooltip } from "antd";
 import { deleteTemplate } from "@bexio-chrome-extension/shared/chromeStorageTemplateEntries";
+import TemplateModal from "../TemplateModal/TemplateModal";
 
 function TemplateEntries() {
   const { templates: templateEntries, reloadData } =
     useContext<TemplateContextType>(TemplateContext);
+
+  const [templateId, setTemplateId] = useState("");
 
   async function confirmTemplateDeletion(template: TemplateEntry) {
     console.log(
@@ -36,6 +39,7 @@ function TemplateEntries() {
             <tr>
               <th>Apply</th>
               <th>Template Name</th>
+              <th>Keywords</th>
               <th>Contact</th>
               <th>Project</th>
               <th>Package</th>
@@ -53,6 +57,7 @@ function TemplateEntries() {
                   <Button onClick={() => applyTemplate(entry.id)}>▶️</Button>
                 </td>
                 <td>{entry.templateName}</td>
+                <td>{entry.keywords}</td>
                 <td>{entry.contact}</td>
                 <td>{entry.project}</td>
                 <td>{entry.package}</td>
@@ -61,20 +66,38 @@ function TemplateEntries() {
                 <td>{entry.status}</td>
                 <td>{entry.work}</td>
                 <td>
-                  <Tooltip title="Delete Template">
-                    <Button
-                      danger
-                      shape="circle"
-                      onClick={() => confirmTemplateDeletion(entry)}
-                    >
-                      ❌
-                    </Button>
-                  </Tooltip>
+                  <div style={{ display: "flex" }}>
+                    <Tooltip title="Delete Template">
+                      <Button
+                        danger
+                        shape="circle"
+                        onClick={() => confirmTemplateDeletion(entry)}
+                      >
+                        ❌
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="Edit Template">
+                      <Button
+                        shape="circle"
+                        onClick={() => setTemplateId(entry.id)}
+                      >
+                        🔨
+                      </Button>
+                    </Tooltip>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        {templateId && (
+          <TemplateModal
+            key={templateId}
+            templateId={templateId}
+            closeModal={() => setTemplateId("")}
+          />
+        )}
       </div>
     </>
   );
