@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.0] - 2023-10-22
+
+### Bug Fixes
+
+- Fix(Templates) Fixed useContext of TemplateContext
+
+- Fix(Templates) Fixed missing template id and wrong matching for update templates
+
+
+### Features
+
+- Feat(Templates, sidePanel) Implemented "Delete Template" & Improved TemplateContext
+
+- Feat(Buttons) Changing to antd buttons, removing initial styling
+
+- Feat(Templates) Fixing update template logic, and adding modal form for editing templates
+
+Also adding a field keywords, which can later be used for auto mapper values
+
+- Feat(Automapper) Adding keywords field to automapper
+
+
+### Miscellaneous Tasks
+
+- Chore(Templates) Extracting devTemplates for development
+
+- Chore (Template) Renaming confirmDeletion function
+
+- Chore(Vite) Improving config to not minify on dev builds
+
+- Chore(Comments) Adding Comments and todos
+
+- Chore(vscode) Adding settings which always appears
+
+
 ## [0.14.0] - 2023-09-22
 
 ### Bug Fixes
