@@ -21,8 +21,44 @@ function ImportEntries() {
   const { templates: templateEntries, reloadData } =
     useContext<TemplateContextType>(TemplateContext);
 
-  // TODO: Instead of relying on the last column being "Notes", we could check where the columns exists and use that index instead
-  const hasNotes = importHeader[importHeader.length - 1] === "Notes";
+  function getNotes(entryIndex: number) {
+    let notes = "";
+    const notesColumnIndex = importHeader.findIndex(
+      (column) => column === "Notes"
+    );
+    if (notesColumnIndex >= 0) {
+      notes = importData[entryIndex][notesColumnIndex];
+      console.log("added notes from notes column");
+    }
+    if (notes === "") {
+      // Get all indexes of the importHeader which start with "Tag"
+      const tagColumnIndexes = importHeader.reduce(
+        (acc: number[], column, index) => {
+          if (column.startsWith("Tag")) {
+            acc.push(index);
+          }
+          return acc;
+        },
+        []
+      );
+      // Sort the indexes, so we can start with the last one
+      tagColumnIndexes.sort((a, b) => b - a);
+
+      // Go through the tag columns, and check if they have content within importData and apply it to notes
+      tagColumnIndexes.forEach((tagColumnIndex) => {
+        if (notes === "") {
+          notes = importData[entryIndex][tagColumnIndex];
+          console.log(
+            "applying notes from tag column with index " +
+              tagColumnIndex +
+              " and column name " +
+              importHeader[tagColumnIndex]
+          );
+        }
+      });
+    }
+    return notes;
+  }
 
   function resetImportState() {
     setImportHeader([]);
@@ -81,40 +117,46 @@ function ImportEntries() {
     // Take the first 2 number blocks of the time, we only need hh:mm from the hh:mm:ss signature
     timeAmount = timeAmount.split(":").slice(0, 2).join(":");
 
-    (async () => {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        lastFocusedWindow: true,
-      });
-      if (tab.id) {
-        const data: {
-          mode: string;
-          duration: string;
-          date: string;
-          notes: undefined | string;
-        } = {
-          mode: "time+duration",
-          duration: timeAmount,
-          date: date,
-          notes: undefined,
-        };
-        // Add notes if they exist
-        if (hasNotes) {
-          data.notes = importData[entryIndex][importHeader.length - 1];
-        }
-        console.log("sending data", data);
-        // const response =
-        await chrome.tabs.sendMessage(tab.id, data);
+    const data: {
+      mode: string;
+      duration: string;
+      date: string;
+      notes: undefined | string;
+    } = {
+      mode: "time+duration",
+      duration: timeAmount,
+      date: date,
+      notes: undefined,
+    };
+    // Add notes (description) if they exist & if notes are enabled
+    const notes = getNotes(entryIndex);
+    if (notes.length) {
+      data.notes = notes;
+      console.log("Using notes: ", notes);
+    }
 
-        // Check if this entry has a template
-        const templateId = importTemplates[entryIndex];
-        if (templateId.length) {
-          applyTemplate(templateId);
+    (async () => {
+      // Sending data to the website context, can only be handled by chrome extension
+      if (chrome.tabs) {
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          lastFocusedWindow: true,
+        });
+        if (tab.id) {
+          console.log("sending data", data);
+          // const response =
+          await chrome.tabs.sendMessage(tab.id, data);
+
+          // Check if this entry has a template
+          const templateId = importTemplates[entryIndex];
+          if (templateId.length) {
+            applyTemplate(templateId);
+          }
+          // do something with response here, not outside the function
+          // console.log(response);
+        } else {
+          throw new Error("No tab found");
         }
-        // do something with response here, not outside the function
-        // console.log(response);
-      } else {
-        throw new Error("No tab found");
       }
     })();
   }
@@ -126,10 +168,11 @@ function ImportEntries() {
     setTabs(["apply"]);
   }
 
-  function reloadImportData() {
-    setTabs(["apply"]);
-    loadImportData();
-  }
+  // Disabled for the moment - checking need
+  // function reloadImportData() {
+  //   setTabs(["apply"]);
+  //   loadImportData();
+  // }
 
   const tagColumnIndexes = importHeader.reduce(
     (acc: number[], column, index) => {
