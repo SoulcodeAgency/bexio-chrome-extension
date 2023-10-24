@@ -5,9 +5,9 @@ import {
   sortTemplates,
 } from "@bexio-chrome-extension/shared";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
+import { developmentEnv } from "./utils/development";
 
 function TemplateProvider({ children }: { children: ReactNode }) {
-  const development = process.env.NODE_ENV === "development";
   const [templates, setTemplates] = useState<TemplateEntry[]>(
     sortTemplates([])
   );
@@ -20,14 +20,14 @@ function TemplateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const templateEntries = development
+      const templateEntries = developmentEnv
         ? await getDevTemplates()
         : await chromeStorageTemplateEntries.loadTemplates();
       setTemplates(sortTemplates(templateEntries));
     };
 
     fetchData();
-  }, [development, reload]);
+  }, [developmentEnv, reload]);
 
   const reloadData = () => {
     setReload(!reload);

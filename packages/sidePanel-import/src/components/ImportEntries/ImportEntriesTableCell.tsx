@@ -1,5 +1,6 @@
 import { Button } from "antd";
 import { useState } from "react";
+import { productionEnv } from "~/utils/development";
 import openBexioTimeTrackingPage from "~/utils/openBexioTimeTrackingPage";
 
 type ImportEntriesTableCellProps = {
@@ -15,7 +16,7 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
   const [clicked, setClicked] = useState(false);
 
   async function clickHandler() {
-    await openBexioTimeTrackingPage();
+    productionEnv && (await openBexioTimeTrackingPage());
     props.onButtonClick();
     // Change button state to clicked, so we have a visual feedback
     setClicked(true);
