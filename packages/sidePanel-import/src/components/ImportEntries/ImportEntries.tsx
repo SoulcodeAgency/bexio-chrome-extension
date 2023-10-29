@@ -5,7 +5,7 @@ import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
 import { Button, Alert, Collapse, CollapseProps, Switch, Tooltip } from "antd";
 import { TemplateContext, TemplateContextType } from "~/TemplateContext";
-import { chromeStorage } from "@bexio-chrome-extension/shared";
+import { chromeStorage, getTemplateName } from "@bexio-chrome-extension/shared";
 import {
   loadApplyNotesSetting,
   saveApplyNotesSetting,
@@ -139,7 +139,6 @@ function ImportEntries() {
     const notes = getNotes(entryIndex);
     if (notes.length) {
       data.notes = notes;
-      console.log("Using notes: ", notes);
     }
 
     (async () => {
@@ -194,13 +193,16 @@ function ImportEntries() {
   function autoMapTemplates() {
     const importTemplateAssignment: string[] = [];
     importData.forEach((row, rowIndex) => {
-      console.groupCollapsed(rowIndex + 1);
+      console.groupCollapsed(`Entry ${rowIndex + 1}`);
       const mappingResult: { [key: string]: number } = {};
       const tagColumnsContent = tagColumnIndexes.map((index) => row[index]);
       // Split content of every tag column by space to search for every word
       tagColumnsContent.forEach((tagColumn, columnIndex) => {
         const tagWords = tagColumn.match(/[a-zA-Z0-9]+/g);
-        console.log("tagWords:", tagWords);
+        console.log(
+          `Identified words in ${importHeader[columnIndex]}:`,
+          tagWords
+        );
         // Count how many times each word occurs in the templateEntries and count them up
         tagWords?.length &&
           tagWords.map((tagWord) => {
@@ -238,16 +240,30 @@ function ImportEntries() {
                   : null
                 : null;
 
+              // TODO: maybe we should turn around the weight
               // Make the count weight increase for every column: For the first tag column *1, second tag column *2, third tag column *3 etc.
               const countIncrease = matches * (columnIndex + 1);
               mappingResult[entry.id] =
                 (mappingResult[entry.id] ?? 0) + countIncrease;
+
+              // TODO: to better debug the points, we should change the mappingResult object to an array of objects, and add the templateName to the object
+              // if (matches)
+              //   console.warn(
+              //     tagWord,
+              //     "made",
+              //     countIncrease,
+              //     "points on " + entry.templateName
+              //   );
             });
           });
       });
+
       // Get the key(template id) of the mappingResult which has the highest value
       const templateId = Object.keys(mappingResult).reduce((a, b) =>
         mappingResult[a] > mappingResult[b] ? a : b
+      );
+      const templateName = getTemplateName(
+        templateEntries.find((entry) => entry.id === templateId)!
       );
 
       // Check if there is only 1 highest value, otherwise we do not auto map and leave the decision to the user
@@ -259,12 +275,35 @@ function ImportEntries() {
       if (highestValueCount === 1) {
         // We have a winner! Assign the template id to the row
         importTemplateAssignment[rowIndex] = templateId;
+        console.log(
+          "Auto mapping template: " + "TemplateId: " + templateId,
+          +"templateName: " + templateName
+        );
+      } else {
+        // No clear winner, leave empty
+        console.warn("Auto mapping template: No clear winner!");
       }
 
-      console.table(mappingResult);
-      console.log(
-        "Auto mapping template: Row " + rowIndex + ", TemplateId: " + templateId
-      );
+      // Next stuff is only needed for nice debugging table of points
+
+      // Map over the mappingResult, and replace the index with the template name from templateEntries
+      Object.keys(mappingResult).map((templateId) => {
+        const templateName = getTemplateName(
+          templateEntries.find((entry) => entry.id === templateId)!
+        );
+        mappingResult[templateName ?? ""] = mappingResult[templateId];
+        delete mappingResult[templateId];
+      });
+
+      // Sort the mappingResult by highest value
+      const sortedMappingResult: { [key: string]: number } = {};
+      Object.keys(mappingResult)
+        .sort((a, b) => mappingResult[b] - mappingResult[a])
+        .forEach((key) => {
+          sortedMappingResult[key] = mappingResult[key];
+        });
+      console.table(sortedMappingResult);
+
       console.groupEnd();
     });
 
@@ -288,6 +327,7 @@ function ImportEntries() {
     });
   }
 
+  // Load import data & templates when tabs change
   useEffect(() => {
     loadImportData();
 

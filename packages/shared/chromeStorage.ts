@@ -3,9 +3,8 @@ const defaultKey: string = "entries";
 // Loads from chrome local storage
 export async function load<T>(key = defaultKey): Promise<T | undefined> {
     return await chrome.storage.local.get(key).then((result) => {
-        console.log(result);
+        console.log("chrome.storage.local load", result);
         if (result[key] !== undefined) {
-            console.log("chrome storage load()", key, result[key]);
             return result[key] as T;
         }
         return undefined;
