@@ -1,13 +1,14 @@
 const defaultKey: string = "entries";
 
 // Loads from chrome local storage
-export async function load<T>(key = defaultKey): Promise<T[]> {
+export async function load<T>(key = defaultKey): Promise<T | undefined> {
     return await chrome.storage.local.get(key).then((result) => {
-        if (result[key] && Array.isArray(result[key])) {
-            console.log("templates", key, result[key]);
-            return result[key] as T[];
+        console.log(result);
+        if (result[key] !== undefined) {
+            console.log("chrome storage load()", key, result[key]);
+            return result[key] as T;
         }
-        return [];
+        return undefined;
     });
 }
 
@@ -15,6 +16,7 @@ export async function load<T>(key = defaultKey): Promise<T[]> {
 export async function remove<T>(id: string, key = defaultKey): Promise<any> {
     // Iterate over the chrome storage and remove the entry with the given id
     const filteredEntries = await chrome.storage.local.get(key).then((result) => {
+        //TODO, this currently only handles arrays.
         if (result[key] && Array.isArray(result[key])) {
             return result[key].filter((entry: T & { id: string }) => entry.id !== id);
         }
@@ -24,8 +26,8 @@ export async function remove<T>(id: string, key = defaultKey): Promise<any> {
 }
 
 // Save chrome local storage
-export async function save<T>(entries: T[], key = defaultKey): Promise<any> {
-    return chrome.storage.local.set({ [key]: entries });
+export async function save<T>(data: T, key = defaultKey): Promise<any> {
+    return chrome.storage.local.set({ [key]: data });
 }
 
 // Update an entry in chrome local storage

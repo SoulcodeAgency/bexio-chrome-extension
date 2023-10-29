@@ -27,7 +27,7 @@ function TemplateProvider({ children }: { children: ReactNode }) {
     };
 
     fetchData();
-  }, [developmentEnv, reload]);
+  }, [reload]);
 
   const reloadData = () => {
     setReload(!reload);

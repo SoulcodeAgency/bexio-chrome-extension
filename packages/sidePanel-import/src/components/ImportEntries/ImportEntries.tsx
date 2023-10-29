@@ -267,16 +267,16 @@ function ImportEntries() {
   }
 
   function loadImportData() {
-    chromeStorage.load<string>("importHeader").then((data) => {
+    chromeStorage.load<string[]>("importHeader").then((data) => {
       setImportHeader(data ?? []);
     });
-    chromeStorage.load<ImportRow>("importData").then((data) => {
+    chromeStorage.load<ImportRow[]>("importData").then((data) => {
       setImportData(data ?? []);
     });
-    chromeStorage.load<string>("importFooter").then((data) => {
+    chromeStorage.load<string[]>("importFooter").then((data) => {
       setImportFooter(data ?? []);
     });
-    chromeStorage.load<string>("importTemplates").then((data) => {
+    chromeStorage.load<string[]>("importTemplates").then((data) => {
       setImportTemplates(data ?? []);
     });
   }
