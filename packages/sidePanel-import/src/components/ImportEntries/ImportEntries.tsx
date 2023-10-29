@@ -348,6 +348,7 @@ function ImportEntries() {
           Auto map templates
         </Button>
       </Tooltip>
+
       <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
         <Switch
           checkedChildren="Apply notes"
@@ -365,7 +366,23 @@ function ImportEntries() {
             <th>#</th>
             <th title="Select the template to apply">Template</th>
             {importHeader.map((field) => (
-              <th key={field}>{field}</th>
+              <th
+                key={field}
+                style={{ minWidth: field === "Notes" ? "120px" : "auto" }}
+              >
+                {field}
+                {field === "Notes" && (
+                  <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
+                    <Switch
+                      checkedChildren="Apply notes"
+                      unCheckedChildren="Ignore notes"
+                      defaultChecked={false}
+                      onClick={switchApplyNotesSetting}
+                      checked={applyNotesSetting}
+                    />
+                  </Tooltip>
+                )}
+              </th>
             ))}
           </tr>
         </thead>

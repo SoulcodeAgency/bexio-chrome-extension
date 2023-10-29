@@ -23,6 +23,7 @@ table th {
   text-align: left;
   background-color: #33b7a2;
   color: white;
+  vertical-align: top;
 }
 
 table thead {
