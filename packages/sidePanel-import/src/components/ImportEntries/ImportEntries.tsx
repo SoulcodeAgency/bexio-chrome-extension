@@ -3,14 +3,19 @@ import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
 import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
-import { Button, Alert, Collapse, CollapseProps } from "antd";
+import { Button, Alert, Collapse, CollapseProps, Switch, Tooltip } from "antd";
 import { TemplateContext, TemplateContextType } from "~/TemplateContext";
 import { chromeStorage } from "@bexio-chrome-extension/shared";
+import {
+  loadApplyNotesSetting,
+  saveApplyNotesSetting,
+} from "@bexio-chrome-extension/shared/chromeStorageSettings";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];
 
 function ImportEntries() {
+  const [applyNotesSetting, setApplyNotesSetting] = useState(true);
   const [clipboardStatus, setClipboardStatus] = useState("");
   const [importHeader, setImportHeader] = useState<ImportRow>([]);
   const [importFooter, setImportFooter] = useState<ImportRow>([]);
@@ -49,10 +54,7 @@ function ImportEntries() {
         if (notes === "") {
           notes = importData[entryIndex][tagColumnIndex];
           console.log(
-            "applying notes from tag column with index " +
-              tagColumnIndex +
-              " and column name " +
-              importHeader[tagColumnIndex]
+            "applying notes from tag column " + importHeader[tagColumnIndex]
           );
         }
       });
@@ -74,6 +76,11 @@ function ImportEntries() {
     chromeStorage.save([], "importFooter");
     chromeStorage.save([], "importTemplates");
     setTabs(["import"]);
+  }
+
+  function switchApplyNotesSetting() {
+    saveApplyNotesSetting(!applyNotesSetting);
+    setApplyNotesSetting(!applyNotesSetting);
   }
 
   function clearTextarea() {
@@ -283,6 +290,10 @@ function ImportEntries() {
 
   useEffect(() => {
     loadImportData();
+
+    loadApplyNotesSetting().then((data) => {
+      setApplyNotesSetting(data ?? true);
+    });
   }, []);
 
   function onChangeTemplate(templateId: string, index: number) {
@@ -332,12 +343,22 @@ function ImportEntries() {
 
   const importDataHTML = (
     <div className="content">
-      <Button type="primary" onClick={autoMapTemplates}>
-        Auto map templates
-      </Button>
+      <Tooltip title="This will try to select the right template for your time entries">
+        <Button type="primary" onClick={autoMapTemplates}>
+          Auto map templates
+        </Button>
+      </Tooltip>
+      <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
+        <Switch
+          checkedChildren="Apply notes"
+          unCheckedChildren="Ignore notes"
+          defaultChecked={false}
+          onClick={switchApplyNotesSetting}
+          checked={applyNotesSetting}
+        />
+      </Tooltip>
       <br />
       <br />
-
       <table className="importDataTable">
         <thead>
           <tr>
