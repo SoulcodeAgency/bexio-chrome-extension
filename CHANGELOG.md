@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.16.0] - 2023-10-30
+
+### Features
+
+- Feat(Notes) Adding description notes from notes, or a tag column in descending order
+
+- Feat(env) Adding helpers for executing things on dev or prod env
+
+- Feat(Notes) Added option to apply notes or not
+
+Notes will be taken from the notes column or the last tag column with content
+
+- Feat(Notes) Added notes button also to the notes header column
+
+- Feat(AutoMapper) New auto mapper version released
+
+
+### Miscellaneous Tasks
+
+- Chore(chromeStorage) Improvements
+
+- Chore(AutoMapper) Cleanup and logging improvements
+
+- Chore(AutoMapper) Cleanup and logging improvements
+
+
 ## [0.15.0] - 2023-10-22
 
 ### Bug Fixes
