@@ -281,7 +281,7 @@ function ImportEntries() {
         );
       } else {
         // No clear winner, leave empty
-        console.warn("Auto mapping template: No clear winner!");
+        console.log("Auto mapping template: No clear winner!");
       }
 
       // Next stuff is only needed for nice debugging table of points
@@ -373,7 +373,7 @@ function ImportEntries() {
 
               // TODO: to better debug the points, we should change the mappingResult object to an array of objects, and add the templateName to the object
               if (matches)
-                console.warn(
+                console.log(
                   tagWord,
                   "made",
                   countIncrease,
@@ -406,7 +406,7 @@ function ImportEntries() {
         );
       } else {
         // No clear winner, leave empty
-        console.warn("Auto mapping template: No clear winner!");
+        console.log("Auto mapping template: No clear winner!");
       }
 
       // Next stuff is only needed for nice debugging table of points
