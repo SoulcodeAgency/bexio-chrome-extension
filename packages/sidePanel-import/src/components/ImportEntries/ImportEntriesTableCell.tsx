@@ -12,6 +12,7 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
   const dateRegex = /^\d{2}[./]\d{2}[./]\d{4}$/;
   const noTimeToBookRegex = /^(0.00|0:00:00)$/;
   const columnIsATrackingDay = dateRegex.test(props.columnHeader);
+  const columnIsBillable = props.columnHeader === "Billable";
   const entryIsEmpty = noTimeToBookRegex.test(props.fieldValue);
   const [clicked, setClicked] = useState(false);
 
@@ -36,6 +37,8 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
         {button}
       </td>
     );
+  } else if (columnIsBillable) {
+    tableCell = <td>{props.fieldValue === "Billable" ? "✅" : "◻️"}</td>;
   } else if (entryIsEmpty) {
     tableCell = <td></td>;
   }

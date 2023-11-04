@@ -28,11 +28,12 @@ function ImportEntries() {
   const { templates: templateEntries, reloadData } =
     useContext<TemplateContextType>(TemplateContext);
 
+  const billableColumnIndex = importHeader.findIndex(
+    (column) => column === "Billable"
+  );
+
   function getBillable(entryIndex: number): boolean | undefined {
     let billable: ImportBillable = undefined;
-    const billableColumnIndex = importHeader.findIndex(
-      (column) => column === "Billable"
-    );
     if (billableColumnIndex >= 0) {
       billable = importData[entryIndex][billableColumnIndex] as ImportBillable;
       console.log(
