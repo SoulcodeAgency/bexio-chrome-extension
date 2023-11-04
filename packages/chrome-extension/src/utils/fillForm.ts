@@ -27,7 +27,7 @@ function toggleDisplayLoader(show = true) {
 }
 
 // Fill form
-async function fillForm(id) {
+async function fillForm(id: string, timeEntryBillable?: boolean) {
     toggleDisplayLoader();
     const templateEntries = await chromeStorageTemplateEntries.loadTemplates();
     const entry = templateEntries.find(entry => entry.id === id);
@@ -44,7 +44,8 @@ async function fillForm(id) {
     await triggerField(projectFieldID, project);
 
     await triggerField(packageFieldID, packageValue);
-    await triggerCheckbox(billableCheckbox, billable);
+    // If the time entry has a billable flag (timeEntryBillable), we prefer that one over the templates billable flag
+    await triggerCheckbox(billableCheckbox, timeEntryBillable ?? billable);
 
     toggleDisplayLoader(false);
 }

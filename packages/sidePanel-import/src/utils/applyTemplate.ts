@@ -1,15 +1,21 @@
-function applyTemplate(templateId: string) {
+import { TemplateExchangeData } from "@bexio-chrome-extension/shared/types";
+
+function applyTemplate(templateId: string, timeEntryBillable?: boolean) {
     (async () => {
         const [tab] = await chrome.tabs.query({
             active: true,
             lastFocusedWindow: true,
         });
         if (tab.id) {
-            // const response = 
-            await chrome.tabs.sendMessage(tab.id, {
+            const data: TemplateExchangeData = {
                 mode: "template",
-                templateId: templateId,
-            });
+                templateId,
+                timeEntryBillable
+            };
+
+            console.log("Sending template data:", data);
+            // const response = 
+            await chrome.tabs.sendMessage(tab.id, data);
             // do something with response here, not outside the function
             // console.log(response);
         } else {

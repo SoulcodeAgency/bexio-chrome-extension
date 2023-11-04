@@ -10,9 +10,11 @@ import {
   loadApplyNotesSetting,
   saveApplyNotesSetting,
 } from "@bexio-chrome-extension/shared/chromeStorageSettings";
+import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
 
 type ImportRow = string[];
 type ImportData = ImportRow[];
+type ImportBillable = "Billable" | "Not billable" | undefined;
 
 function ImportEntries() {
   const [applyNotesSetting, setApplyNotesSetting] = useState(true);
@@ -25,6 +27,30 @@ function ImportEntries() {
   const importDataRef = useRef<HTMLTextAreaElement>(null);
   const { templates: templateEntries, reloadData } =
     useContext<TemplateContextType>(TemplateContext);
+
+  function getBillable(entryIndex: number): boolean | undefined {
+    let billable: ImportBillable = undefined;
+    const billableColumnIndex = importHeader.findIndex(
+      (column) => column === "Billable"
+    );
+    if (billableColumnIndex >= 0) {
+      billable = importData[entryIndex][billableColumnIndex] as ImportBillable;
+      console.log(
+        "Added billable value:",
+        billable,
+        "as",
+        billable === "Billable"
+      );
+    }
+    // Only return true or false if it is set, otherwise undefined
+    if (billable === "Billable") {
+      return true;
+    } else if (billable === "Not billable") {
+      return false;
+    }
+    // Every other value should return undefined
+    return undefined;
+  }
 
   function getNotes(entryIndex: number) {
     let notes = "";
@@ -124,17 +150,20 @@ function ImportEntries() {
     // Take the first 2 number blocks of the time, we only need hh:mm from the hh:mm:ss signature
     timeAmount = timeAmount.split(":").slice(0, 2).join(":");
 
-    const data: {
-      mode: string;
-      duration: string;
-      date: string;
-      notes: undefined | string;
-    } = {
+    const data: EntryExchangeData = {
       mode: "time+duration",
       duration: timeAmount,
       date: date,
       notes: undefined,
+      billable: undefined,
     };
+
+    // Add billable if it exists
+    const billable = getBillable(entryIndex);
+    if (billable !== undefined) {
+      data.billable = billable;
+    }
+
     // Add notes (description) if they exist & if notes are enabled
     const notes = getNotes(entryIndex);
     if (notes.length) {
@@ -149,14 +178,14 @@ function ImportEntries() {
           lastFocusedWindow: true,
         });
         if (tab.id) {
-          console.log("sending data", data);
+          console.log("Sending data", data);
           // const response =
           await chrome.tabs.sendMessage(tab.id, data);
 
           // Check if this entry has a template
           const templateId = importTemplates[entryIndex];
           if (templateId.length) {
-            applyTemplate(templateId);
+            applyTemplate(templateId, billable);
           }
           // do something with response here, not outside the function
           // console.log(response);

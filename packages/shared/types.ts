@@ -13,3 +13,20 @@ export type TemplateEntry = {
 };
 
 export type ImportData = string[];
+
+export type ExchangeMode = "template" | "time+duration";
+
+export type EntryExchangeData = {
+    mode: "time+duration";
+    duration: string;
+    date: string;
+    notes: undefined | string;
+    billable?: boolean;
+}
+
+export type TemplateExchangeData = {
+    mode: "template";
+    templateId: string;
+    timeEntryBillable?: boolean;
+}
+export type ExchangeRequestData = TemplateExchangeData | EntryExchangeData;
