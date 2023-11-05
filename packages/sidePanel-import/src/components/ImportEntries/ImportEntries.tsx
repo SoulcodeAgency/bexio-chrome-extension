@@ -600,6 +600,7 @@ function ImportEntries() {
               </td>
               {entry.map((entryField, index) => (
                 <ImportEntriesTableCell
+                  templateId={importTemplates[entryIndex]}
                   columnHeader={importHeader[index]}
                   fieldValue={entryField}
                   key={entryField + index}
