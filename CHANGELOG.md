@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.17.0] - 2023-11-06
+
+### Features
+
+- Feat(Billable) Recognizes now also the Billable/Not Billable fields from the import, if "Billable" column exists.
+
+Will overwrite the value of the template
+
+- Feat(Billable) Displays Billable column as checkboxes
+
+- Feat(Billable) Warns about differences between template and time entry billable flags
+
+Also re factored and improved cell rendering components
+
+
+### Miscellaneous Tasks
+
+- Chore(templateId) Check for missing templateId fix before applying Template
+
+
 ## [0.16.0] - 2023-10-30
 
 ### Features
