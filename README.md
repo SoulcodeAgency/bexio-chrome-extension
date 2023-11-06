@@ -6,24 +6,31 @@ Importing entries from ManicTime
 
 Feature Overview:
 
-* Time clicking the extension icon will bring you to the bexio time tracking page.
-* On the time tracking page you can now save and re-use templates.
-* SidePanel! Clicking the icon on the bexio time tracking page will open a side panel
-* SidePanel: You will see the saved templates as well and you can also execute them from there
-* SidePanel: You can now import ManicTime data and select which template to use
-* SidePanel: Clicking a time entry (via ▶️ button) will automatically fill the time tracking page, with the time, date and if selected use the selected template.
+* Time clicking the extension icon will bring you to the bexio time tracking page
+* On the time tracking page you can now save and re-use templates
+* Clicking the icon on the bexio time tracking page will open a side panel
+* You will see the saved templates as well and you can also execute them from there
+* During applying a template, it will show a loader screen, which blocks interactivity while auto-filling your template information (to mitigate bugs)
+* In the sidepanel you can further:
+  * Delete Templates
+  * Edit Templates
+  * Add keywords to templates (used for the import feature)
 
-NEW:
+IMPORT FEATURES (within the sidepanel)
 
-* Bexio Import: You can use the auto-mapper Feature which tries to find the right template for your entry. (Name matching)
-* Showing loader screen, which blocks interactivity while auto-filling your template information
+You can import ManicTime data and select which template to use, further features are:
 
-ManicTime export support:
+* Clicking a time entry (via ▶️ button) will automatically fill the time tracking page, with the time, date and if selected use the selected template.
+* You can use the auto-mapper Feature which tries to find the right template for your entry
+* Automapper also checks the keywords as well as other fields on the templates
+
+## How to use ManicTime feature
 
 * Export ManicTime exports via (Timesheet -> Generate Report -> Copy "Copy to clipboard")
 * Make sure you selected "Time format", not "Decimal format"
 * Include the tags as columns
 * Check "Include Notes" if you want to use the Notes as Descriptions
+* Include "Billable" as a column - to have Billable flag support per Time Entry
 
 ## Chrome webstore address
 
