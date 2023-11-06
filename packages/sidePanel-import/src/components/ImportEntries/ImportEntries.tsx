@@ -185,7 +185,7 @@ function ImportEntries() {
 
           // Check if this entry has a template
           const templateId = importTemplates[entryIndex];
-          if (templateId.length) {
+          if (templateId?.length) {
             applyTemplate(templateId, billable);
           }
           // do something with response here, not outside the function
