@@ -7,8 +7,8 @@ Run `npm run createRelease`
 ## Manually
 
 * Test current version
-* Run npm script `build:newExtensionRelease`
 * Run npm script `version:minor` (or what you need) to increase version number
+* Run npm script `build:newExtensionRelease`
 * Tag the version (TODO: automate this), this is needed to have the changelog created correctly
 * Run npm script `changelog` to create the changelog
 * Commit Everything as new release (probably amend) to get into the same commit as before

@@ -22,8 +22,8 @@ function GetPackageVersion() {
 }
 
 # Run the build and version scripts
-RunScript "build:newExtensionRelease"
 RunScript "version:minor"
+RunScript "build:newExtensionRelease"
 
 # Get new version number
 $version = GetPackageVersion
