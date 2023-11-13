@@ -1,0 +1,6 @@
+// Configuration to match git-cliff generated format
+{
+    "MD012": false,
+    "MD024": false,
+    "MD013": false
+}
