@@ -32,7 +32,6 @@ function TemplateEntries() {
 
   return (
     <>
-      <h2>Bexio Templates</h2>
       <div className="content">
         <table>
           <thead>

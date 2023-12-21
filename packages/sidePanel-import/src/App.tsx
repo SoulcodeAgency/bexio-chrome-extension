@@ -9,7 +9,7 @@ function App() {
   const items: TabsProps["items"] = [
     {
       key: "1",
-      label: `Bexio import`,
+      label: `Import`,
       children: <ImportEntries />,
     },
     {
@@ -21,6 +21,7 @@ function App() {
 
   return (
     <TemplateProvider>
+      <h2 style={{ margin: "0" }}>Bexio Timetracking Templates</h2>
       <div style={{ textAlign: "left" }}>
         <Tabs defaultActiveKey="1" items={items} />
       </div>
