@@ -15,23 +15,18 @@
 }
 
 .soulcode-logo {
-  width: 200px;
-  right: 0;
-  top: -20px;
-
-  @media screen and (min-width: 768px) {
-    position: absolute;
-  }
+  height: 50px;
+  vertical-align: middle;
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #33b7a3;
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: #3376b5;
 }
 
 body {
@@ -41,7 +36,6 @@ body {
   min-height: 100vh;
   flex-direction: column;
   justify-content: space-between;
-
 }
 
 h1 {
@@ -53,10 +47,6 @@ h1 {
   :root {
     color: #213547;
     background-color: #ffffff;
-  }
-
-  a:hover {
-    color: #747bff;
   }
 
   button {
