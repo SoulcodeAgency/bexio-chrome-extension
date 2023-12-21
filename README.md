@@ -1,4 +1,4 @@
-# Soulcode's bexio-chrome-extension
+# Bexio-chrome-extension
 
 Improves handling of time tracking on bexio  
 Enabling the user to save the form as templates, and re-use it later.  

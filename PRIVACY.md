@@ -1,4 +1,4 @@
-# Data Privacy Policy for Soulcode's Bexio Timetracking Templates
+# Data Privacy Policy for Soulcode's "Bexio Timetracking Templates"
 
 *We do not track any of your data, period.*
 
