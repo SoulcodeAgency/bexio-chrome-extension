@@ -352,10 +352,13 @@ function ImportEntries() {
 
     importData.forEach((row, rowIndex) => {
       console.groupCollapsed(`Entry ${rowIndex + 1}`);
-      const mappingResult: { [key: string]: number } = {};
       const tagColumnsContent = tagColumnIndexes.map((index) => row[index]);
       const pointsByTemplateName: {
-        [key: string]: { total: number; points: { [key: string]: number } };
+        [key: string]: {
+          id: string;
+          total: number;
+          points: { [key: string]: number };
+        };
       } = {};
 
       // Split content of every tag column by space to search for every word
@@ -430,14 +433,13 @@ function ImportEntries() {
               }
 
               const countIncrease = matches;
-              mappingResult[entry.id] =
-                (mappingResult[entry.id] ?? 0) + countIncrease;
 
               // Add points to the pointsByTemplateName object
               if (countIncrease > 0) {
                 // Create entry if it doesn't exist
                 if (!pointsByTemplateName[entry.templateName]) {
                   pointsByTemplateName[entry.templateName] = {
+                    id: entry.id,
                     total: 0,
                     points: {},
                   };
@@ -457,61 +459,15 @@ function ImportEntries() {
           });
       });
 
-      // Get the key(template id) of the mappingResult which has the highest value
-      const templateId = Object.keys(mappingResult).reduce((a, b) =>
-        mappingResult[a] > mappingResult[b] ? a : b
-      );
-      const templateName = getTemplateName(
-        templateEntries.find((entry) => entry.id === templateId)!
-      );
-
-      // Check if there is only 1 highest value, otherwise we do not auto map and leave the decision to the user
-      const highestValue = Math.max(...Object.values(mappingResult));
-      const highestValueCount = Object.values(mappingResult).filter(
-        (value) => value === highestValue
-      ).length;
-
-      if (highestValueCount === 1) {
-        // We have a winner! Assign the template id to the row
-        importTemplateAssignment[rowIndex] = templateId;
-        console.log(
-          "Auto mapping template: " + "TemplateId: " + templateId,
-          +"templateName: " + templateName
-        );
-      } else {
-        // No clear winner, leave empty
-        console.log("Auto mapping template: No clear winner!");
-      }
-
-      // Next stuff is only needed for nice debugging table of points
-
-      // Map over the mappingResult, and replace the index with the template name from templateEntries
-      Object.keys(mappingResult).map((templateId) => {
-        const templateName = getTemplateName(
-          templateEntries.find((entry) => entry.id === templateId)!
-        );
-        mappingResult[templateName ?? ""] = mappingResult[templateId];
-        delete mappingResult[templateId];
-      });
-
-      // Sort the mappingResult by highest value
-      const sortedMappingResult: { [key: string]: number } = {};
-      Object.keys(mappingResult)
-        .sort((a, b) => mappingResult[b] - mappingResult[a])
-        .forEach((key) => {
-          sortedMappingResult[key] = mappingResult[key];
-        });
-      console.table(sortedMappingResult);
-
-      // count up the total points for every template within the pointsByTemplateName object
+      // Count up the total points for every template within the pointsByTemplateName object
       Object.keys(pointsByTemplateName).map((templateName) => {
         pointsByTemplateName[templateName]["total"] = Object.values(
           pointsByTemplateName[templateName]["points"]
         ).reduce((a, b) => a + b);
       });
+
       // Sort the pointsByTemplateName object by highest total points
       const sortedPointsByTemplateName: typeof pointsByTemplateName = {};
-
       Object.keys(pointsByTemplateName)
         .sort(
           (a, b) =>
@@ -520,6 +476,36 @@ function ImportEntries() {
         .forEach((key) => {
           sortedPointsByTemplateName[key] = pointsByTemplateName[key];
         });
+
+      // Get the key(template id) of the sortedPointsByTemplateName which has the highest total points
+      const [topTemplateKeyName, topTemplateValues] = Object.entries(
+        sortedPointsByTemplateName
+      )[0];
+      const topTemplateId = topTemplateValues.id;
+      const templateName = getTemplateName(
+        templateEntries.find((entry) => entry.id === topTemplateId)!
+      );
+
+      // Check if there is only 1 highest total points, otherwise we do not auto map and leave the decision to the user
+      const highestTotalPoints =
+        sortedPointsByTemplateName[topTemplateKeyName].total;
+      const highestTotalPointsCount = Object.values(
+        sortedPointsByTemplateName
+      ).filter(
+        (templateData) => templateData.total === highestTotalPoints
+      ).length;
+
+      if (highestTotalPointsCount === 1) {
+        // We have a winner! Assign the template id to the row
+        importTemplateAssignment[rowIndex] = topTemplateId;
+        console.log(
+          "Auto mapping template: TemplateId: " + topTemplateId,
+          "TemplateName: " + templateName
+        );
+      } else {
+        // No clear winner, leave empty
+        console.log("Auto mapping template: No clear winner!");
+      }
 
       console.table(
         Object.entries(sortedPointsByTemplateName).map(
