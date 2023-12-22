@@ -10,8 +10,8 @@ export function autoMapTemplatesV3(
   tagColumnIndexes: number[]
 ) {
   const lowPrio = 1;
-  const mediumPrio = 5;
-  const highPrio = 10;
+  const mediumPrio = 3;
+  const highPrio = 7;
 
   const importTemplateAssignment: string[] = [];
 
