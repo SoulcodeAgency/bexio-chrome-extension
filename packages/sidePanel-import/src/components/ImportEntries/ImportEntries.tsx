@@ -349,10 +349,15 @@ function ImportEntries() {
     const highPrio = 10;
 
     const importTemplateAssignment: string[] = [];
+
     importData.forEach((row, rowIndex) => {
       console.groupCollapsed(`Entry ${rowIndex + 1}`);
       const mappingResult: { [key: string]: number } = {};
       const tagColumnsContent = tagColumnIndexes.map((index) => row[index]);
+      const pointsByTemplateName: {
+        [key: string]: { total: number; points: { [key: string]: number } };
+      } = {};
+
       // Split content of every tag column by space to search for every word
       tagColumnsContent.forEach((tagColumn, columnIndex) => {
         const tagWords = tagColumn.match(/[a-zA-Z0-9]+/g);
@@ -368,48 +373,86 @@ function ImportEntries() {
             tagWord = tagWord.toLowerCase();
             templateEntries.map((entry) => {
               let matches = 0;
-              // Give points for the following columns if they match the tagWord
-              entry.templateName.toLowerCase().includes(tagWord)
-                ? (matches += mediumPrio)
-                : null;
-              entry.contact
-                ? entry.contact.toLowerCase().includes(tagWord)
-                  ? (matches += highPrio)
-                  : null
-                : null;
-              entry.project
-                ? entry.project.toLowerCase().includes(tagWord)
-                  ? (matches += lowPrio)
-                  : null
-                : null;
-              entry.package
-                ? entry.package.toLowerCase().includes(tagWord)
-                  ? (matches += lowPrio)
-                  : null
-                : null;
-              entry.contactPerson
-                ? entry.contactPerson.toLowerCase().includes(tagWord)
-                  ? (matches += mediumPrio)
-                  : null
-                : null;
-              entry.keywords
-                ? entry.keywords.toLowerCase().includes(tagWord)
-                  ? (matches += mediumPrio)
-                  : null
-                : null;
+              // Give points for the following columns if they match the tagWord as single word
+              const templateNameWords = entry.templateName
+                .toLowerCase()
+                .split(" ");
+              const contactWords = entry.contact
+                ? entry.contact.toLowerCase().split(" ")
+                : [];
+              const projectWords = entry.project
+                ? entry.project.toLowerCase().split(" ")
+                : [];
+              const packageWords = entry.package
+                ? entry.package.toLowerCase().split(" ")
+                : [];
+              const contactPersonWords = entry.contactPerson
+                ? entry.contactPerson.toLowerCase().split(" ")
+                : [];
+              const keywordsWords = entry.keywords
+                ? entry.keywords.toLowerCase().split(" ")
+                : [];
+
+              if (templateNameWords.includes(tagWord)) {
+                matches += highPrio * 2;
+              } else if (entry.templateName.toLowerCase().includes(tagWord)) {
+                matches += highPrio;
+              }
+
+              if (contactWords.includes(tagWord)) {
+                matches += highPrio * 2;
+              } else if (entry.contact?.toLowerCase().includes(tagWord)) {
+                matches += highPrio;
+              }
+
+              if (projectWords.includes(tagWord)) {
+                matches += lowPrio * 2;
+              } else if (entry.project?.toLowerCase().includes(tagWord)) {
+                matches += lowPrio;
+              }
+
+              if (packageWords.includes(tagWord)) {
+                matches += lowPrio * 2;
+              } else if (entry.package?.toLowerCase().includes(tagWord)) {
+                matches += lowPrio;
+              }
+
+              if (contactPersonWords.includes(tagWord)) {
+                matches += mediumPrio * 2;
+              } else if (entry.contactPerson?.toLowerCase().includes(tagWord)) {
+                matches += mediumPrio;
+              }
+
+              if (keywordsWords.includes(tagWord)) {
+                matches += mediumPrio * 2;
+              } else if (entry.keywords?.toLowerCase().includes(tagWord)) {
+                matches += mediumPrio;
+              }
 
               const countIncrease = matches;
               mappingResult[entry.id] =
                 (mappingResult[entry.id] ?? 0) + countIncrease;
 
-              // TODO: to better debug the points, we should change the mappingResult object to an array of objects, and add the templateName to the object
-              if (matches)
-                console.log(
-                  tagWord,
-                  "made",
-                  countIncrease,
-                  "points on " + entry.templateName
-                );
+              // Add points to the pointsByTemplateName object
+              if (countIncrease > 0) {
+                // Create entry if it doesn't exist
+                if (!pointsByTemplateName[entry.templateName]) {
+                  pointsByTemplateName[entry.templateName] = {
+                    total: 0,
+                    points: {},
+                  };
+                }
+                // Create points entry if it doesn't exist
+                if (
+                  !pointsByTemplateName[entry.templateName]["points"][tagWord]
+                ) {
+                  pointsByTemplateName[entry.templateName]["points"][tagWord] =
+                    countIncrease;
+                } else {
+                  pointsByTemplateName[entry.templateName]["points"][tagWord] +=
+                    countIncrease;
+                }
+              }
             });
           });
       });
@@ -459,6 +502,34 @@ function ImportEntries() {
           sortedMappingResult[key] = mappingResult[key];
         });
       console.table(sortedMappingResult);
+
+      // count up the total points for every template within the pointsByTemplateName object
+      Object.keys(pointsByTemplateName).map((templateName) => {
+        pointsByTemplateName[templateName]["total"] = Object.values(
+          pointsByTemplateName[templateName]["points"]
+        ).reduce((a, b) => a + b);
+      });
+      // Sort the pointsByTemplateName object by highest total points
+      const sortedPointsByTemplateName: typeof pointsByTemplateName = {};
+
+      Object.keys(pointsByTemplateName)
+        .sort(
+          (a, b) =>
+            pointsByTemplateName[b]["total"] - pointsByTemplateName[a]["total"]
+        )
+        .forEach((key) => {
+          sortedPointsByTemplateName[key] = pointsByTemplateName[key];
+        });
+
+      console.table(
+        Object.entries(sortedPointsByTemplateName).map(
+          ([templateName, templateData]) => ({
+            TemplateName: templateName,
+            TotalPoints: templateData.total,
+            ...templateData.points,
+          })
+        )
+      );
 
       console.groupEnd();
     });
