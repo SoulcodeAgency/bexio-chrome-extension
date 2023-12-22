@@ -2,6 +2,7 @@
   background-color: rgb(230, 88, 88);
   color: white;
   padding: 1px 20px;
+  margin-bottom: 6px;
 }
 
 .importDataTable tr:last-child td {

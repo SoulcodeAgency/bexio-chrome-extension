@@ -5,7 +5,7 @@ import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
 import { Button, Alert, Collapse, CollapseProps, Switch, Tooltip } from "antd";
 import { TemplateContext, TemplateContextType } from "~/TemplateContext";
-import { chromeStorage, getTemplateName } from "@bexio-chrome-extension/shared";
+import { chromeStorage } from "@bexio-chrome-extension/shared";
 import {
   loadApplyNotesSetting,
   saveApplyNotesSetting,
@@ -14,6 +14,7 @@ import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
 import { autoMapTemplatesV3 } from "./AutoMapTemplatesV3";
 import { autoMapTemplatesV1 } from "./AutoMapTemplatesV1";
 import { autoMapTemplatesV2 } from "./AutoMapTemplatesV2";
+import { handleCsvData } from "~/utils/csvParser";
 
 export type ImportRow = string[];
 export type ImportData = ImportRow[];
@@ -21,7 +22,7 @@ export type ImportBillable = "Billable" | "Not billable" | undefined;
 
 function ImportEntries() {
   const [applyNotesSetting, setApplyNotesSetting] = useState(true);
-  const [clipboardStatus, setClipboardStatus] = useState("");
+  const [parseStatus, setParseStatus] = useState("");
   const [importHeader, setImportHeader] = useState<ImportRow>([]);
   const [importFooter, setImportFooter] = useState<ImportRow>([]);
   const [importData, setImportData] = useState<ImportData>([]);
@@ -115,21 +116,21 @@ function ImportEntries() {
 
   function clearTextarea() {
     importDataRef?.current && (importDataRef.current.value = "");
-    setClipboardStatus("");
+    setParseStatus("");
   }
 
   function convertImportData(csvString: string) {
     try {
       const { importFooter, importHeader, importData } =
         handleCsvData(csvString);
-      setClipboardStatus("");
+      setParseStatus("");
       setImportFooter(importFooter);
       setImportHeader(importHeader);
       setImportData(importData);
       setImportTemplates([]);
       setTabs(["import", "apply"]);
     } catch (error: any) {
-      setClipboardStatus(error.message as string);
+      setParseStatus(error.message as string);
       resetImportState();
     }
   }
@@ -284,12 +285,27 @@ function ImportEntries() {
     <div className="content">
       <p>
         This lets you import entries from <b>ManicTime</b> - directly from your
-        clipboard. Use the "Copy to clipboard" function in ManicTime's TimeSheet
-        Summary, and make sure you have at least a "Tag 1" column.
+        clipboard: <br />
+        <ul>
+          <li>
+            Use the <i>"Copy to clipboard"</i> function in ManicTime's TimeSheet
+            Summary, and make sure you have at least a <i>"Tag 1"</i> column.
+          </li>
+          <li>
+            Optionally you can add <b>Notes</b> and <b>Billable</b> columns as
+            well to apply them. <br />
+            ⚠️ Notes are only supported if they don't contain line breaks. If
+            you have any line breaks, you can still search and remove them in
+            the following textarea field
+          </li>
+        </ul>
       </p>
       <p>
-        Paste the data into the following field (Note: it will import and
-        override already imported data below)
+        Paste the data into the following field <br />
+        <i>
+          (Note: This will import data and override the "Apply imported
+          data"-tab content)
+        </i>
       </p>
       <div>
         <textarea
@@ -300,20 +316,20 @@ function ImportEntries() {
         />
       </div>
 
+      {parseStatus && (
+        <div className="error">
+          <p>Error: {parseStatus}</p>
+        </div>
+      )}
+
       <Button onClick={clearTextarea}>Clear textarea</Button>
       <Button type="primary" onClick={saveImport}>
         Save this import
       </Button>
-
-      {clipboardStatus && (
-        <div className="error">
-          <p>Error: {clipboardStatus}</p>
-        </div>
-      )}
     </div>
   );
 
-  const importDataHTML = (
+  const importDataHTML = importData.length ? (
     <div className="content">
       <Tooltip title="First version of the auto mapper, weight depends on Tag culumns">
         <Button type="default" onClick={callAutoMapTemplatesV1}>
@@ -440,6 +456,14 @@ function ImportEntries() {
         />
       </div>
     </div>
+  ) : (
+    <div>
+      <Alert
+        showIcon
+        type="info"
+        message="Before you can apply the imported data, you need to add some data above and maybe also save it for later use."
+      />
+    </div>
   );
 
   const items: CollapseProps["items"] = [
@@ -466,21 +490,3 @@ function ImportEntries() {
 }
 
 export default ImportEntries;
-function handleCsvData(csvString: string) {
-  const rows = csvString.split("\n");
-  const importHeader = rows[0].split("\t");
-  const importFooter = rows[rows.length - 1].split("\t");
-
-  if (importHeader.find((column) => column === "Tag 1") === undefined) {
-    const errorMessage =
-      "Clipboard data could not be parsed correctly. Make sure you have atleast a column called 'Tag 1'";
-    throw new Error(errorMessage);
-  }
-
-  const importData = rows
-    .slice(1)
-    .slice(0, -1)
-    .map((row) => row.replace(/\r/g, ""))
-    .map((row: string) => row.split("\t"));
-  return { importFooter, importHeader, importData };
-}
