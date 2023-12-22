@@ -6,6 +6,11 @@ table {
 
 table tr {
   background-color: #dae6f1;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: #2c2e32;
+  }
+
   border-bottom: 1px solid black;
 }
 
@@ -21,9 +26,13 @@ table td:last-child, table th:last-child {
 
 table th {
   text-align: left;
-  background-color: #33b7a2;
   color: white;
   vertical-align: top;
+  background-color: #33b7a2;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: #1e6f62;
+  }
 }
 
 table thead {

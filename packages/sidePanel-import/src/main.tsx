@@ -4,13 +4,20 @@ import App from "./App.tsx";
 import "./index.scss";
 import soulcodeLogo from "./assets/soulcode-logo.png";
 import * as packageInfo from "../../../package.json";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, theme } from "antd";
+
+const prefersDarkMode = window.matchMedia(
+  "(prefers-color-scheme: dark)"
+).matches;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <div style={{ position: "relative" }}>
       <ConfigProvider
         theme={{
+          algorithm: prefersDarkMode
+            ? theme.darkAlgorithm
+            : theme.defaultAlgorithm,
           token: {
             colorPrimary: "#3176b4",
           },
