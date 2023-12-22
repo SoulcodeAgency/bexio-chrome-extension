@@ -117,31 +117,19 @@ function ImportEntries() {
   }
 
   function convertImportData(csvString: string) {
-    const rows = csvString.split("\n");
-    const importHeader = rows[0].split("\t");
-    const importFooter = rows[rows.length - 1].split("\t");
-
-    if (importHeader.find((column) => column === "Tag 1") === undefined) {
-      const errorMessage =
-        "Clipboard data could not be parsed correctly. Make sure you have atleast a column called 'Tag 1'";
-      setClipboardStatus(errorMessage);
+    try {
+      const { importFooter, importHeader, importData } =
+        handleCsvData(csvString);
+      setClipboardStatus("");
+      setImportFooter(importFooter);
+      setImportHeader(importHeader);
+      setImportData(importData);
+      setImportTemplates([]);
+      setTabs(["import", "apply"]);
+    } catch (error: any) {
+      setClipboardStatus(error.message as string);
       resetImportState();
-      throw new Error(errorMessage);
     }
-    // Clear status
-    setClipboardStatus("");
-
-    const importData = rows
-      .slice(1)
-      .slice(0, -1)
-      .map((row) => row.replace(/\r/g, ""))
-      .map((row: string) => row.split("\t"));
-
-    setImportFooter(importFooter);
-    setImportHeader(importHeader);
-    setImportData(importData);
-    setImportTemplates([]);
-    setTabs(["import", "apply"]);
   }
 
   function applyImportEntry(
@@ -577,3 +565,21 @@ function ImportEntries() {
 }
 
 export default ImportEntries;
+function handleCsvData(csvString: string) {
+  const rows = csvString.split("\n");
+  const importHeader = rows[0].split("\t");
+  const importFooter = rows[rows.length - 1].split("\t");
+
+  if (importHeader.find((column) => column === "Tag 1") === undefined) {
+    const errorMessage =
+      "Clipboard data could not be parsed correctly. Make sure you have atleast a column called 'Tag 1'";
+    throw new Error(errorMessage);
+  }
+
+  const importData = rows
+    .slice(1)
+    .slice(0, -1)
+    .map((row) => row.replace(/\r/g, ""))
+    .map((row: string) => row.split("\t"));
+  return { importFooter, importHeader, importData };
+}
