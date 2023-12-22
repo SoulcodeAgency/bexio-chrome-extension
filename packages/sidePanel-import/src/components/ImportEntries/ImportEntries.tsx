@@ -363,7 +363,8 @@ function ImportEntries() {
         // Count how many times each word occurs in the templateEntries and count them up
         tagWords?.length &&
           tagWords.map((tagWord) => {
-            if (tagWord === "") return;
+            // Empty or single characters are not worth searching for
+            if (tagWord.length <= 1) return;
             tagWord = tagWord.toLowerCase();
             templateEntries.map((entry) => {
               let matches = 0;
@@ -545,7 +546,7 @@ function ImportEntries() {
       </Tooltip>
       <Tooltip title="New algorithm which weights the bexio fields, not the Tag columns">
         <Button type="primary" onClick={autoMapTemplatesV2}>
-          Auto map templates v2 (new)
+          Auto map templates v2
         </Button>
       </Tooltip>
 
