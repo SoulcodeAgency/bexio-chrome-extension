@@ -24,13 +24,18 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             className="soulcode-logo"
             src={soulcodeLogo}
             alt="Soulcode logo"
-          />{" "}
-        </a>
+          />
+        </a>{" "}
         <a
           href="https://chromewebstore.google.com/u/2/detail/nbmjdligmcfaeebdihmgbdpahdfddlhm"
           target="_blank"
+          style={{
+            verticalAlign: "top",
+            marginTop: "22px",
+            display: "inline-block",
+          }}
         >
-          Version {packageInfo.version}
+          V {packageInfo.version}
           {" - "}
           {packageInfo.date}
         </a>
