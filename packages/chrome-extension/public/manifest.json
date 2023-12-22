@@ -3,7 +3,7 @@
     "version": "0.19.0",
     "description": "This extension allows saving and loading of form data within the bexios time tracking page.",
     "manifest_version": 3,
-    "author": "Fabian Gander",
+    "author": "fabian.gander@soulcode.ch",
     "action": {
         "default_title": "Bexio Timetracking Templates"
     },
@@ -13,10 +13,10 @@
         "tabs"
     ],
     "icons": {
-        "16": "assets/extension_icon16.png",
-        "32": "assets/extension_icon32.png",
-        "48": "assets/extension_icon48.png",
-        "128": "assets/extension_icon128.png"
+        "16": "assets/logo16.png",
+        "32": "assets/logo32.png",
+        "128": "assets/logo128.png",
+        "192": "assets/logo192.png"
     },
     "background": {
         "service_worker": "service_worker.js"
