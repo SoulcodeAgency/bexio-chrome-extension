@@ -41,16 +41,17 @@ const TableCellBillable = (props: ImportEntriesTableCellProps) => {
     </>
   );
 
-  return (
-    <td>
-      {templateIsBillable !== undefined && (
-        <>
-          {fieldIsBillable ? "✅" : "◻️"}
-          {matchesTemplateBillable ? "" : <Tooltip title={text}>⚠️</Tooltip>}
-        </>
-      )}
-    </td>
-  );
+  const rendering =
+    templateIsBillable !== undefined ? (
+      <>
+        {fieldIsBillable ? "✅" : "◻️"}
+        {matchesTemplateBillable ? "" : <Tooltip title={text}>⚠️</Tooltip>}
+      </>
+    ) : (
+      <>{fieldIsBillable ? "✅" : "◻️"}</>
+    );
+
+  return <td>{rendering}</td>;
 };
 
 export default TableCellBillable;
