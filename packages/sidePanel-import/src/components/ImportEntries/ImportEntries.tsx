@@ -13,6 +13,7 @@ import {
 import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
 import { autoMapTemplatesV3 } from "./AutoMapTemplatesV3";
 import { autoMapTemplatesV1 } from "./AutoMapTemplatesV1";
+import { autoMapTemplatesV2 } from "./AutoMapTemplatesV2";
 
 export type ImportRow = string[];
 export type ImportData = ImportRow[];
@@ -217,6 +218,19 @@ function ImportEntries() {
     chromeStorage.save(importTemplateAssignment, "importTemplates");
   }
 
+  function callAutoMapTemplatesV2() {
+    const importTemplateAssignment = autoMapTemplatesV2(
+      importData,
+      templateEntries,
+      importHeader,
+      tagColumnIndexes
+    );
+
+    // Save the auto mapped templates
+    setImportTemplates(importTemplateAssignment);
+    chromeStorage.save(importTemplateAssignment, "importTemplates");
+  }
+
   function callAutoMapTemplatesV3() {
     const importTemplateAssignment = autoMapTemplatesV3(
       importData,
@@ -301,9 +315,14 @@ function ImportEntries() {
 
   const importDataHTML = (
     <div className="content">
-      <Tooltip title="This will try to select the right template for your time entries">
+      <Tooltip title="First version of the auto mapper, weight depends on Tag culumns">
         <Button type="default" onClick={callAutoMapTemplatesV1}>
           Auto map templates v1
+        </Button>
+      </Tooltip>
+      <Tooltip title="Second version, which weights the bexio fields, not the Tag columns">
+        <Button type="default" onClick={callAutoMapTemplatesV2}>
+          Auto map templates v2
         </Button>
       </Tooltip>
       <Tooltip title="Based on v2, but further weights exact word matches">
