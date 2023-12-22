@@ -2,9 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.scss";
-import soulcodeLogo from "./assets/soulcode-logo.png";
 import * as packageInfo from "../../../package.json";
 import { ConfigProvider, theme } from "antd";
+const copyrightSymbol = "\u00A9";
+const currentYear = new Date().getFullYear();
 
 const prefersDarkMode = window.matchMedia(
   "(prefers-color-scheme: dark)"
@@ -25,26 +26,17 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       >
         <App />
       </ConfigProvider>
-      <div style={{ marginTop: "1rem" }}>
-        <a href="https://soulcode.ch" target="_blank">
-          <img
-            className="soulcode-logo"
-            src={soulcodeLogo}
-            alt="Soulcode logo"
-          />
-        </a>{" "}
+      <div>
+        {copyrightSymbol} {currentYear} {" - "}
+        <a href="https://www.soulcode.agency" target="_blank">
+          Soulcode AG
+        </a>
+        {" - "}
         <a
           href="https://chromewebstore.google.com/u/2/detail/nbmjdligmcfaeebdihmgbdpahdfddlhm"
           target="_blank"
-          style={{
-            verticalAlign: "top",
-            marginTop: "22px",
-            display: "inline-block",
-          }}
         >
-          V {packageInfo.version}
-          {" - "}
-          {packageInfo.date}
+          Version {packageInfo.version} - {packageInfo.date}
         </a>
       </div>
     </div>

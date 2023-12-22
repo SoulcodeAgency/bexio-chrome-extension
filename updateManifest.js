@@ -23,7 +23,11 @@ console.log("Manifest version updated successfully!");
 const packageJsonContent = fs.readFileSync(packageJsonFile, "utf8");
 const updatedPackageJson = packageJsonContent.replace(
   /"date": ".*?"/g,
-  `"date": "${new Date().toDateString()}"`
+  `"date": "${new Date().toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })}"`
 );
 
 // Write the updated manifest.json file
