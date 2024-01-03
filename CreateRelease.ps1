@@ -25,7 +25,7 @@ function GetPackageVersion() {
 Write-Output "You are on branch: $(git branch --show-current)"
 
 # Run the build and version scripts
-RunScript "version:minor"
+RunScript "version:major"
 RunScript "build:newExtensionRelease"
 
 # Get new version number
