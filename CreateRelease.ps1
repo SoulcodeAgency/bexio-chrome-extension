@@ -21,6 +21,9 @@ function GetPackageVersion() {
     return $version
 }
 
+# Print message to be sure that user is on the correct branch
+Write-Output "You are on branch: $(git branch --show-current)"
+
 # Run the build and version scripts
 RunScript "version:minor"
 RunScript "build:newExtensionRelease"
@@ -42,3 +45,6 @@ git merge $version
 
 # Push all branches
 git push --all
+
+# Checkout the develop branch
+git checkout develop
