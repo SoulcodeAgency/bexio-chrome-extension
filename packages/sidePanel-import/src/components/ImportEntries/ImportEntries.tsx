@@ -19,6 +19,7 @@ import { handleCsvData } from "~/utils/csvParser";
 export type ImportRow = string[];
 export type ImportData = ImportRow[];
 export type ImportBillable = "Billable" | "Not billable" | undefined;
+export type EntryStatus = { [key: string]: boolean };
 
 function ImportEntries() {
   const [applyNotesSetting, setApplyNotesSetting] = useState(true);
@@ -26,6 +27,7 @@ function ImportEntries() {
   const [importHeader, setImportHeader] = useState<ImportRow>([]);
   const [importFooter, setImportFooter] = useState<ImportRow>([]);
   const [importData, setImportData] = useState<ImportData>([]);
+  const [entryStatus, setEntryStatus] = useState<EntryStatus>({});
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
@@ -104,6 +106,7 @@ function ImportEntries() {
     resetImportState();
     chromeStorage.save([], "importHeader");
     chromeStorage.save([], "importData");
+    chromeStorage.save({}, "entryStatus");
     chromeStorage.save([], "importFooter");
     chromeStorage.save([], "importTemplates");
     setTabs(["import"]);
@@ -127,6 +130,7 @@ function ImportEntries() {
       setImportFooter(importFooter);
       setImportHeader(importHeader);
       setImportData(importData);
+      setEntryStatus({});
       setImportTemplates([]);
       setTabs(["import", "apply"]);
     } catch (error: any) {
@@ -136,13 +140,13 @@ function ImportEntries() {
   }
 
   function applyImportEntry(
-    date: string,
+    columnIndex: number,
     timeAmount: string,
     entryIndex: number
   ) {
     // Take the first 2 number blocks of the time, we only need hh:mm from the hh:mm:ss signature
     timeAmount = timeAmount.split(":").slice(0, 2).join(":");
-
+    const date = importHeader[columnIndex];
     const data: EntryExchangeData = {
       mode: "time+duration",
       duration: timeAmount,
@@ -182,11 +186,27 @@ function ImportEntries() {
           }
           // do something with response here, not outside the function
           // console.log(response);
+
+          // Update the entry status
+          const entryStatusCopy = { ...entryStatus };
+          entryStatusCopy[`${columnIndex}-${entryIndex}`] = true;
+          setEntryStatus(entryStatusCopy);
+          chromeStorage.save(entryStatusCopy, "entryStatus");
+          console.log("Updated entry status", entryStatusCopy);
         } else {
           throw new Error("No tab found");
         }
       }
     })();
+  }
+
+  function resetEntryStatus(id: string) {
+    // Reset the entry status
+    const entryStatusCopy = { ...entryStatus };
+    entryStatusCopy[id] = false;
+    setEntryStatus(entryStatusCopy);
+    chromeStorage.save(entryStatusCopy, "entryStatus");
+    console.log("Reset entry status for id ", id, entryStatusCopy);
   }
 
   function saveImport() {
@@ -251,6 +271,9 @@ function ImportEntries() {
     });
     chromeStorage.load<ImportRow[]>("importData").then((data) => {
       setImportData(data ?? []);
+    });
+    chromeStorage.load<EntryStatus>("entryStatus").then((data) => {
+      setEntryStatus(data ?? {});
     });
     chromeStorage.load<string[]>("importFooter").then((data) => {
       setImportFooter(data ?? []);
@@ -396,18 +419,18 @@ function ImportEntries() {
                   }
                 />
               </td>
-              {entry.map((entryField, index) => (
+              {entry.map((fieldValue, columnIndex) => (
                 <ImportEntriesTableCell
                   templateId={importTemplates[entryIndex]}
-                  columnHeader={importHeader[index]}
-                  fieldValue={entryField}
-                  key={entryField + index}
+                  columnHeader={importHeader[columnIndex]}
+                  fieldValue={fieldValue}
+                  key={`table-cell-${entryIndex + 1}-${columnIndex}`}
+                  entryStatus={entryStatus[`${columnIndex}-${entryIndex}`]}
                   onButtonClick={() =>
-                    applyImportEntry(
-                      importHeader[index],
-                      entryField,
-                      entryIndex
-                    )
+                    applyImportEntry(columnIndex, fieldValue, entryIndex)
+                  }
+                  onButtonClickReset={() =>
+                    resetEntryStatus(`${columnIndex}-${entryIndex}`)
                   }
                 />
               ))}

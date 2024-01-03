@@ -5,7 +5,9 @@ type ImportEntriesTableCellProps = {
   templateId: string;
   columnHeader: string;
   fieldValue: string;
+  entryStatus: boolean;
   onButtonClick: () => void;
+  onButtonClickReset: () => void;
 };
 const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
   const dateRegex = /^\d{2}[./]\d{2}[./]\d{4}$/;
@@ -16,7 +18,9 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
     return (
       <TableCellTrackingDay
         fieldValue={props.fieldValue}
+        entryStatus={props.entryStatus}
         onButtonClick={props.onButtonClick}
+        onButtonClickReset={props.onButtonClickReset}
       />
     );
   } else if (columnIsBillable) {
