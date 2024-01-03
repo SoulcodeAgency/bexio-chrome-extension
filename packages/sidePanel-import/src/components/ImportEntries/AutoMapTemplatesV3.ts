@@ -124,6 +124,13 @@ export function autoMapTemplatesV3(
         });
     });
 
+    // Bail out if we have no matches
+    if (Object.values(pointsByTemplateName).length === 0) {
+      console.log("No matches found!");
+      console.groupEnd();
+      return;
+    }
+
     // Count up the total points for every template within the pointsByTemplateName object
     Object.keys(pointsByTemplateName).map((templateName) => {
       pointsByTemplateName[templateName]["total"] = Object.values(
