@@ -11,17 +11,17 @@ import {
 } from "@bexio-chrome-extension/shared/chromeStorageSettings";
 
 function App() {
-  const [activeTabId, setActiveTabId] = useState("import");
+  const [activeTabId, setActiveTabId] = useState("templates");
   const items: TabsProps["items"] = [
-    {
-      key: "import",
-      label: `Import`,
-      children: <ImportEntries />,
-    },
     {
       key: "templates",
       label: `Templates`,
       children: <TemplateEntries />,
+    },
+    {
+      key: "import",
+      label: `Import`,
+      children: <ImportEntries />,
     },
   ];
 
@@ -34,7 +34,7 @@ function App() {
   // Load active tab id on mount to keep the users last tab selection
   useEffect(() => {
     loadActiveTabId().then((data) => {
-      setActiveTabId(data ?? "import");
+      setActiveTabId(data ?? "templates");
     });
   }, []);
 
