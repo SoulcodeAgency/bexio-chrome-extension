@@ -10,15 +10,16 @@ type ImportEntriesTableCellProps = {
 };
 
 const TableCellTrackingDay = (props: ImportEntriesTableCellProps) => {
-  const noTimeToBookRegex = /^(0.00|0:00:00)$/;
-  const entryIsEmpty = noTimeToBookRegex.test(props.fieldValue);
+  // Remove double zeroes from the time string
+  const simplifiedZeroes = props.fieldValue.replace(/00/g, "0");
+  const noTimeToBookRegex = /^(0.0|0:0|0:0:0)$/;
+  const entryIsEmpty = noTimeToBookRegex.test(simplifiedZeroes);
 
   async function clickHandler() {
     productionEnv && (await openBexioTimeTrackingPage());
     props.onButtonClick();
   }
 
-  // TODO: we could even save this state into a new store (using date and entryIndex)
   let button = <Button onClick={clickHandler}>▶️</Button>;
   if (props.entryStatus) {
     button = <Button onClick={() => props.onButtonClickReset()}>✅</Button>;
