@@ -27,9 +27,9 @@
   },
   "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
   "devDependencies": {
-    "@types/chrome": "^0.0.241",
-    "@types/node": "^20.4.1",
-    "typescript": "^5.1.6",
-    "vite": "^4.4.3"
+    "@types/chrome": "^0.0.254",
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10"
   }
 }
