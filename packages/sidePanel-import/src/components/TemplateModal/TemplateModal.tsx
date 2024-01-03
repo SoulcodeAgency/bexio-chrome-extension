@@ -3,6 +3,7 @@ import { Modal, Form, Input, Select, Switch } from "antd";
 import { TemplateContextType, TemplateContext } from "~/TemplateContext";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 import { updateTemplate } from "@bexio-chrome-extension/shared/chromeStorageTemplateEntries";
+import reloadExtension from "~/utils/reloadExtension";
 
 interface Props {
   templateId: string;
@@ -25,6 +26,7 @@ const MyComponent: React.FC<Props> = ({ templateId, closeModal }) => {
     console.log("handleSave", template);
     await updateTemplate(template);
     reloadData();
+    reloadExtension();
     closeModal();
   };
 

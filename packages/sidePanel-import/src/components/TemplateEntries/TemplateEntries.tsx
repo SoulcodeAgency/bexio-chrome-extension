@@ -6,6 +6,7 @@ import { useContext, useState } from "react";
 import { Button, Tooltip } from "antd";
 import { deleteTemplate } from "@bexio-chrome-extension/shared/chromeStorageTemplateEntries";
 import TemplateModal from "../TemplateModal/TemplateModal";
+import reloadExtension from "~/utils/reloadExtension";
 
 function TemplateEntries() {
   const { templates: templateEntries, reloadData } =
@@ -23,7 +24,10 @@ function TemplateEntries() {
           `Are you sure you want to delete the template "${template.templateName}"?`
         )
       ) {
-        deleteTemplate(template.id).then(() => reloadData());
+        deleteTemplate(template.id).then(() => {
+          reloadData();
+          reloadExtension();
+        });
       }
     } else {
       alert("Sorry - Something went wrong!");
