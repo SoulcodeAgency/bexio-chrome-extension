@@ -154,9 +154,16 @@ export function autoMapTemplatesV3(
       sortedPointsByTemplateName
     )[0];
     const topTemplateId = topTemplateValues.id;
-    const templateName = getTemplateName(
-      templateEntries.find((entry) => entry.id === topTemplateId)!
+
+    const topTemplateEntry = templateEntries.find(
+      (entry) => entry.id === topTemplateId
     );
+    if (!topTemplateEntry) {
+      console.log("Template not found!");
+      console.groupEnd();
+      return;
+    }
+    const templateName = getTemplateName(topTemplateEntry);
 
     // Check if there is only 1 highest total points, otherwise we do not auto map and leave the decision to the user
     const highestTotalPoints =

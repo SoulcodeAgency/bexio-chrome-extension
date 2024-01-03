@@ -81,9 +81,16 @@ export function autoMapTemplatesV2(
     const templateId = Object.keys(mappingResult).reduce((a, b) =>
       mappingResult[a] > mappingResult[b] ? a : b
     );
-    const templateName = getTemplateName(
-      templateEntries.find((entry) => entry.id === templateId)!
+
+    const topTemplateEntry = templateEntries.find(
+      (entry) => entry.id === templateId
     );
+    if (!topTemplateEntry) {
+      console.log("Template not found!");
+      console.groupEnd();
+      return;
+    }
+    const templateName = getTemplateName(topTemplateEntry);
 
     // Check if there is only 1 highest value, otherwise we do not auto map and leave the decision to the user
     const highestValue = Math.max(...Object.values(mappingResult));
@@ -108,6 +115,7 @@ export function autoMapTemplatesV2(
     // Map over the mappingResult, and replace the index with the template name from templateEntries
     Object.keys(mappingResult).map((templateId) => {
       const templateName = getTemplateName(
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         templateEntries.find((entry) => entry.id === templateId)!
       );
       mappingResult[templateName ?? ""] = mappingResult[templateId];

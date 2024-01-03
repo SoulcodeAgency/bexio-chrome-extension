@@ -31,7 +31,7 @@ function ImportEntries() {
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
-  const { templates: templateEntries, reloadData } =
+  const { templates: templateEntries } =
     useContext<TemplateContextType>(TemplateContext);
 
   const billableColumnIndex = importHeader.findIndex(
@@ -133,6 +133,7 @@ function ImportEntries() {
       setEntryStatus({});
       setImportTemplates([]);
       setTabs(["import", "apply"]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setParseStatus(error.message as string);
       resetImportState();
