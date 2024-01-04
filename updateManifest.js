@@ -1,9 +1,9 @@
-const fs = require("fs-extra");
+import fs from "fs-extra";
+// Read the package.json file
+import packageJson from "./package.json" assert { type: "json" };
+
 const manifestFile = "./packages/chrome-extension/public/manifest.json";
 const packageJsonFile = "./package.json";
-
-// Read the package.json file
-const package = require("./package.json");
 
 // Read the manifest.json file
 const manifest = fs.readFileSync(manifestFile, "utf8");
@@ -11,7 +11,7 @@ const manifest = fs.readFileSync(manifestFile, "utf8");
 // Update the version in the manifest.json file
 const updatedManifest = manifest.replace(
   /"version": ".*?"/g,
-  `"version": "${package.version}"`
+  `"version": "${packageJson.version}"`
 );
 
 // Write the updated manifest.json file

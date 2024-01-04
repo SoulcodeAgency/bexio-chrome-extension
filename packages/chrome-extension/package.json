@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "This extension adds saving and loading of form data within bexios time tracking page.",
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
     "build": "vite build",
     "build:dev": "vite build --mode development",

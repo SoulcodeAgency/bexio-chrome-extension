@@ -14,7 +14,7 @@ function TemplateProvider({ children }: { children: ReactNode }) {
   const [reload, setReload] = useState(false);
 
   async function getDevTemplates() {
-    const response = await fetch("/devTemplates.json");
+    const response = await fetch("devTemplates.json");
     return await response.json();
   }
 
