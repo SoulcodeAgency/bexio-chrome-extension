@@ -10,7 +10,7 @@ Importing entries from ManicTime
 
 Within the **bexio time tracking page**:
 
-Time clicking the extension icon will bring you to the bexio time tracking page
+Clicking the extension icon will bring you to the bexio time tracking page
 
 * On the time tracking page you can now save and re-use form data as templates
 * Once the filled form is saved as a template you can simply let further forms fill out automatically using the template buttons
@@ -69,3 +69,7 @@ See [FAQ.md](./FAQ.md)
 ## Privacy
 
 See [PRIVACY.md](PRIVACY.md)
+
+## License
+
+See [LICENSE](LICENSE)
