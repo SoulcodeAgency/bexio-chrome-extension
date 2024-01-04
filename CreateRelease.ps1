@@ -25,7 +25,12 @@ function GetPackageVersion() {
 Write-Output "You are on branch: $(git branch --show-current)"
 
 # Run the build and version scripts
-RunScript "version:major"
+RunScript "version:minor"
+
+# Interrupt the script and await user for confirmation
+Write-Output "Generated version number is: $(GetPackageVersion)"
+Read-Host -Prompt "Press Enter to continue"
+
 RunScript "build:newExtensionRelease"
 
 # Get new version number
@@ -36,10 +41,13 @@ npx git-cliff@latest --tag $version > CHANGELOG.md # we give the hint to the new
 
 # Commit and tag the version
 git add .
+
+Read-Host -Prompt "Press Enter to commit changes and create tag version $version"
 git commit -m "Release: $version"
 git tag $version
 
 # Merge the tagged commit into main
+Read-Host -Prompt "Press Enter to merge to main and push"
 git checkout main
 git merge $version
 

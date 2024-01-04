@@ -3,6 +3,7 @@
     "version": "0.20.0",
     "date": "Dec 23, 2023",
     "description": "This extension adds saving and loading of form data within bexios time tracking page.",
+    "type": "module",
     "scripts": {
         "installProject": "npm ci --workspaces --include-workspace-root",
         "build:devRelease": "npm run version:patch && npm run build:project -- -Development",
