@@ -8,7 +8,7 @@
         "build:devRelease": "npm run version:patch && npm run build:project -- -Development",
         "build:devRelease:sidePanelOnly": "npm run build:devRelease -- -IgnoreExtension",
         "build:devRelease:extensionOnly": "npm run build:devRelease -- -IgnoreSidePanel",
-        "build:project": "powershell -File build.ps1",
+        "build:project": "powershell -File Build.ps1",
         "build:newExtensionRelease": "npm run build:project -- -createPackage",
         "cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\"",
         "version:patch": "npm --no-git-tag-version version patch",
