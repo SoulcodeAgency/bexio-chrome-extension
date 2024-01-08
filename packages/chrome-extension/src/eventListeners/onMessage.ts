@@ -6,7 +6,7 @@ import triggerDuration from "../utils/triggerDuration";
 import { loadApplyNotesSetting } from "@bexio-chrome-extension/shared/chromeStorageSettings";
 import triggerCheckbox from "../utils/triggerCheckbox";
 import { billableCheckbox } from "../selectors/billableCheckbox";
-import initializeExtension from "../initExtension";
+import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
 
 // Listen to messages from the side panel
 chrome.runtime.onMessage.addListener(async function (

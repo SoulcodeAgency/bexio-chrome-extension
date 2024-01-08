@@ -34,7 +34,8 @@
     "content_scripts": [
         {
             "matches": [
-                "https://office.bexio.com/index.php/monitoring/edit"
+                "https://office.bexio.com/index.php/monitoring/edit",
+                "https://office.bexio.com/index.php/monitoring/edit/id/*"
             ],
             "js": [
                 "bexioTimetrackingTemplates.js"

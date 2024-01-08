@@ -6,7 +6,8 @@ export default ({ mode }) => {
       assetsDir: "", // otherwise the scripts will be placed into the named assetsDir folder
       rollupOptions: {
         input: {
-          bexioTimetrackingTemplates: "src/index.ts",
+          bexioTimetrackingTemplates:
+            "./src/apps/bexioTimetrackingTemplates/index.ts",
         },
         output: {
           dir: "../../unpacked",

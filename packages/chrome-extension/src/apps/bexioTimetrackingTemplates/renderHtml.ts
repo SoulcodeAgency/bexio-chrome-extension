@@ -1,8 +1,8 @@
-import confirmActiveTemplateDeletion from "./utils/confirmTemplateDeletion";
-import fillForm from "./utils/fillForm";
+import confirmActiveTemplateDeletion from "../../utils/confirmTemplateDeletion";
+import fillForm from "../../utils/fillForm";
 import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
-import { DATE, VERSION } from "./utils/packageInfo";
-import readFormData from "./utils/readFormData";
+import { DATE, VERSION } from "../../utils/packageInfo";
+import readFormData from "../../utils/readFormData";
 
 // Renders all the html code for placing buttons to interact with
 async function renderHtml(templateEntries) {
