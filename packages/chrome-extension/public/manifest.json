@@ -43,6 +43,14 @@
             "css": [
                 "bexioTimetrackingTemplates.css"
             ]
+        },
+        {
+            "matches": [
+                "https://office.bexio.com/index.php/monitoring/list"
+            ],
+            "js": [
+                "bexioProjectList.js"
+            ]
         }
     ]
 }

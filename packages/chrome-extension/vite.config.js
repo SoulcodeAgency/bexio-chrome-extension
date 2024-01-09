@@ -8,6 +8,7 @@ export default ({ mode }) => {
         input: {
           bexioTimetrackingTemplates:
             "./src/apps/bexioTimetrackingTemplates/index.ts",
+          bexioProjectList: "./src/apps/bexioProjectList/index.ts",
         },
         output: {
           dir: "../../unpacked",
