@@ -1,4 +1,4 @@
-# Bexio-chrome-extension
+# bexio Time Tracking Templates - chrome extension
 
 Improves handling of time tracking in bexio
 
@@ -71,7 +71,7 @@ This repo has a script which will handle and prepare a new release, further deta
 ## Chrome webstore address
 
 Extension can be installed over the chrome webstore:
-[Bexio Timetracking Templates](https://chromewebstore.google.com/detail/bexio-timetracking-templa/nbmjdligmcfaeebdihmgbdpahdfddlhm)
+[bexio Time Tracking Templates](https://chromewebstore.google.com/detail/bexio-timetracking-templa/nbmjdligmcfaeebdihmgbdpahdfddlhm)
 
 ## FAQ
 

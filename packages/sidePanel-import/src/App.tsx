@@ -41,7 +41,7 @@ function App() {
   return (
     <TemplateProvider>
       <h2 style={{ margin: "0", textAlign: "left" }}>
-        Bexio Timetracking Templates
+        bexio Time Tracking Templates
       </h2>
       <div style={{ textAlign: "left" }}>
         <Tabs
