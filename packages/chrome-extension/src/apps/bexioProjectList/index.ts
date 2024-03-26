@@ -4,6 +4,7 @@ export async function initializeExtension() {
   renderHtml();
 }
 
+// We need to watch for changes in the table, if the table is reloaded, we need to reinitialize the extension
 function observingTableModifications() {
   // Select the node that will be observed for mutations
   var targetNode = document.getElementById("monitoring_content");
