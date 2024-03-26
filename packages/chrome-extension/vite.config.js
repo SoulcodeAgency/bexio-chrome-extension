@@ -15,6 +15,10 @@ export default ({ mode }) => {
           assetFileNames: "[name].[ext]",
           chunkFileNames: "[name].[ext]",
           entryFileNames: "[name].js", // Removes the hash of the entry file
+          // format: "esm",
+          // assetFileNames: "[name].[format]",
+          // chunkFileNames: "[name].[format]",
+          // entryFileNames: "[name].[format]", // Removes the hash of the entry file
         },
       },
       exclude: [/\.html$/],
