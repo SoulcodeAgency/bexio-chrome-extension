@@ -1,13 +1,18 @@
+import {
+  loadRemovePopoversSetting,
+  saveRemovePopoversSetting,
+} from "@bexio-chrome-extension/shared/chromeStorageSettings";
 import convertPopoverToText from "../../utils/convertPopoverToText";
 
 // Renders all the html code for placing buttons to interact with
 async function renderHtml() {
-  // Remove the templates HTML, if it already exists
+  const isRemovePopoversSettingEnabled = await loadRemovePopoversSetting();
   const templates = document.getElementById("ProjectListShowText");
-  if (templates) {
-    templates.remove();
-  }
 
+  // Exit if the button is already present
+  if (templates) {
+    return;
+  }
   const button =
     "<button type='button' id='ProjectListShowTextButton' class='btn btn-info' style='float: left; margin-right: 10px;'>👀 Show Text</button>";
   const templatePlacement = document.getElementsByClassName(
@@ -22,6 +27,7 @@ async function renderHtml() {
   showTextButton &&
     showTextButton.addEventListener("click", function (e) {
       e.preventDefault();
+      saveRemovePopoversSetting(!isRemovePopoversSettingEnabled);
       convertPopoverToText();
     });
 }
