@@ -29,7 +29,7 @@
         }
     ],
     "background": {
-        "service_worker": "service_worker.js"
+        "service_worker": "public/service_worker.js"
     },
     "content_scripts": [
         {
@@ -38,7 +38,7 @@
                 "https://office.bexio.com/index.php/monitoring/edit/id/*"
             ],
             "js": [
-                "bexioTimetrackingTemplates.js"
+                "/src/apps/bexioTimetrackingTemplates/index.ts"
             ],
             "css": [
                 "bexioTimetrackingTemplates.css"
@@ -49,7 +49,7 @@
                 "https://office.bexio.com/index.php/monitoring/list"
             ],
             "js": [
-                "bexioProjectList.js"
+                "/src/apps/bexioProjectList/index.ts"
             ]
         }
     ]
