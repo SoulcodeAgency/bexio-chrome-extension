@@ -11,8 +11,6 @@ export async function initializeExtension() {
 
 // We need to watch for changes in the table, if the table is reloaded, we need to reinitialize the extension
 function observingTableModifications() {
-  // Select the node that will be observed for mutations
-  var targetNode = document.getElementById("monitoring_content");
   // Options for the observer (which mutations to observe)
   var config = { attributes: false, childList: true, subtree: false };
   // Callback function to execute when mutations are observed
@@ -25,8 +23,19 @@ function observingTableModifications() {
   };
   // Create an observer instance linked to the callback function
   var observer = new MutationObserver(callback);
+
+  // Select the node that will be observed for mutations
+  // time bookings
+  var monitoring_List_TargetNode =
+    document.getElementById("monitoring_content");
+  var prProject_ListMonitoring_TargetNode =
+    document.getElementsByClassName("listBlock")[0];
+
   // Start observing the target node for configured mutations
-  observer.observe(targetNode, config);
+  monitoring_List_TargetNode &&
+    observer.observe(monitoring_List_TargetNode, config);
+  prProject_ListMonitoring_TargetNode &&
+    observer.observe(prProject_ListMonitoring_TargetNode, config);
 }
 
 // Add the initializeExtension function to the window object

@@ -5,7 +5,7 @@ import convertPopover from "../../utils/convertPopover";
 async function renderHtml() {
   let isRemovePopoversSettingEnabled =
     await chromeStorageSettings.loadRemovePopoversSetting();
-  const templates = document.getElementById("ProjectListShowText");
+  const templates = document.getElementById("PopoverTextSwitcher");
 
   // Exit if the button is already present
   if (templates) {
@@ -22,7 +22,7 @@ async function renderHtml() {
 
   // add a new child element for the the button before the global search
   const newNavElement = `<li class="nav-item pull-right" style="margin-top: 6px;">${button}</li>`;
-  globalSearchListElement.insertAdjacentHTML("beforebegin", newNavElement);
+  globalSearchListElement.insertAdjacentHTML("afterend", newNavElement);
 
   // Attach functionality to the buttons
   const showTextButton = document.getElementById("PopoverTextSwitcher");
