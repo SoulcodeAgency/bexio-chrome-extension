@@ -1,7 +1,12 @@
+import { chromeStorageSettings } from "@bexio-chrome-extension/shared";
 import renderHtml from "./renderHtml";
+import convertPopover from "../../utils/convertPopover";
 
 export async function initializeExtension() {
   renderHtml();
+  const isRemovePopoversSettingEnabled =
+    await chromeStorageSettings.loadRemovePopoversSetting();
+  convertPopover(isRemovePopoversSettingEnabled);
 }
 
 // We need to watch for changes in the table, if the table is reloaded, we need to reinitialize the extension

@@ -1,34 +1,45 @@
-import {
-  loadRemovePopoversSetting,
-  saveRemovePopoversSetting,
-} from "@bexio-chrome-extension/shared/chromeStorageSettings";
-import convertPopoverToText from "../../utils/convertPopoverToText";
+import { chromeStorageSettings } from "@bexio-chrome-extension/shared";
+import convertPopover from "../../utils/convertPopover";
 
 // Renders all the html code for placing buttons to interact with
 async function renderHtml() {
-  const isRemovePopoversSettingEnabled = await loadRemovePopoversSetting();
+  let isRemovePopoversSettingEnabled =
+    await chromeStorageSettings.loadRemovePopoversSetting();
   const templates = document.getElementById("ProjectListShowText");
 
   // Exit if the button is already present
   if (templates) {
     return;
   }
-  const button =
-    "<button type='button' id='ProjectListShowTextButton' class='btn btn-info' style='float: left; margin-right: 10px;'>👀 Show Text</button>";
-  const templatePlacement = document.getElementsByClassName(
-    "filterQuickSearch"
-  )[0] as HTMLElement;
+  const getButtonContent = (isRemovePopoversSettingEnabled) =>
+    isRemovePopoversSettingEnabled ? "👀 Show Popovers" : "👀 Show Text";
+  const button = `<button type='button' id='PopoverTextSwitcher' class='btn btn-info' style='float: left; margin-right: 10px;'>${getButtonContent(
+    isRemovePopoversSettingEnabled
+  )}</button>`;
 
-  // Place the html into the DOM
-  templatePlacement.innerHTML = button + templatePlacement.innerHTML;
+  const globalSearchListElement =
+    document.getElementsByClassName("globalsearch")[0];
+
+  // add a new child element for the the button before the global search
+  const newNavElement = `<li class="nav-item pull-right" style="margin-top: 6px;">${button}</li>`;
+  globalSearchListElement.insertAdjacentHTML("beforebegin", newNavElement);
 
   // Attach functionality to the buttons
-  const showTextButton = document.getElementById("ProjectListShowTextButton");
+  const showTextButton = document.getElementById("PopoverTextSwitcher");
   showTextButton &&
     showTextButton.addEventListener("click", function (e) {
       e.preventDefault();
-      saveRemovePopoversSetting(!isRemovePopoversSettingEnabled);
-      convertPopoverToText();
+      // Switch the setting
+      isRemovePopoversSettingEnabled = !isRemovePopoversSettingEnabled;
+
+      // Apply changes according to the new setting value
+      showTextButton.innerText = getButtonContent(
+        isRemovePopoversSettingEnabled
+      );
+      convertPopover(isRemovePopoversSettingEnabled);
+      chromeStorageSettings.saveRemovePopoversSetting(
+        isRemovePopoversSettingEnabled
+      );
     });
 }
 
