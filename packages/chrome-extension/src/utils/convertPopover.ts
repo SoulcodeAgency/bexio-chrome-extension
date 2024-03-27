@@ -41,6 +41,7 @@ export async function revertPopover() {
     const cellTextContent = popoverParent.querySelector(".new-popover-text");
     cellTextContent && cellTextContent.remove();
 
-    popoverParent.style.backgroundColor = "transparent";
+    // remove the background color on the parent element
+    popoverParent.style.backgroundColor = "";
   });
 }
