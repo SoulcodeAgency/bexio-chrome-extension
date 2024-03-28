@@ -20,7 +20,11 @@ export async function convertPopoverToText() {
 
     const cellTextContent = document.createElement("div");
     cellTextContent.className = "new-popover-text";
-    cellTextContent.textContent = popoverText;
+
+    // Set the innerHTML to the popoverText to convert the html entities to text (&amp; -> & etc.)
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = popoverText;
+    cellTextContent.textContent = tempDiv.textContent;
 
     popoverParent.appendChild(cellTextContent);
     popoverParent.style.backgroundColor = index % 2 === 0 ? "#ffe2bc" : "antiquewhite";
