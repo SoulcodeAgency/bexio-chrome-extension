@@ -2,16 +2,28 @@ import { chromeStorageSettings } from "@bexio-chrome-extension/shared";
 import { getPopoverNodes, getPopoverNodeText } from "../selectors/projectTable_TextCell";
 
 export default async function convertPopover() {
+  // Check if we should convert the popovers or revert them
   const isRemovePopoversSettingEnabled = await chromeStorageSettings.loadRemovePopoversSetting();
-  if (isRemovePopoversSettingEnabled) {
-    return convertPopoverToText();
+  if (!isRemovePopoversSettingEnabled) {
+    return revertPopover();
   }
-  return revertPopover();
+
+  // Check for popover nodes which are still visible
+  // In case the convertPopover function is called multiple times, we should not apply the conversion multiple times
+  const popoverNodes = getPopoverNodes();
+  const visiblePopoverNodes = Array.from(popoverNodes).filter((popoverNode) => popoverNode.style.display !== "none");
+  console.log("[bexio extension] Visible popover nodes found: ", visiblePopoverNodes.length);
+  if (visiblePopoverNodes.length > 0) {
+    // Do something with the visible popover nodes
+    convertPopoverToText(visiblePopoverNodes);
+  } else {
+    console.log("[bexio extension] No visible popover nodes found");
+  }
 }
 
-export async function convertPopoverToText() {
+export async function convertPopoverToText(popoverNodes) {
   // iterate over the rows, replacing the text cell content with the data-content attribute
-  getPopoverNodes().forEach((popoverNode, index) => {
+  popoverNodes.forEach((popoverNode, index) => {
     const popoverText = getPopoverNodeText(popoverNode);
     const popoverParent = popoverNode.parentElement as HTMLElement;
 

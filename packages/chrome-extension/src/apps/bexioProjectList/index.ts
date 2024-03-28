@@ -46,6 +46,16 @@ function observerProjectPage() {
   }
 }
 
+function observerProjectWorkPackagePage() {
+  // Project view
+  if (location.pathname.startsWith("/index.php/pr_project/showPackage")) {
+    const prProject_listMonitoring_TargetNode = document.getElementById("ui-id-5");
+    if (prProject_listMonitoring_TargetNode) {
+      createObserverWithCallback(convertPopover).observe(prProject_listMonitoring_TargetNode, observerOptions);
+    }
+  }
+}
+
 function observeBillingPage() {
   if (location.pathname.startsWith("/index.php/kb_invoice/show/id")) {
     const jqDialog = document.getElementById("jqDialog");
@@ -60,12 +70,14 @@ function observeBillingModalTable() {
   const jqDialog = document.getElementById("jqDialog");
   const modalTable = jqDialog.getElementsByClassName("list block")[0];
   createObserverWithCallback(convertPopover).observe(modalTable, observerOptions);
+  convertPopover(); // Convert the initial modal
 }
 
 // We need to watch for changes in the table, if the table is reloaded, we need to reinitialize the extension
 function observingTableModifications() {
   observerTimeTrackingPage();
   observerProjectPage();
+  observerProjectWorkPackagePage();
   observeBillingPage();
 }
 
