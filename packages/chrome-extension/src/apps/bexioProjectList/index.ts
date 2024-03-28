@@ -9,33 +9,92 @@ export async function initializeExtension() {
   convertPopover(isRemovePopoversSettingEnabled);
 }
 
+const observerOptions = { attributes: false, childList: true, subtree: false };
+
+// Options for the observer (which mutations to observe)
+// Callback function to execute when mutations are observed
+var callback = function (mutationsList, observer) {
+  for (let mutation of mutationsList) {
+    if (mutation.type === "childList") {
+      (window as any).initializeExtension();
+    }
+  }
+};
+// Create an observer instance linked to the callback function
+var initExtensionObserver = new MutationObserver(callback);
+
 // We need to watch for changes in the table, if the table is reloaded, we need to reinitialize the extension
 function observingTableModifications() {
-  // Options for the observer (which mutations to observe)
-  var config = { attributes: false, childList: true, subtree: false };
-  // Callback function to execute when mutations are observed
+  observerTimeTrackingPage();
+  observerProjectPage();
+  observeBillingPage();
+}
+
+function observerTimeTrackingPage() {
+  // Start observing the target node for configured mutations
+  // Select the node that will be observed for mutations
+  // Time tracking view
+  if (location.pathname.startsWith("/index.php/monitoring/list")) {
+    var monitoring_List_TargetNode =
+      document.getElementById("monitoring_content");
+    monitoring_List_TargetNode &&
+      initExtensionObserver.observe(
+        monitoring_List_TargetNode,
+        observerOptions
+      );
+  }
+}
+
+function observerProjectPage() {
+  // Project view
+  if (location.pathname.startsWith("/index.php/pr_project/listMonitoring")) {
+    var prProject_listMonitoring_TargetNode =
+      document.getElementsByClassName("listBlock")[0];
+    prProject_listMonitoring_TargetNode &&
+      initExtensionObserver.observe(
+        prProject_listMonitoring_TargetNode,
+        observerOptions
+      );
+  }
+}
+
+function observeBillingPage() {
+  if (!location.pathname.startsWith("/index.php/kb_invoice/show/id")) {
+    return;
+  }
+
   var callback = function (mutationsList, observer) {
+    // Only execute the callback ONCE if we detect changes in the jqDialog
+    let jqDialogChanged = false;
     for (let mutation of mutationsList) {
       if (mutation.type === "childList") {
-        (window as any).initializeExtension();
+        jqDialogChanged = true;
       }
+    }
+    if (jqDialogChanged) {
+      observeBillingPageModal();
     }
   };
   // Create an observer instance linked to the callback function
-  var observer = new MutationObserver(callback);
+  var dialogObserver = new MutationObserver(callback);
+  const jqDialog = document.getElementById("jqDialog");
+  dialogObserver.observe(jqDialog, observerOptions);
+}
 
-  // Select the node that will be observed for mutations
-  // time bookings
-  var monitoring_List_TargetNode =
-    document.getElementById("monitoring_content");
-  var prProject_ListMonitoring_TargetNode =
-    document.getElementsByClassName("listBlock")[0];
-
-  // Start observing the target node for configured mutations
-  monitoring_List_TargetNode &&
-    observer.observe(monitoring_List_TargetNode, config);
-  prProject_ListMonitoring_TargetNode &&
-    observer.observe(prProject_ListMonitoring_TargetNode, config);
+function observeBillingPageModal() {
+  console.log("observing billing page modal");
+  // var callback = function (mutationsList, observer) {
+  //   for (let mutation of mutationsList) {
+  //     if (mutation.type === "childList") {
+  //       (window as any).initializeExtension();
+  //     }
+  //   }
+  // };
+  // Create an observer instance linked to the callback function
+  // var observer = new MutationObserver(callback);
+  const jqDialog = document.getElementById("jqDialog");
+  var tableListWithinPopup = jqDialog.getElementsByClassName("list block")[0];
+  initExtensionObserver.observe(tableListWithinPopup, observerOptions);
 }
 
 // Add the initializeExtension function to the window object

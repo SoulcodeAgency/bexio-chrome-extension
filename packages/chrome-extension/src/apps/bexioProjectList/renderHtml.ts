@@ -3,14 +3,14 @@ import convertPopover from "../../utils/convertPopover";
 
 // Renders all the html code for placing buttons to interact with
 async function renderHtml() {
-  let isRemovePopoversSettingEnabled =
-    await chromeStorageSettings.loadRemovePopoversSetting();
   const templates = document.getElementById("PopoverTextSwitcher");
-
   // Exit if the button is already present
   if (templates) {
     return;
   }
+
+  let isRemovePopoversSettingEnabled =
+    await chromeStorageSettings.loadRemovePopoversSetting();
   const getButtonContent = (isRemovePopoversSettingEnabled) =>
     isRemovePopoversSettingEnabled ? "👀 Show Popovers" : "👀 Show Text";
   const button = `<button type='button' id='PopoverTextSwitcher' class='btn btn-info' style='float: left; margin-right: 10px;'>${getButtonContent(
