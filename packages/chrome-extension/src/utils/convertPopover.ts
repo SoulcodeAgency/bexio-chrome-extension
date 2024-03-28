@@ -1,10 +1,9 @@
-import {
-  getPopoverNodes,
-  getPopoverNodeText,
-} from "../selectors/projectTable_TextCell";
+import { chromeStorageSettings } from "@bexio-chrome-extension/shared";
+import { getPopoverNodes, getPopoverNodeText } from "../selectors/projectTable_TextCell";
 
-export default async function convertPopover(toText: boolean) {
-  if (toText) {
+export default async function convertPopover() {
+  const isRemovePopoversSettingEnabled = await chromeStorageSettings.loadRemovePopoversSetting();
+  if (isRemovePopoversSettingEnabled) {
     return convertPopoverToText();
   }
   return revertPopover();
@@ -24,8 +23,7 @@ export async function convertPopoverToText() {
     cellTextContent.textContent = popoverText;
 
     popoverParent.appendChild(cellTextContent);
-    popoverParent.style.backgroundColor =
-      index % 2 === 0 ? "#ffe2bc" : "antiquewhite";
+    popoverParent.style.backgroundColor = index % 2 === 0 ? "#ffe2bc" : "antiquewhite";
   });
 }
 
