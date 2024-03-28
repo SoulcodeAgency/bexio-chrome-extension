@@ -3,7 +3,7 @@
 ## Automatically
 
 Simply run the script `npm run createRelease`.  
-It will handle the version update, tagging, commiting and pushing automatically.
+It will handle the version update, tagging, committing and pushing automatically.
 
 ## Manually
 

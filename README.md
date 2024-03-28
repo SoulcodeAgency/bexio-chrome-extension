@@ -2,11 +2,12 @@
 
 Improves handling of time tracking in bexio
 
-There are 2 main features currrently:
+There are 3 main features currently:
 
 * It enables the user to save the form data as templates, and re-use it later.
   If you work on a specific project or work package and you have to track over and over again some time, this can help you fill out some of the base fields.
 * Importing time entries from ManicTime, and applying them step by step. This supports complete form filling, from selecting a template and the base fields like contact or project, but also the time, date and billable feature for every entry.
+* Converting the cumbersome tooltips to real text cells
 
 ## Feature Overview
 
@@ -39,6 +40,21 @@ In the sidepanel you can find the following features:
   * Further it will also apply the **time and date** as well as the **billable** checkbox if the according value exists on the entry
   * You can use the **auto-mapper** Feature which tries to find the right template for your entries
   * Automapper also checks the **keywords** as well as other fields on the templates. You can add keywords in the template section
+
+### Tooltip replacement
+
+Bexio has small little tooltip icons, where it hides the text content of an entry.
+Because the content is sometimes very important, and the tooltip is of no help for that, we have created a solution, which replaces these icons with the real text.
+
+On specific pages we place a "Text mode / Popover mode" Button, in the top right corner next to the "Quick find".
+If the "Text mode" is enabled, it will automatically replace the tooltips with the real content.
+
+These tooltips are available in different locations, currently the feature to remove them is enabled in the following places:
+
+* Projects -> Time tracking
+* Projects -> Projects -> Project XY -> Times
+* Projects -> Projects -> Project XY -> Work packages -> Work package XY -> Time tracking
+* Sales -> Invoices -> Invoice XY -> More items -> Tracked time
 
 ## How to use ManicTime feature
 
