@@ -6,14 +6,9 @@ import applyTemplate from "~/utils/applyTemplate";
 import { Button, Alert, Collapse, CollapseProps, Switch, Tooltip } from "antd";
 import { TemplateContext, TemplateContextType } from "~/TemplateContext";
 import { chromeStorage } from "@bexio-chrome-extension/shared";
-import {
-  loadApplyNotesSetting,
-  saveApplyNotesSetting,
-} from "@bexio-chrome-extension/shared/chromeStorageSettings";
+import { loadApplyNotesSetting, saveApplyNotesSetting } from "@bexio-chrome-extension/shared/chromeStorageSettings";
 import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
 import { autoMapTemplatesV3 } from "./AutoMapTemplatesV3";
-import { autoMapTemplatesV1 } from "./AutoMapTemplatesV1";
-import { autoMapTemplatesV2 } from "./AutoMapTemplatesV2";
 import { handleCsvData } from "~/utils/csvParser";
 
 export type ImportRow = string[];
@@ -31,23 +26,15 @@ function ImportEntries() {
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
-  const { templates: templateEntries } =
-    useContext<TemplateContextType>(TemplateContext);
+  const { templates: templateEntries } = useContext<TemplateContextType>(TemplateContext);
 
-  const billableColumnIndex = importHeader.findIndex(
-    (column) => column === "Billable"
-  );
+  const billableColumnIndex = importHeader.findIndex((column) => column === "Billable");
 
   function getBillable(entryIndex: number): boolean | undefined {
     let billable: ImportBillable = undefined;
     if (billableColumnIndex >= 0) {
       billable = importData[entryIndex][billableColumnIndex] as ImportBillable;
-      console.log(
-        "Added billable value:",
-        billable,
-        "as",
-        billable === "Billable"
-      );
+      console.log("Added billable value:", billable, "as", billable === "Billable");
     }
     // Only return true or false if it is set, otherwise undefined
     if (billable === "Billable") {
@@ -61,24 +48,19 @@ function ImportEntries() {
 
   function getNotes(entryIndex: number) {
     let notes = "";
-    const notesColumnIndex = importHeader.findIndex(
-      (column) => column === "Notes"
-    );
+    const notesColumnIndex = importHeader.findIndex((column) => column === "Notes");
     if (notesColumnIndex >= 0) {
       notes = importData[entryIndex][notesColumnIndex];
       console.log("added notes from notes column");
     }
     if (notes === "") {
       // Get all indexes of the importHeader which start with "Tag"
-      const tagColumnIndexes = importHeader.reduce(
-        (acc: number[], column, index) => {
-          if (column.startsWith("Tag")) {
-            acc.push(index);
-          }
-          return acc;
-        },
-        []
-      );
+      const tagColumnIndexes = importHeader.reduce((acc: number[], column, index) => {
+        if (column.startsWith("Tag")) {
+          acc.push(index);
+        }
+        return acc;
+      }, []);
       // Sort the indexes, so we can start with the last one
       tagColumnIndexes.sort((a, b) => b - a);
 
@@ -86,9 +68,7 @@ function ImportEntries() {
       tagColumnIndexes.forEach((tagColumnIndex) => {
         if (notes === "") {
           notes = importData[entryIndex][tagColumnIndex];
-          console.log(
-            "applying notes from tag column " + importHeader[tagColumnIndex]
-          );
+          console.log("applying notes from tag column " + importHeader[tagColumnIndex]);
         }
       });
     }
@@ -124,8 +104,7 @@ function ImportEntries() {
 
   function convertImportData(csvString: string) {
     try {
-      const { importFooter, importHeader, importData } =
-        handleCsvData(csvString);
+      const { importFooter, importHeader, importData } = handleCsvData(csvString);
       setParseStatus("");
       setImportFooter(importFooter);
       setImportHeader(importHeader);
@@ -140,11 +119,7 @@ function ImportEntries() {
     }
   }
 
-  function applyImportEntry(
-    columnIndex: number,
-    timeAmount: string,
-    entryIndex: number
-  ) {
+  function applyImportEntry(columnIndex: number, timeAmount: string, entryIndex: number) {
     // Take the first 2 number blocks of the time, we only need hh:mm from the hh:mm:ss signature
     timeAmount = timeAmount.split(":").slice(0, 2).join(":");
     const date = importHeader[columnIndex];
@@ -217,49 +192,15 @@ function ImportEntries() {
     setTabs(["apply"]);
   }
 
-  const tagColumnIndexes = importHeader.reduce(
-    (acc: number[], column, index) => {
-      if (column.startsWith("Tag")) {
-        acc.push(index);
-      }
-      return acc;
-    },
-    []
-  );
-
-  function callAutoMapTemplatesV1() {
-    const importTemplateAssignment = autoMapTemplatesV1(
-      importData,
-      templateEntries,
-      importHeader,
-      tagColumnIndexes
-    );
-
-    // Save the auto mapped templates
-    setImportTemplates(importTemplateAssignment);
-    chromeStorage.save(importTemplateAssignment, "importTemplates");
-  }
-
-  function callAutoMapTemplatesV2() {
-    const importTemplateAssignment = autoMapTemplatesV2(
-      importData,
-      templateEntries,
-      importHeader,
-      tagColumnIndexes
-    );
-
-    // Save the auto mapped templates
-    setImportTemplates(importTemplateAssignment);
-    chromeStorage.save(importTemplateAssignment, "importTemplates");
-  }
+  const tagColumnIndexes = importHeader.reduce((acc: number[], column, index) => {
+    if (column.startsWith("Tag")) {
+      acc.push(index);
+    }
+    return acc;
+  }, []);
 
   function callAutoMapTemplatesV3() {
-    const importTemplateAssignment = autoMapTemplatesV3(
-      importData,
-      templateEntries,
-      importHeader,
-      tagColumnIndexes
-    );
+    const importTemplateAssignment = autoMapTemplatesV3(importData, templateEntries, importHeader, tagColumnIndexes);
 
     // Save the auto mapped templates
     setImportTemplates(importTemplateAssignment);
@@ -308,36 +249,25 @@ function ImportEntries() {
   const manicTimeImport = (
     <div className="content">
       <p>
-        This lets you import entries from <b>ManicTime</b> - directly from your
-        clipboard: <br />
+        This lets you import entries from <b>ManicTime</b> - directly from your clipboard: <br />
         <ul>
           <li>
-            Use the <i>"Copy to clipboard"</i> function in ManicTime's TimeSheet
-            Summary, and make sure you have at least a <i>"Tag 1"</i> column.
+            Use the <i>"Copy to clipboard"</i> function in ManicTime's TimeSheet Summary, and make sure you have at
+            least a <i>"Tag 1"</i> column.
           </li>
           <li>
-            Optionally you can add <b>Notes</b> and <b>Billable</b> columns as
-            well to apply them. <br />
-            ⚠️ Notes are only supported if they don't contain line breaks. If
-            you have any line breaks, you can still search and remove them in
-            the following textarea field
+            Optionally you can add <b>Notes</b> and <b>Billable</b> columns as well to apply them. <br />
+            ⚠️ Notes are only supported if they don't contain line breaks. If you have any line breaks, you can still
+            search and remove them in the following textarea field
           </li>
         </ul>
       </p>
       <p>
         Paste the data into the following field <br />
-        <i>
-          (Note: This will import data and override the "Apply imported
-          data"-tab content)
-        </i>
+        <i>(Note: This will import data and override the "Apply imported data"-tab content)</i>
       </p>
       <div>
-        <textarea
-          ref={importDataRef}
-          wrap="off"
-          rows={10}
-          onChange={(e) => convertImportData(e.target.value)}
-        />
+        <textarea ref={importDataRef} wrap="off" rows={10} onChange={(e) => convertImportData(e.target.value)} />
       </div>
 
       {parseStatus && (
@@ -355,19 +285,9 @@ function ImportEntries() {
 
   const importDataHTML = importData.length ? (
     <div className="content">
-      <Tooltip title="First version of the auto mapper, weight depends on Tag culumns">
-        <Button type="default" onClick={callAutoMapTemplatesV1}>
-          Auto map templates v1
-        </Button>
-      </Tooltip>
-      <Tooltip title="Second version, which weights the bexio fields, not the Tag columns">
-        <Button type="default" onClick={callAutoMapTemplatesV2}>
-          Auto map templates v2
-        </Button>
-      </Tooltip>
       <Tooltip title="Based on v2, but further weights exact word matches">
         <Button type="primary" onClick={callAutoMapTemplatesV3}>
-          Auto map templates v3
+          Auto map templates
         </Button>
       </Tooltip>
 
@@ -388,10 +308,7 @@ function ImportEntries() {
             <th>#</th>
             <th title="Select the template to apply">Template</th>
             {importHeader.map((field) => (
-              <th
-                key={field}
-                style={{ minWidth: field === "Notes" ? "120px" : "auto" }}
-              >
+              <th key={field} style={{ minWidth: field === "Notes" ? "120px" : "auto" }}>
                 {field}
                 {field === "Notes" && (
                   <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
@@ -415,9 +332,7 @@ function ImportEntries() {
               <td>
                 <TemplateSelect
                   selectedTemplate={importTemplates[entryIndex]}
-                  onChange={(templateId: string) =>
-                    onChangeTemplate(templateId, entryIndex)
-                  }
+                  onChange={(templateId: string) => onChangeTemplate(templateId, entryIndex)}
                 />
               </td>
               {entry.map((fieldValue, columnIndex) => (
@@ -427,12 +342,8 @@ function ImportEntries() {
                   fieldValue={fieldValue}
                   key={`table-cell-${entryIndex + 1}-${columnIndex}`}
                   entryStatus={entryStatus[`${columnIndex}-${entryIndex}`]}
-                  onButtonClick={() =>
-                    applyImportEntry(columnIndex, fieldValue, entryIndex)
-                  }
-                  onButtonClickReset={() =>
-                    resetEntryStatus(`${columnIndex}-${entryIndex}`)
-                  }
+                  onButtonClick={() => applyImportEntry(columnIndex, fieldValue, entryIndex)}
+                  onButtonClickReset={() => resetEntryStatus(`${columnIndex}-${entryIndex}`)}
                 />
               ))}
             </tr>
@@ -462,49 +373,36 @@ function ImportEntries() {
           description={
             <ol>
               <li>
-                Select an <strong>Auto-map button</strong> above and check if
-                the templates do match with your entries.
+                Select an <strong>Auto-map button</strong> above and check if the templates do match with your entries.
                 <br />
-                You can manually fix single entries, or do it completely
-                manually of course.
+                You can manually fix single entries, or do it completely manually of course.
                 <br />
-                <i>
-                  These changes are saved automatically, in case you leave and
-                  come back later.
-                </i>
+                <i>These changes are saved automatically, in case you leave and come back later.</i>
               </li>
               <li>
-                Click on the ▶️-button next to the time you want to track. It
-                will automatically fill the form in bexio and change its status
-                to "applied" (✅)
+                Click on the ▶️-button next to the time you want to track. It will automatically fill the form in bexio
+                and change its status to "applied" (✅)
                 <br />
-                ⚠️ This action currently is not yet saved, so we suggest to go
-                through all entries in one session. If this page gets closed,
-                you will loose the state of the button.
+                ⚠️ This action currently is not yet saved, so we suggest to go through all entries in one session. If
+                this page gets closed, you will loose the state of the button.
                 <br />
-                ℹ️ You can click the button again, if you want to re-apply it
-                for some reason. <br />
-                ℹ️ If you change the selected template, the state will also get
-                reset.
+                ℹ️ You can click the button again, if you want to re-apply it for some reason. <br />
+                ℹ️ If you change the selected template, the state will also get reset.
               </li>
               <li>
                 Auto filling
                 <ol>
-                  <li>
-                    Date and Time will get applied on the bexio form directly.
-                  </li>
+                  <li>Date and Time will get applied on the bexio form directly.</li>
                   <li>If added, Billable and Notes are also applied.</li>
                   <li>
-                    If selected also the Template with its values will
-                    auto-magically fill out the rest of the form. 🥳
+                    If selected also the Template with its values will auto-magically fill out the rest of the form. 🥳
                   </li>
                 </ol>
               </li>
               <li>
                 Submit the form <br />
-                ℹ️ Click the next time entry, to automatically open the time
-                tracking page and auto fill again, no need to open the time
-                track page within bexio.
+                ℹ️ Click the next time entry, to automatically open the time tracking page and auto fill again, no need
+                to open the time track page within bexio.
               </li>
             </ol>
           }
@@ -534,14 +432,7 @@ function ImportEntries() {
     },
   ];
 
-  return (
-    <Collapse
-      items={items}
-      defaultActiveKey={tabs}
-      activeKey={tabs}
-      onChange={changeTabs}
-    />
-  );
+  return <Collapse items={items} defaultActiveKey={tabs} activeKey={tabs} onChange={changeTabs} />;
 }
 
 export default ImportEntries;
