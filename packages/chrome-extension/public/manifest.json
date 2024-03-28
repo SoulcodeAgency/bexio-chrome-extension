@@ -48,6 +48,7 @@
             "matches": [
                 "https://office.bexio.com/index.php/monitoring/list",
                 "https://office.bexio.com/index.php/pr_project/listMonitoring/*",
+                "https://office.bexio.com/index.php/pr_project/showPackage/*",
                 "https://office.bexio.com/index.php/kb_invoice/show/id/*"
             ],
             "js": [
