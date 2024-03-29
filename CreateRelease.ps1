@@ -22,6 +22,8 @@ function GetPackageVersion() {
 }
 
 # Print message to be sure that user is on the correct branch
+Write-Output "Make sure you are on the develop branch before running this script!"
+Write-Output "If you are on a feature branch, this is fine too, but you need to update the develop branch after the release is done."
 Write-Output "You are on branch: $(git branch --show-current)"
 
 # Run the build and version scripts
