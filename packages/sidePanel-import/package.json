@@ -29,7 +29,7 @@
     "eslint-plugin-react-refresh": "^0.4.6",
     "sass": "^1.72.0",
     "typescript": "^5.4.3",
-    "vite": "^5.2.6"
+    "vite": "^5.2.14"
   },
   "description": "Application which holds bexio-chrome-exntension features separate in a chrome side panel",
   "main": "index.js",
