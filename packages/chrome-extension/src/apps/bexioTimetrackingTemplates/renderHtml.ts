@@ -3,6 +3,7 @@ import fillForm from "../../utils/fillForm";
 import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "../../utils/packageInfo";
 import readFormData from "../../utils/readFormData";
+import { toggleDisplayLoader } from "../../utils/loader";
 
 // Renders all the html code for placing buttons to interact with
 async function renderHtml(templateEntries) {
@@ -25,8 +26,7 @@ async function renderHtml(templateEntries) {
     templates.remove();
   }
 
-  const templatePlacement = document.getElementById("pr_package")?.parentNode
-    ?.parentNode?.parentNode as HTMLElement;
+  const templatePlacement = document.getElementById("pr_package")?.parentNode?.parentNode?.parentNode as HTMLElement;
   const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="column-count: 2; column-fill: balance;">
         ${buttons}
     </div>`;
@@ -63,14 +63,17 @@ async function renderHtml(templateEntries) {
         font-size: 5rem;
         display: none;">
             <div style="color: white"><img src="${logoPath}" style="min-width: 200px; max-width: 10vw; margin-right: 20px;" />Loading...</div>
+            <div id="closeModal" style="position: absolute; top: 30px; right: 30px; cursor: pointer;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #ccc; display: flex; justify-content: center; align-items: center;">
+                    <span style="font-size: 2rem;font-weight: normal;">&times;</span>
+                </div>
+            </div>
         </div>
     </div>`
   );
 
   // Attach functionality to the buttons
-  const domButtons = document
-    .getElementById("bexioTimetrackingTemplates-entries")
-    ?.querySelectorAll("button.entry");
+  const domButtons = document.getElementById("bexioTimetrackingTemplates-entries")?.querySelectorAll("button.entry");
   domButtons &&
     domButtons.forEach((button) =>
       button.addEventListener("click", function (e) {
@@ -90,18 +93,20 @@ async function renderHtml(templateEntries) {
     );
 
   // Special action buttons
-  document
-    .getElementById("AddNewTemplate")
-    ?.addEventListener("click", function (e) {
-      e.preventDefault();
-      readFormData();
-    });
-  document
-    .getElementById("DeleteTemplate")
-    ?.addEventListener("click", function (e) {
-      e.preventDefault();
-      confirmActiveTemplateDeletion();
-    });
+  document.getElementById("AddNewTemplate")?.addEventListener("click", function (e) {
+    e.preventDefault();
+    readFormData();
+  });
+  document.getElementById("DeleteTemplate")?.addEventListener("click", function (e) {
+    e.preventDefault();
+    confirmActiveTemplateDeletion();
+  });
+
+  // Close modal
+  document.getElementById("closeModal")?.addEventListener("click", function (e) {
+    e.preventDefault();
+    toggleDisplayLoader(false);
+  });
 }
 
 export default renderHtml;
