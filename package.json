@@ -1,7 +1,7 @@
 {
     "name": "@bexio-chrome-extension/main",
-    "version": "1.2.0",
-    "date": "Mar 29, 2024",
+    "version": "1.2.5",
+    "date": "Oct 11, 2024",
     "description": "This extension allows saving and loading of form data as templates within the bexio time tracking page.",
     "type": "module",
     "scripts": {
@@ -39,7 +39,7 @@
     "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
     "devDependencies": {
         "fs-extra": "^11.2.0",
-        "git-cliff": "^1.4.0"
+        "git-cliff": "^2.6.1"
     },
     "workspaces": [
         "packages/shared",
