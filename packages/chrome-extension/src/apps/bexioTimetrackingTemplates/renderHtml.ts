@@ -36,7 +36,7 @@ async function renderHtml(templateEntries) {
               <button id="templateFilterReset"  class="template-search-filter-clear-button" type="button">&times;</button>
             </div>
             <button type="button" id="AddNewTemplate" class="btn btn-info">Add</button>
-            <button type="button" id="DeleteTemplate" class="btn btn-danger">Delete</button>
+            <button type="button" id="DeleteTemplate" class="btn">Delete</button>
         </div>`;
 
   // Place the html into the DOM
@@ -76,23 +76,48 @@ async function renderHtml(templateEntries) {
     </div>`
   );
 
+  // Track delete mode
+  const deleteTemplateButton = document.getElementById("DeleteTemplate");
+  let deleteMode = false;
+
+  const disableDeleteMode = () => {
+    deleteMode = false; // Reset delete mode
+    deleteTemplateButton.classList.remove("btn-danger");
+  };
+  const enableDeleteMode = () => {
+    deleteMode = true;
+    activateDeleteButton();
+  };
+  const activateDeleteButton = () => {
+    deleteTemplateButton.classList.add("btn-danger");
+  };
+
   // Attach functionality to the buttons
   const domButtons = document.getElementById("bexioTimetrackingTemplates-entries")?.querySelectorAll("button.entry");
   domButtons &&
     domButtons.forEach((button) =>
       button.addEventListener("click", function (e) {
         e.preventDefault();
-        fillForm(button.id);
+        console.log("deleteMode", deleteMode);
+        if (deleteMode) {
+          // Handle delete action
+          confirmActiveTemplateDeletion(button.id);
+          disableDeleteMode();
+        } else {
+          // Handle fill form action
+          fillForm(button.id);
 
-        // Handle active template button
-        const parent = (e.target as HTMLElement).parentNode as HTMLElement;
-        const siblings = parent.querySelectorAll(".template-button");
+          // Handle active template button
+          const parent = (e.target as HTMLElement).parentNode as HTMLElement;
+          const siblings = parent.querySelectorAll(".template-button");
 
-        siblings.forEach((sibling) => {
-          sibling.classList.remove("template-button--active");
-        });
+          siblings.forEach((sibling) => {
+            sibling.classList.remove("template-button--active");
+            activateDeleteButton();
+          });
 
-        (e.target as HTMLElement).classList.add("template-button--active");
+          (e.target as HTMLElement).classList.add("template-button--active");
+        }
       })
     );
 
@@ -101,9 +126,22 @@ async function renderHtml(templateEntries) {
     e.preventDefault();
     readFormData();
   });
-  document.getElementById("DeleteTemplate")?.addEventListener("click", function (e) {
+
+  deleteTemplateButton.addEventListener("click", function (e) {
     e.preventDefault();
-    confirmActiveTemplateDeletion();
+    const activeButton = document.querySelector(".template-button--active") ?? undefined;
+    if (activeButton) {
+      // Confirm deletion of current active template
+      confirmActiveTemplateDeletion();
+    } else if (deleteMode) {
+      // Deactivate delete mode
+      disableDeleteMode();
+      alert("Delete mode deactivated.");
+    } else {
+      // Activate delete mode
+      enableDeleteMode();
+      alert("Select a template to delete.");
+    }
   });
 
   // Close modal
