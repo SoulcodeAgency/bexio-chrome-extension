@@ -30,9 +30,13 @@ async function renderHtml(templateEntries) {
   const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="column-count: 2; column-fill: balance;">
         ${buttons}
     </div>`;
-  const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px;">
-            <button type="button" id="AddNewTemplate" class="btn btn-info">+ Add as Template</button>
-            <button type="button" id="DeleteTemplate" class="btn btn-danger">Delete Template</button>
+  const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
+            <div class="template-search-filter">
+              <input type="search" id="templateFilter" class="search-input" placeholder="Filter templates">
+              <button id="templateFilterReset"  class="template-search-filter-clear-button" type="button">&times;</button>
+            </div>
+            <button type="button" id="AddNewTemplate" class="btn btn-info">Add</button>
+            <button type="button" id="DeleteTemplate" class="btn btn-danger">Delete</button>
         </div>`;
 
   // Place the html into the DOM
@@ -106,6 +110,30 @@ async function renderHtml(templateEntries) {
   document.getElementById("closeModal")?.addEventListener("click", function (e) {
     e.preventDefault();
     toggleDisplayLoader(false);
+  });
+
+  // Filter templates
+  document.getElementById("templateFilter")?.addEventListener("input", function (e) {
+    const filterValue = (e.target as HTMLInputElement).value.toLowerCase();
+    domButtons &&
+      domButtons.forEach((button) => {
+        const templateName = button.textContent?.toLowerCase() || "";
+        if (templateName.includes(filterValue)) {
+          (button as HTMLElement).style.display = "block";
+        } else {
+          (button as HTMLElement).style.display = "none";
+        }
+      });
+  });
+
+  // Reset filter
+  document.getElementById("templateFilterReset")?.addEventListener("click", function (e) {
+    e.preventDefault();
+    (document.getElementById("templateFilter") as HTMLInputElement).value = "";
+    domButtons &&
+      domButtons.forEach((button) => {
+        (button as HTMLElement).style.display = "block";
+      });
   });
 }
 
