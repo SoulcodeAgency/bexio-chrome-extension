@@ -5,19 +5,21 @@
     "description": "This extension allows saving and loading of form data as templates within the bexio time tracking page.",
     "type": "module",
     "scripts": {
-        "installProject": "npm ci --workspaces --include-workspace-root",
         "build:devRelease": "npm run version:patch && npm run build:project -- -Development",
         "build:devRelease:sidePanelOnly": "npm run build:devRelease -- -IgnoreExtension",
         "build:devRelease:extensionOnly": "npm run build:devRelease -- -IgnoreSidePanel",
         "build:project": "powershell -File Build.ps1",
         "build:newExtensionRelease": "npm run build:project -- -createPackage",
-        "cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\"",
+        "build:cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\"",
         "version:patch": "npm --no-git-tag-version version patch",
         "version:minor": "npm --no-git-tag-version version minor",
         "version:major": "npm --no-git-tag-version version major",
         "postversion": "node updateManifest.js",
         "changelog": "npx git-cliff > CHANGELOG.md",
         "createRelease": "powershell -File createRelease.ps1",
+        "npm:installProject": "npm ci --workspaces --include-workspace-root",
+        "npm:nodeModules:cleanup": "powershell \"Remove-Item -Path node_modules -Recurse -Force",
+        "npm:lock:cleanup": "powershell \"Remove-Item -Path package-lock.json -Force",
         "npmCheckUpdates:check": "npx npm-check-updates -ws",
         "npmCheckUpdates:update": "npx npm-check-updates -ws -u"
     },
@@ -47,5 +49,8 @@
         "packages/shared",
         "packages/sidePanel-import",
         "packages/chrome-extension"
-    ]
+    ],
+    "overrides": {
+        "rollup": "4.24.0"
+    }
 }
