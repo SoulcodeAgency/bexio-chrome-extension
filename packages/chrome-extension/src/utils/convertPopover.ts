@@ -1,5 +1,6 @@
 import { chromeStorageSettings } from "@bexio-chrome-extension/shared";
 import { getPopoverNodes, getPopoverNodeText } from "../selectors/projectTable_TextCell";
+import DOMPurify from 'dompurify';
 
 export default async function convertPopover() {
   // Check if we should convert the popovers or revert them
@@ -35,7 +36,7 @@ export async function convertPopoverToText(popoverNodes) {
 
     // Set the innerHTML to the popoverText to convert the html entities to text (&amp; -> & etc.)
     const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = popoverText;
+    tempDiv.innerHTML = DOMPurify.sanitize(popoverText);
     cellTextContent.textContent = tempDiv.textContent;
 
     popoverParent.appendChild(cellTextContent);
