@@ -1,6 +1,6 @@
 {
     "name": "bexio Time Tracking Templates",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "description": "This extension allows saving and loading of form data within the bexio time tracking page.",
     "manifest_version": 3,
     "author": "fabian.gander@soulcode.ch",
