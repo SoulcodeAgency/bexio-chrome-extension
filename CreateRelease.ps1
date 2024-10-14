@@ -39,7 +39,7 @@ RunScript "build:newExtensionRelease"
 $version = GetPackageVersion
 
 # Run the changelog script
-npx git-cliff@latest --tag $version > CHANGELOG.md # we give the hint to the new version
+npx --no-install git-cliff --tag $version > CHANGELOG.md # we give the hint to the new version
 
 # Commit and tag the version
 git add .
