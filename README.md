@@ -19,7 +19,8 @@ Clicking the extension icon will bring you to the bexio time tracking page
 
 * On the time tracking page you can now save and re-use form data as templates
 * Once the filled form is saved as a template you can simply let further forms fill out automatically using the template buttons
-* If you don't need a template anymore, you can also delete it (*first select the according template button, then the delete button*)
+* If you don't need a template anymore, you can also delete it
+* You can filter the templates if you have many of them
 
 ### Side panel (browser)
 
