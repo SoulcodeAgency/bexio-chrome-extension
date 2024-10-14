@@ -5,13 +5,12 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -31,5 +30,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y powershell
     - run: npm ci
-    - run: npm run build --if-present
+    - name: Build
+      shell: pwsh
+      run: |
+        .\Build.ps1
+    # - run: npm run build --if-present
     - run: npm test --if-present
