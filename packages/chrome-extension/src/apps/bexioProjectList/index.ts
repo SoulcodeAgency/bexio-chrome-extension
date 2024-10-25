@@ -1,4 +1,3 @@
-import { chromeStorageSettings } from "@bexio-chrome-extension/shared";
 import renderHtml from "./renderHtml";
 import convertPopover from "../../utils/convertPopover";
 
