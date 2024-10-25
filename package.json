@@ -42,6 +42,7 @@
     },
     "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
     "devDependencies": {
+        "@crxjs/vite-plugin": "^2.0.0-beta.26",
         "fs-extra": "^11.2.0",
         "git-cliff": "^2.6.1"
     },
