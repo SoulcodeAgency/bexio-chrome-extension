@@ -21,13 +21,30 @@ function GetPackageVersion() {
     return $version
 }
 
+# Function to run the version update script based on user input
+function RunVersionUpdate {
+    param (
+        [string]$versionType
+    )
+
+    switch ($versionType) {
+        "patch" { RunScript "version:patch" }
+        "minor" { RunScript "version:minor" }
+        "major" { RunScript "version:major" }
+        default { Write-Output "Invalid option. Please choose patch, minor, or major." }
+    }
+}
+
 # Print message to be sure that user is on the correct branch
 Write-Output "Make sure you are on the develop branch before running this script!"
 Write-Output "If you are on a feature branch, this is fine too, but you need to update the develop branch after the release is done."
 Write-Output "You are on branch: $(git branch --show-current)"
 
-# Run the build and version scripts
-RunScript "version:minor"
+# Prompt the user to choose the version type
+$versionType = Read-Host "Enter the version type to increase (patch, minor, major)"
+
+# Run the corresponding version update script
+RunVersionUpdate -versionType $versionType
 
 # Interrupt the script and await user for confirmation
 Write-Output "Generated version number is: $(GetPackageVersion)"
