@@ -1,7 +1,7 @@
 {
     "name": "@bexio-chrome-extension/main",
-    "version": "1.3.1",
-    "date": "Oct 14, 2024",
+    "version": "1.3.2",
+    "date": "Oct 25, 2024",
     "description": "This extension allows saving and loading of form data as templates within the bexio time tracking page.",
     "type": "module",
     "scripts": {
@@ -17,7 +17,8 @@
         "postversion": "node updateManifest.js",
         "changelog": "npx --no-install git-cliff --tag $version > CHANGELOG.md",
         "createRelease": "powershell -File createRelease.ps1",
-        "npm:installProject": "npm ci --workspaces --include-workspace-root",
+        "npm:installProject": "npm i --workspaces --include-workspace-root",
+        "npm:ciProject": "npm ci --workspaces --include-workspace-root",
         "npm:nodeModules:cleanup": "powershell \"Remove-Item -Path node_modules -Recurse -Force",
         "npm:lock:cleanup": "powershell \"Remove-Item -Path package-lock.json -Force",
         "npmCheckUpdates:check": "npx npm-check-updates -ws",
