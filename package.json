@@ -43,8 +43,8 @@
     },
     "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
     "devDependencies": {
-        "fs-extra": "^11.2.0",
-        "git-cliff": "^2.6.1"
+        "fs-extra": "11.2.0",
+        "git-cliff": "2.6.1"
     },
     "workspaces": [
         "packages/shared",
