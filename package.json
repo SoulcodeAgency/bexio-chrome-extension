@@ -55,6 +55,7 @@
         "packages/chrome-extension"
     ],
     "overrides": {
-        "rollup": "4.55.1"
+        "rollup": "4.55.1",
+        "esbuild": "0.27.2"
     }
 }
