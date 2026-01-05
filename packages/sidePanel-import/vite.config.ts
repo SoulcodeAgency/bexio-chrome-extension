@@ -20,7 +20,9 @@ export default ({ mode }) => {
       outDir: '../../unpacked/sidePanel-import',
       emptyOutDir: true,
       rollupOptions: {
-        external: ["../shared/chromeStorageTemplateEntries", "../shared/chromeStorage"],
+        output: {
+          manualChunks: undefined,
+        },
       },
       minify: mode === 'production',
     },
