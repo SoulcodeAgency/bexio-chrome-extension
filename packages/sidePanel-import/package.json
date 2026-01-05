@@ -25,14 +25,14 @@
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "8.51.0",
     "@typescript-eslint/parser": "8.51.0",
-    "@vitejs/plugin-react-swc": "4.2.2",
+    "@vitejs/plugin-react-swc": "^3.7.1",
     "antd": "6.1.4",
     "eslint": "9.39.2",
     "eslint-plugin-react-hooks": "7.0.1",
     "eslint-plugin-react-refresh": "0.4.26",
     "sass": "1.97.1",
     "typescript": "5.9.3",
-    "vite": "7.3.0"
+    "vite": "^5.4.11"
   },
   "description": "Application which holds bexio-chrome-exntension features separate in a chrome side panel",
   "main": "index.js",
