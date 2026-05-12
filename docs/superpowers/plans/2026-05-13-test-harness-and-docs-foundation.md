@@ -102,7 +102,7 @@
 **Files:**
 - Modify: `package.json` (root)
 
-- [ ] **Step 1: Install dev dependencies (exact-pinned via `.npmrc`)**
+- [x] **Step 1: Install dev dependencies (exact-pinned via `.npmrc`)**
 
 Run:
 ```bash
@@ -110,7 +110,7 @@ npm install --save-dev --save-exact vitest jsdom
 ```
 Expected: `package.json` `devDependencies` now lists `vitest` and `jsdom` with exact versions; `package-lock.json` updated.
 
-- [ ] **Step 2: Add scripts to root `package.json`**
+- [x] **Step 2: Add scripts to root `package.json`**
 
 In the `"scripts"` block add (keep existing scripts):
 ```jsonc
@@ -120,12 +120,12 @@ In the `"scripts"` block add (keep existing scripts):
 "test:e2e": "playwright test --config e2e/playwright.config.ts"
 ```
 
-- [ ] **Step 3: Verify Vitest is callable**
+- [x] **Step 3: Verify Vitest is callable**
 
 Run: `npx vitest --version`
 Expected: prints a version number, no error.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add package.json package-lock.json
 git commit -m "chore(test): add vitest + jsdom and root test scripts"
@@ -139,7 +139,7 @@ git commit -m "chore(test): add vitest + jsdom and root test scripts"
 - Create: `vitest.config.ts`
 - Create: `vitest.workspace.ts`
 
-- [ ] **Step 1: Create `vitest.config.ts`**
+- [x] **Step 1: Create `vitest.config.ts`**
 ```ts
 import { defineConfig } from "vitest/config";
 
@@ -157,7 +157,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 2: Create `vitest.workspace.ts`**
+- [x] **Step 2: Create `vitest.workspace.ts`**
 ```ts
 import { defineWorkspace } from "vitest/config";
 import path from "node:path";
@@ -196,7 +196,7 @@ export default defineWorkspace([
 ]);
 ```
 
-- [ ] **Step 3: Add a path alias so tests can import package source by name**
+- [x] **Step 3: Add a path alias so tests can import package source by name**
 
 In `vitest.workspace.ts`, for the `chrome-extension` and `shared` projects, add a `resolve.alias` mapping (Vitest reads `resolve` from the project config). Update both objects' `test` siblings — actually `resolve` is a top-level key on the project config object, not under `test`. Final form for the `chrome-extension` project entry:
 ```ts
@@ -219,7 +219,7 @@ In `vitest.workspace.ts`, for the `chrome-extension` and `shared` projects, add 
 ```
 Add the same `resolve.alias` block to the `shared` project entry (it imports `./types` etc. relatively, so it only needs the `@bexio-chrome-extension/shared` alias; include it anyway for consistency). The subpath imports the code uses (`@bexio-chrome-extension/shared/types`, `/chromeStorageSettings`, etc.) resolve via Node's package-exports? No — there is no `exports` map. They currently work only because of npm workspaces symlinking `node_modules/@bexio-chrome-extension/shared` → `packages/shared`. That symlink also works under Vitest, so the alias above is a belt-and-braces measure; if a subpath import fails to resolve in tests, add explicit aliases like `"@bexio-chrome-extension/shared/types": path.resolve(__dirname, "packages/shared/types.ts")`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add vitest.config.ts vitest.workspace.ts
 git commit -m "chore(test): add root vitest workspace with shared / chrome-extension / sidePanel-import projects"
@@ -233,7 +233,7 @@ git commit -m "chore(test): add root vitest workspace with shared / chrome-exten
 - Create: `test/support/chrome-fake.ts`
 - Create: `test/support/setup-chrome.ts`
 
-- [ ] **Step 1: Write `test/support/chrome-fake.ts`**
+- [x] **Step 1: Write `test/support/chrome-fake.ts`**
 ```ts
 // Minimal in-memory stand-ins for the chrome.* APIs the extension touches in
 // code that we unit-test. Anything not implemented here throws loudly so we
@@ -332,7 +332,7 @@ export function getChromeFake(): ChromeFake {
 }
 ```
 
-- [ ] **Step 2: Write `test/support/setup-chrome.ts`**
+- [x] **Step 2: Write `test/support/setup-chrome.ts`**
 ```ts
 import { beforeEach } from "vitest";
 import { installChromeFake, resetChromeFake } from "./chrome-fake";
@@ -344,7 +344,7 @@ beforeEach(() => {
 });
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add test/support/chrome-fake.ts test/support/setup-chrome.ts
 git commit -m "chore(test): add in-memory chrome.storage / chrome.runtime fake + setup file"
@@ -359,7 +359,7 @@ git commit -m "chore(test): add in-memory chrome.storage / chrome.runtime fake +
 - Create: `packages/chrome-extension/test/support/__inline__/tiny.html`
 - Create: `packages/chrome-extension/test/support/load-fixture.test.ts`
 
-- [ ] **Step 1: Write `packages/chrome-extension/test/support/load-fixture.ts`**
+- [x] **Step 1: Write `packages/chrome-extension/test/support/load-fixture.ts`**
 ```ts
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -384,12 +384,12 @@ export function readFixture(name: string): string {
 }
 ```
 
-- [ ] **Step 2: Write `packages/chrome-extension/test/support/__inline__/tiny.html`**
+- [x] **Step 2: Write `packages/chrome-extension/test/support/__inline__/tiny.html`**
 ```html
 <div id="probe" data-content="&amp;ok"><i rel="popover" data-content="hello &amp; goodbye"></i></div>
 ```
 
-- [ ] **Step 3: Write the failing test `packages/chrome-extension/test/support/load-fixture.test.ts`**
+- [x] **Step 3: Write the failing test `packages/chrome-extension/test/support/load-fixture.test.ts`**
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
@@ -440,12 +440,12 @@ declare global {
 export {};
 ```
 
-- [ ] **Step 4: Run the test, expect it to PASS (harness works)**
+- [x] **Step 4: Run the test, expect it to PASS (harness works)**
 
 Run: `npx vitest run --project chrome-extension test/support/load-fixture.test.ts`
 Expected: 4 passed. If "chrome is not defined" → the setup file isn't wired; recheck `setupFiles` path in `vitest.workspace.ts`. If module-resolution errors → recheck the aliases from Task 0.2.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add packages/chrome-extension/test/support/
 git commit -m "test: add fixture loader + harness smoke test"
