@@ -1,9 +1,12 @@
+// NOTE: vitest.workspace.ts is deprecated since Vitest 3.2.
+// The workspace projects are now defined in vitest.config.ts via test.projects.
+// This file is kept for reference only and is NOT used by Vitest 4.x.
+
 import { defineWorkspace } from "vitest/config";
 import path from "node:path";
 
 export default defineWorkspace([
   {
-    extends: "./vitest.config.ts",
     resolve: {
       alias: {
         "@bexio-chrome-extension/shared": path.resolve(__dirname, "packages/shared/index.ts"),
@@ -19,7 +22,6 @@ export default defineWorkspace([
     },
   },
   {
-    extends: "./vitest.config.ts",
     resolve: {
       alias: {
         "@bexio-chrome-extension/shared": path.resolve(__dirname, "packages/shared/index.ts"),
@@ -35,7 +37,6 @@ export default defineWorkspace([
     },
   },
   {
-    extends: "./vitest.config.ts",
     test: {
       name: "sidePanel-import",
       root: "./packages/sidePanel-import",
