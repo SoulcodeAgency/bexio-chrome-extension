@@ -9,7 +9,7 @@ It will handle the version update, tagging, committing and pushing automatically
 
 - Test current version
 - Run npm script `version:minor` (or what you need) to increase version number
-- Run npm script `postversion` to update all version references
+- Run npm script `version:updateManifest` to update all version references
 - Run npm script `build:newExtensionRelease`
 - Tag the version this is needed to have the changelog created correctly
 - Run npm script `changelog` to create the changelog

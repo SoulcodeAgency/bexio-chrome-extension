@@ -58,6 +58,9 @@ $version = GetPackageVersion
 # Run the changelog script
 npx --no-install git-cliff --tag $version > CHANGELOG.md # we give the hint to the new version
 
+# Update version in manifest.json
+RunScript "version:updateManifest"
+
 # Commit and tag the version
 git add .
 
