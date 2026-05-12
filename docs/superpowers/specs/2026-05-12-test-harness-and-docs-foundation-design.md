@@ -4,6 +4,8 @@
 **Status:** Approved (pending written-spec review)
 **Author:** brainstorming session (Fabian Gander + Claude)
 
+> **Update 2026-05-13:** Spec approved. Raw bexio fixtures captured (all except `kb_invoice-show`, which is deferred — see "Fixture loader" below). Implementation planning started.
+
 ## Background
 
 The bexio Chrome extension has no automated tests and only user-facing documentation. We have split the project into seven topics; topics 1–3 (template UI on the bexio form, the side-panel app shell, the ManicTime import/auto-mapper) are deprioritised. This effort targets the remaining four:
@@ -58,7 +60,7 @@ Establish a **reproducible test harness** and a **developer knowledge base** for
   - `monitoring-list.html` — the time-tracking list (`/index.php/monitoring/list`).
   - `pr_project-listMonitoring.html` — project times (`/index.php/pr_project/listMonitoring/*`).
   - `pr_project-showPackage.html` — work-package times (`/index.php/pr_project/showPackage/*`).
-  - `kb_invoice-show.html` — invoice "tracked time" modal (`/index.php/kb_invoice/show/id/*`).
+  - `kb_invoice-show.html` — invoice "tracked time" modal (`/index.php/kb_invoice/show/id/*`). **Not captured this round:** the "weitere Positionen → erfasste Zeit" path appears to have changed/disappeared in current bexio, so this fixture is deferred and the `kb_invoice/show` content-script path is flagged for a follow-up investigation (verify whether it still works, adapt to the new UI, or remove it). Captured this round: `monitoring-edit.html`, `monitoring-edit-filled.html` (a filled existing entry), `monitoring-edit.tinymce-iframe.html` (the empty tinymce body), `monitoring-list.html`, `pr_project-listMonitoring.html`, `pr_project-showPackage.html`.
   Each fixture has a sibling `<page>.md` recording: source URL, capture date, what was trimmed, and that names/contacts/project data were scrubbed. A `loadFixture(name)` helper reads the file and returns a jsdom `Document` (or installs it as `document` for the test).
 - **Build smoke test (topic 7):** a Vitest test in the `node` project (or a small script it invokes) that:
   1. runs `npm run build:project -- -Development`;

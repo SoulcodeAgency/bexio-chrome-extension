@@ -1,0 +1,3 @@
+# Raw, un-anonymised bexio captures — never commit these.
+*
+!.gitignore
