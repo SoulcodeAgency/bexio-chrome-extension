@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "include-component-in-tag": false,
+  "include-v-in-tag": false,
+  "packages": {
+    ".": {
+      "package-name": "@bexio-chrome-extension/main",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "packages/chrome-extension/public/manifest.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}
