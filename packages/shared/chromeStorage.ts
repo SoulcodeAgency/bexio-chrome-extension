@@ -11,7 +11,16 @@ export async function load<T>(key = defaultKey): Promise<T | undefined> {
     });
 }
 
-// Delete from chrome local storage
+/**
+ * Removes the entry whose `id` property equals `id` from the stored array at `key`.
+ *
+ * **Array-only assumption:** if the stored value exists but is not an array, `remove`
+ * silently replaces it with `[]` rather than throwing. This is a known issue — see
+ * `docs/architecture/storage.md`.
+ *
+ * @param id   The `id` of the entry to remove.
+ * @param key  The storage key (defaults to `"entries"`).
+ */
 export async function remove<T>(id: string, key = defaultKey): Promise<any> {
     // Iterate over the chrome storage and remove the entry with the given id
     const filteredEntries = await chrome.storage.local.get(key).then((result) => {
@@ -29,7 +38,24 @@ export async function save<T>(data: T, key = defaultKey): Promise<any> {
     return chrome.storage.local.set({ [key]: data });
 }
 
-// Update an entry in chrome local storage
+/**
+ * Shallow-merges `updatedEntry` over the existing entry whose `idKey` property matches.
+ *
+ * **Array-only assumption:** only works correctly when the stored value is an array.
+ * If the stored value is absent or not an array, the entry block is skipped and
+ * `save(undefined)` is called, overwriting the key with `undefined`.
+ *
+ * **Unknown-id no-op (with side-effect):** if no entry matches `updatedEntry[idKey]`,
+ * `Array.prototype.findIndex` returns `-1` and the code executes `arr[-1] = {...}`, which
+ * sets a non-index property on the array object. The array `length` is unchanged and numeric
+ * iteration skips the property, but the stray property persists in memory (real
+ * `chrome.storage.local` drops non-index properties on serialization). This is a known issue —
+ * see `docs/architecture/storage.md`.
+ *
+ * @param updatedEntry  The entry to merge in. Must have a property matching `idKey`.
+ * @param key           The storage key (defaults to `"entries"`).
+ * @param idKey         The property name used as the unique identifier (defaults to `"id"`).
+ */
 export async function update<T>(updatedEntry: T & { [index: string]: string }, key = defaultKey, idKey = "id"): Promise<any> {
     // Iterate over the chrome storage and update the entry with the given id
     const entries = await chrome.storage.local.get(key);

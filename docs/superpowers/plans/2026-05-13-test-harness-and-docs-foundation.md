@@ -674,14 +674,14 @@ git commit -m "test(shared): pin sortTemplates / getTemplateName / confirmTempla
 - Create: `docs/architecture/storage.md`
 - Modify (TSDoc only): `packages/shared/chromeStorage.ts`, `packages/shared/types.ts`, `packages/shared/getTemplateName.ts`
 
-- [ ] **Step 1: Write `docs/architecture/storage.md`** covering: the `chrome.storage.local` model and that everything is namespaced under string keys; the `"entries"` key for templates; the settings keys (`applyNotesSetting` default `true`, `removePopoversSetting` default `false`, `activeTabId` default `undefined`); the import-data key; the `TemplateEntry` shape and the `[key: string]: any` escape hatch (and the historical "`id` was the template name in 0.4.x" note from `getTemplateName`); the array-only assumption baked into `chromeStorage.remove`/`update`; the **known issues** surfaced by the tests (non-array → `[]`; unknown-id update no-ops); and a "who reads/writes what" table (chrome-extension content scripts, side-panel app).
-- [ ] **Step 2: Add TSDoc** — a one-paragraph doc comment on `chromeStorage.update` and `chromeStorage.remove` noting the array-only assumption and the unknown-id no-op; a doc comment on `TemplateEntry` explaining the `status` enum values and the `[key: string]: any`; a doc comment on `getTemplateName` keeping/expanding the existing 0.4.x note. **No behaviour changes.**
-- [ ] **Step 3: Verify the suite still passes** (TSDoc edits shouldn't break anything)
+- [x] **Step 1: Write `docs/architecture/storage.md`** covering: the `chrome.storage.local` model and that everything is namespaced under string keys; the `"entries"` key for templates; the settings keys (`applyNotesSetting` default `true`, `removePopoversSetting` default `false`, `activeTabId` default `undefined`); the import-data key; the `TemplateEntry` shape and the `[key: string]: any` escape hatch (and the historical "`id` was the template name in 0.4.x" note from `getTemplateName`); the array-only assumption baked into `chromeStorage.remove`/`update`; the **known issues** surfaced by the tests (non-array → `[]`; unknown-id update no-ops); and a "who reads/writes what" table (chrome-extension content scripts, side-panel app).
+- [x] **Step 2: Add TSDoc** — a one-paragraph doc comment on `chromeStorage.update` and `chromeStorage.remove` noting the array-only assumption and the unknown-id no-op; a doc comment on `TemplateEntry` explaining the `status` enum values and the `[key: string]: any`; a doc comment on `getTemplateName` keeping/expanding the existing 0.4.x note. **No behaviour changes.**
+- [x] **Step 3: Verify the suite still passes** (TSDoc edits shouldn't break anything)
 
 Run: `npx vitest run --project shared`
 Expected: all pass.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add docs/architecture/storage.md packages/shared/chromeStorage.ts packages/shared/types.ts packages/shared/getTemplateName.ts
 git commit -m "docs: add storage architecture doc + TSDoc for shared storage layer"
