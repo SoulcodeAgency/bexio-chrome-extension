@@ -126,12 +126,13 @@ even/odd row banding. jsdom serialises `#ffe2bc` as `rgb(255, 226, 188)` and `an
 - **Click handler:** toggles `removePopoversSetting` in storage, updates the button label, and
   calls `convertPopover()` to immediately apply the new state.
 
-**Important limitation (KNOWN ISSUE):** `renderHtml()` crashes at
-`globalSearchListElement.insertAdjacentHTML(...)` with a `TypeError` if no `.globalsearch` element
-is present in the DOM. The available test fixtures do not include the full bexio nav bar, so the
-button cannot be injected in unit tests. The crash is an unhandled async rejection (because
-`initializeExtension()` is called without `await` at module level) and is suppressed in
-`test/apps/bexioProjectList.test.ts` by mocking `renderHtml`.
+**Fragility:** `renderHtml()` crashes at `globalSearchListElement.insertAdjacentHTML(...)`
+with a `TypeError` if no `.globalsearch` element is present — the content script silently
+assumes the full bexio nav bar is there. The `monitoring-list.html` fixture is captured
+from `document.body.outerHTML` precisely so `.globalsearch` is included; the crash is itself
+exercised as a negative test in `test/apps/bexioProjectList.test.ts` (we strip `.globalsearch`
+from the fixture and assert the unhandled rejection surfaces). The Playwright extension-smoke
+test (`e2e/extension-smoke.spec.ts`) covers the success path against the same fixture.
 
 ---
 
@@ -152,8 +153,10 @@ button cannot be injected in unit tests. The crash is an unhandled async rejecti
 ## Known issues
 
 - **`renderHtml` crashes without `.globalsearch` in DOM:** `TypeError: Cannot read properties of
-  undefined (reading 'insertAdjacentHTML')` — the content script assumes a full bexio page
-  layout with the standard nav bar. Logged in `test/apps/bexioProjectList.test.ts`.
+  undefined (reading 'insertAdjacentHTML')` — the content script silently assumes the full bexio
+  nav bar is present. The `monitoring-list.html` fixture includes it, so the happy path is
+  covered, but a future bexio redesign that drops/renames `.globalsearch` will break this code.
+  Both the success path and the negative path are pinned in `test/apps/bexioProjectList.test.ts`.
 - **`kb_invoice/show/id` branch unverified:** `observeBillingPage()` and
   `observeBillingModalTable()` target `#jqDialog` and `.list.block` inside it. The path in
   current bexio is unconfirmed; the `observeBillingModalTable` function references

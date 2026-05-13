@@ -1,1158 +1,195 @@
-<div class="main_block list" id="monitoring_content"><div
-    class="lf_content mass_item_holder ajxon"
-    id="S1Aon8JEqc"
-    reload_link="/index.php/filter/reload/f/MonitoringFilter/m/monitoring/a/list"
-  ><div class="content"><div class="tableBlock"><div class="row-fluid" id="listContainer"><div class="span24"><div class="row-fluid"><div class="span14"><ul class="nav nav-tabs bx-listFilter-ul" id="tab"><li class="bx-listFilter"><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/empty"
-                      >Alle</a
-                    ></li><li class="bx-listFilter"><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999"
-                      >Heute</a
-                    ></li><li class="bx-listFilter"><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999"
-                      >Aktuelle Woche</a
-                    ></li><li class="bx-listFilter"><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999"
-                      >Aktueller Monat</a
-                    ></li><li class="bx-listFilter active"><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999"
-                      >Meine<i
-                        data-link="/index.php/filter/saveDefaultTab/f/MonitoringFilter/m/monitoring/a/list/fId/27"
-                        class="halflings halflings-glyph-pushpin set_standard_tab"
-                        title="Als Standardtab festlegen"
-                        data-placement="bottom"
-                      ></i
-                    ></a></li><li class="dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#">Eigene Filter <b class="caret"></b></a><ul class="dropdown-menu"><li><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999"
-                          >Globex PM<i
-                            class="glyphicons pencil editFilter"
-                            rel="tooltip"
-                            title="Filter bearbeiten"
-                            href="/index.php/filter/editFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999"
-                          ></i
-                        ></a></li></ul></li></ul></div><div class="span10"><div class="filterQuickSearch"><div class="filterActions"><a
-                      style="cursor: pointer; margin-right: 10px"
-                      onclick="toggleFilter($(this))"
-                      class="btn-filter-open"
-                    ><i title="Filtern" rel="tooltip" class="halflings halflings-filter"></i> Filtern
-                    </a></div><form method="post" action="/index.php/filter/quickSearch/f/MonitoringFilter/m/monitoring/a/list"><div class="input-prepend"><span class="add-on"><i class="glyphicons search"></i></span><input
-                        id="quickSearch"
-                        type="text"
-                        name="quickSearch"
-                        placeholder="Suche"
-                        class="filterQuickSearchField autoselect"
-                        value=""
-                      /></div><label for="quickSearch"></label></form></div></div></div><form method="post" action="/index.php/filter/saveFilter/f/MonitoringFilter/m/monitoring/a/list"><input type="hidden" name="monitoring_filters[_csrf_token]" id="monitoring_filters__csrf_token" /><div class="filter row-fluid"><div class="span24"><div class="bx-formular-container bx-formular-filter"><div class="row-fluid bx-formular-container-head bx-bottom-margin"><h2>Filter festlegen</h2><i class="glyphicons remove_2 removeFilter" onclick="toggleFilter($(this))"></i></div><div class="row-fluid bx-formular"><div class="span24"><div class="row-fluid"><div class="span8 bx-formular-inlinecolumn"><div class="control-group"><label class="control-label" for="monitoring_filters_client_service_id">Tätigkeit</label><div class="controls"><div class="input"><div
-                                    class="select2-container"
-                                    id="s2id_monitoring_filters_client_service_id"
-                                    style="width: 100%"
-                                  ><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1"><span class="select2-chosen" id="select2-chosen-5"></span
-                                      ><abbr class="select2-search-choice-close"></abbr><span class="select2-arrow" role="presentation"
-                                        ><b role="presentation"></b></span></a
-                                    ><label for="s2id_autogen5" class="select2-offscreen">Tätigkeit</label
-                                    ><input
-                                      class="select2-focusser select2-offscreen"
-                                      type="text"
-                                      aria-haspopup="true"
-                                      role="button"
-                                      aria-labelledby="select2-chosen-5"
-                                      id="s2id_autogen5"
-                                    /><div class="select2-drop select2-display-none select2-with-searchbox"><div class="select2-search"><label for="s2id_autogen5_search" class="select2-offscreen">Tätigkeit</label><input
-                                          type="text"
-                                          autocomplete="off"
-                                          autocorrect="off"
-                                          autocapitalize="off"
-                                          spellcheck="false"
-                                          class="select2-input"
-                                          role="combobox"
-                                          aria-expanded="true"
-                                          aria-autocomplete="list"
-                                          aria-owns="select2-results-5"
-                                          id="s2id_autogen5_search"
-                                          placeholder=""
-                                        /></div><ul class="select2-results" role="listbox" id="select2-results-5"></ul></div></div><select
-                                    name="monitoring_filters[client_service_id]"
-                                    id="monitoring_filters_client_service_id"
-                                    title="Tätigkeit"
-                                    class="select2-offscreen"
-                                    tabindex="-1"
-                                  ><option value="" selected="selected"></option><option value="1">Work</option></select></div></div></div><div class="control-group"><label class="control-label" for="monitoring_filters_date">Datum</label><div class="controls"><div class="input"><div class="input-append datepicker bx-datapicker"><input
-                                      placeholder="Von"
-                                      type="text"
-                                      name="monitoring_filters[date][from]"
-                                      value=""
-                                      style="width: 80px"
-                                      id="monitoring_filters_date_from"
-                                      class="hasDatepicker"
-                                    /><span class="add-on"><label for="monitoring_filters_date_from"><i class="halflings halflings-glyph-calendar"></i></label></span></div><span class="bx-date-delimiter">–</span><div class="input-append datepicker bx-datapicker"><input
-                                      placeholder="Bis"
-                                      type="text"
-                                      name="monitoring_filters[date][to]"
-                                      value=""
-                                      style="width: 80px"
-                                      id="monitoring_filters_date_to"
-                                      class="hasDatepicker"
-                                    /><span class="add-on"><label for="monitoring_filters_date_to"><i class="halflings halflings-glyph-calendar"></i></label></span></div><div class="exclude"></div></div></div></div></div><div class="span8 bx-formular-inlinecolumn"><div class="control-group"><label class="control-label" for="monitoring_filters_contact_id">Kontakt</label><div class="controls"><div class="input"><input
-                                    type="hidden"
-                                    name="monitoring_filters[contact_id]"
-                                    id="monitoring_filters_contact_id"
-                                  /><input
-                                    type="text"
-                                    name="autocomplete_monitoring_filters[contact_id]"
-                                    value=""
-                                    class="noautocompleter ac_input"
-                                    placeholder="Bitte geben Sie einen Suchbegriff ein"
-                                    id="autocomplete_monitoring_filters_contact_id"
-                                    autocomplete="off"
-                                  /><a
-                                    href="/index.php/lookup/index/model/Contact/name/monitoring_filters_contact_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRDb250YWN0JTVDJTJGZmllbGRJZCU1QyUyRm1vbml0b3JpbmdfZmlsdGVyc19jb250YWN0X2lkJTVDJTJGZGlhbG9nJTVDJTJGY2hvb3NlckRpYWxvZyUzRmNhbGxiYWNrJTNEY2FsbGJhY2tfcXVpY2tfYWRkX2F1dG9jb21wbGV0ZSUyMiUyQyUyMnF1aWNrQWRkRGlhbG9nT3B0aW9ucyUyMiUzQSU3QiUyMnRpdGxlJTIyJTNBJTIyTmV1ZXIlMjBLb250YWt0JTIyJTdEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMk5ldWVyJTIwS29udGFrdCUyMiU3RA%3D%3D"
-                                    onclick="
-                                      jq_load_dialog(
-                                        '/index.php/lookup/index/model/Contact/name/monitoring_filters_contact_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRDb250YWN0JTVDJTJGZmllbGRJZCU1QyUyRm1vbml0b3JpbmdfZmlsdGVyc19jb250YWN0X2lkJTVDJTJGZGlhbG9nJTVDJTJGY2hvb3NlckRpYWxvZyUzRmNhbGxiYWNrJTNEY2FsbGJhY2tfcXVpY2tfYWRkX2F1dG9jb21wbGV0ZSUyMiUyQyUyMnF1aWNrQWRkRGlhbG9nT3B0aW9ucyUyMiUzQSU3QiUyMnRpdGxlJTIyJTNBJTIyTmV1ZXIlMjBLb250YWt0JTIyJTdEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMk5ldWVyJTIwS29udGFrdCUyMiU3RA%3D%3D',
-                                        {
-                                          autoOpen: false,
-                                          bgiframe: false,
-                                          close: 'function() { $(this).dialog(\'destroy\'); }',
-                                          maxHeight: 2000,
-                                          maxWidth: 2024,
-                                          modal: true,
-                                          open: function (event, ui) {
-                                            $('#searchField').focus();
-                                          },
-                                          resizable: false,
-                                          title: 'Liste',
-                                          width: 850,
-                                        },
-                                        '#chooserDialog',
-                                      );
-                                      $(this).blur();
-                                      return false;
-                                    "
-                                    class="btn"
-                                    ><i class="glyphicons address_book"></i
-                                  ></a></div></div></div><div class="control-group"><label class="control-label" for="monitoring_filters_user_id">Ansprechpartner</label><div class="controls"><div class="input"><div
-                                    class="select2-container"
-                                    id="s2id_monitoring_filters_user_id"
-                                    style="width: 100%"
-                                  ><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1"><span class="select2-chosen" id="select2-chosen-6"></span
-                                      ><abbr class="select2-search-choice-close"></abbr><span class="select2-arrow" role="presentation"
-                                        ><b role="presentation"></b></span></a
-                                    ><label for="s2id_autogen6" class="select2-offscreen">Ansprechpartner</label
-                                    ><input
-                                      class="select2-focusser select2-offscreen"
-                                      type="text"
-                                      aria-haspopup="true"
-                                      role="button"
-                                      aria-labelledby="select2-chosen-6"
-                                      id="s2id_autogen6"
-                                    /><div class="select2-drop select2-display-none select2-with-searchbox"><div class="select2-search"><label for="s2id_autogen6_search" class="select2-offscreen"
-                                          >Ansprechpartner</label
-                                        ><input
-                                          type="text"
-                                          autocomplete="off"
-                                          autocorrect="off"
-                                          autocapitalize="off"
-                                          spellcheck="false"
-                                          class="select2-input"
-                                          role="combobox"
-                                          aria-expanded="true"
-                                          aria-autocomplete="list"
-                                          aria-owns="select2-results-6"
-                                          id="s2id_autogen6_search"
-                                          placeholder=""
-                                        /></div><ul class="select2-results" role="listbox" id="select2-results-6"></ul></div></div><select
-                                    name="monitoring_filters[user_id]"
-                                    id="monitoring_filters_user_id"
-                                    title="Ansprechpartner"
-                                    class="select2-offscreen"
-                                    tabindex="-1"
-                                  ><option value="" selected="selected"></option><option value="8">Roe Richard</option><option value="6">Gray Robin</option><option value="11">Smith Sam</option><option value="14">Brown Pat</option><option value="12">Doe Jane</option><option value="1">Klein Anna</option><option value="7">Klein (Test Account) Anna</option><option value="3">Weber Tom</option><option value="13">Weber (Test Account) Tom</option><option value="17">Fischer Max</option><option value="15">Meier Eva</option><option value="2">Wolf Leo</option><option value="5">Berg Nils</option><option value="4">Stein Otto</option></select></div></div></div><div class="control-group"><label class="control-label" for="monitoring_filters_pr_project_id">Projekt</label><div class="controls"><div class="input"><input
-                                    type="hidden"
-                                    name="monitoring_filters[pr_project_id]"
-                                    id="monitoring_filters_pr_project_id"
-                                  /><input
-                                    type="text"
-                                    name="autocomplete_monitoring_filters[pr_project_id]"
-                                    value=""
-                                    class="noautocompleter ac_input"
-                                    placeholder="Bitte geben Sie einen Suchbegriff ein"
-                                    id="autocomplete_monitoring_filters_pr_project_id"
-                                    autocomplete="off"
-                                  /><a
-                                    href="/index.php/lookup/index/model/PrProject/name/monitoring_filters_pr_project_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRQclByb2plY3QlNUMlMkZmaWVsZElkJTVDJTJGbW9uaXRvcmluZ19maWx0ZXJzX3ByX3Byb2plY3RfaWQlNUMlMkZkaWFsb2clNUMlMkZjaG9vc2VyRGlhbG9nJTNGY2FsbGJhY2slM0RjYWxsYmFja19xdWlja19hZGRfYXV0b2NvbXBsZXRlJTIyJTJDJTIycXVpY2tBZGREaWFsb2dPcHRpb25zJTIyJTNBJTVCJTVEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMiUyMiU3RA%3D%3D"
-                                    onclick="
-                                      jq_load_dialog(
-                                        '/index.php/lookup/index/model/PrProject/name/monitoring_filters_pr_project_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRQclByb2plY3QlNUMlMkZmaWVsZElkJTVDJTJGbW9uaXRvcmluZ19maWx0ZXJzX3ByX3Byb2plY3RfaWQlNUMlMkZkaWFsb2clNUMlMkZjaG9vc2VyRGlhbG9nJTNGY2FsbGJhY2slM0RjYWxsYmFja19xdWlja19hZGRfYXV0b2NvbXBsZXRlJTIyJTJDJTIycXVpY2tBZGREaWFsb2dPcHRpb25zJTIyJTNBJTVCJTVEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMiUyMiU3RA%3D%3D',
-                                        {
-                                          autoOpen: false,
-                                          bgiframe: false,
-                                          close: 'function() { $(this).dialog(\'destroy\'); }',
-                                          maxHeight: 2000,
-                                          maxWidth: 2024,
-                                          modal: true,
-                                          open: function (event, ui) {
-                                            $('#searchField').focus();
-                                          },
-                                          resizable: false,
-                                          title: 'Liste',
-                                          width: 940,
-                                        },
-                                        '#chooserDialog',
-                                      );
-                                      $(this).blur();
-                                      return false;
-                                    "
-                                    class="btn"
-                                    ><i class="glyphicons newspaper"></i
-                                  ></a></div></div></div></div><div class="span8 bx-formular-inlinecolumn"><div class="control-group"><label class="control-label" for="monitoring_filters_monitoring_status_id">Status</label><div class="controls"><div class="input"><div
-                                    class="select2-container"
-                                    id="s2id_monitoring_filters_monitoring_status_id"
-                                    style="width: 100%"
-                                  ><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1"><span class="select2-chosen" id="select2-chosen-7"></span
-                                      ><abbr class="select2-search-choice-close"></abbr><span class="select2-arrow" role="presentation"
-                                        ><b role="presentation"></b></span></a
-                                    ><label for="s2id_autogen7" class="select2-offscreen">Status</label
-                                    ><input
-                                      class="select2-focusser select2-offscreen"
-                                      type="text"
-                                      aria-haspopup="true"
-                                      role="button"
-                                      aria-labelledby="select2-chosen-7"
-                                      id="s2id_autogen7"
-                                    /><div class="select2-drop select2-display-none select2-with-searchbox"><div class="select2-search"><label for="s2id_autogen7_search" class="select2-offscreen">Status</label><input
-                                          type="text"
-                                          autocomplete="off"
-                                          autocorrect="off"
-                                          autocapitalize="off"
-                                          spellcheck="false"
-                                          class="select2-input"
-                                          role="combobox"
-                                          aria-expanded="true"
-                                          aria-autocomplete="list"
-                                          aria-owns="select2-results-7"
-                                          id="s2id_autogen7_search"
-                                          placeholder=""
-                                        /></div><ul class="select2-results" role="listbox" id="select2-results-7"></ul></div></div><select
-                                    name="monitoring_filters[monitoring_status_id]"
-                                    id="monitoring_filters_monitoring_status_id"
-                                    title="Status"
-                                    class="select2-offscreen"
-                                    tabindex="-1"
-                                  ><option value="" selected="selected"></option><option value="1">Offen</option><option value="2">In Arbeit</option><option value="3">Erledigt</option><option value="4">Fakturiert</option><option value="5">Geschlossen</option></select></div></div></div><div class="control-group"><label class="control-label" for="monitoring_filters_allowable_bill"
-                                >Eintrag ist abrechenbar</label
-                              ><div class="controls"><div class="input"><div
-                                    class="select2-container"
-                                    id="s2id_monitoring_filters_allowable_bill"
-                                    style="width: 100%"
-                                  ><a href="javascript:void(0)" class="select2-choice" tabindex="-1"><span class="select2-chosen" id="select2-chosen-8">Egal</span
-                                      ><abbr class="select2-search-choice-close"></abbr><span class="select2-arrow" role="presentation"
-                                        ><b role="presentation"></b></span></a
-                                    ><label for="s2id_autogen8" class="select2-offscreen">Eintrag ist abrechenbar</label
-                                    ><input
-                                      class="select2-focusser select2-offscreen"
-                                      type="text"
-                                      aria-haspopup="true"
-                                      role="button"
-                                      aria-labelledby="select2-chosen-8"
-                                      id="s2id_autogen8"
-                                    /><div class="select2-drop select2-display-none select2-with-searchbox"><div class="select2-search"><label for="s2id_autogen8_search" class="select2-offscreen"
-                                          >Eintrag ist abrechenbar</label
-                                        ><input
-                                          type="text"
-                                          autocomplete="off"
-                                          autocorrect="off"
-                                          autocapitalize="off"
-                                          spellcheck="false"
-                                          class="select2-input"
-                                          role="combobox"
-                                          aria-expanded="true"
-                                          aria-autocomplete="list"
-                                          aria-owns="select2-results-8"
-                                          id="s2id_autogen8_search"
-                                          placeholder=""
-                                        /></div><ul class="select2-results" role="listbox" id="select2-results-8"></ul></div></div><select
-                                    name="monitoring_filters[allowable_bill]"
-                                    id="monitoring_filters_allowable_bill"
-                                    title="Eintrag ist abrechenbar"
-                                    class="select2-offscreen"
-                                    tabindex="-1"
-                                  ><option value="" selected="selected">Egal</option><option value="1">Ja</option><option value="0">Nein</option></select></div></div></div><div class="control-group"><label class="control-label" for="monitoring_filters_pr_package_id">Arbeitspaket</label><div class="controls"><div class="input"><input
-                                    type="hidden"
-                                    name="monitoring_filters[pr_package_id]"
-                                    id="monitoring_filters_pr_package_id"
-                                  /><input
-                                    type="text"
-                                    name="autocomplete_monitoring_filters[pr_package_id]"
-                                    value=""
-                                    class="noautocompleter ac_input"
-                                    placeholder="Bitte geben Sie einen Suchbegriff ein"
-                                    id="autocomplete_monitoring_filters_pr_package_id"
-                                    autocomplete="off"
-                                  /><a
-                                    href="/index.php/lookup/index/model/PrPackage/name/monitoring_filters_pr_package_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRQclBhY2thZ2UlNUMlMkZmaWVsZElkJTVDJTJGbW9uaXRvcmluZ19maWx0ZXJzX3ByX3BhY2thZ2VfaWQlNUMlMkZkaWFsb2clNUMlMkZjaG9vc2VyRGlhbG9nJTNGY2FsbGJhY2slM0RjYWxsYmFja19xdWlja19hZGRfYXV0b2NvbXBsZXRlJTIyJTJDJTIycXVpY2tBZGREaWFsb2dPcHRpb25zJTIyJTNBJTVCJTVEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMiUyMiU3RA%3D%3D"
-                                    onclick="
-                                      jq_load_dialog(
-                                        '/index.php/lookup/index/model/PrPackage/name/monitoring_filters_pr_package_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRQclBhY2thZ2UlNUMlMkZmaWVsZElkJTVDJTJGbW9uaXRvcmluZ19maWx0ZXJzX3ByX3BhY2thZ2VfaWQlNUMlMkZkaWFsb2clNUMlMkZjaG9vc2VyRGlhbG9nJTNGY2FsbGJhY2slM0RjYWxsYmFja19xdWlja19hZGRfYXV0b2NvbXBsZXRlJTIyJTJDJTIycXVpY2tBZGREaWFsb2dPcHRpb25zJTIyJTNBJTVCJTVEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMiUyMiU3RA%3D%3D',
-                                        {
-                                          autoOpen: false,
-                                          bgiframe: false,
-                                          close: 'function() { $(this).dialog(\'destroy\'); }',
-                                          maxHeight: 2000,
-                                          maxWidth: 2024,
-                                          modal: true,
-                                          open: function (event, ui) {
-                                            $('#searchField').focus();
-                                          },
-                                          resizable: false,
-                                          title: 'Liste',
-                                          width: 940,
-                                        },
-                                        '#chooserDialog',
-                                      );
-                                      $(this).blur();
-                                      return false;
-                                    "
-                                    class="btn"
-                                    ><i class="glyphicons newspaper"></i
-                                  ></a></div></div></div></div></div></div></div><hr /><button class="btn btn-primary"><i class="glyphicons ok_2"></i> Filter anwenden</button><button
-                      class="btn"
-                      onclick="
-                        saveFilter($(this).closest('form'));
-                        return false;
-                      "
-                    ><i class="halflings halflings-floppy-disk"></i> Filter speichern
-                    </button></div></div></div></form><div class="list"><div class="dataTableHolder"><table id="dataTable" class="table table-striped table-condensed table-hover jsTable"><thead><tr><th class=""><a
-                          class="ajxl"
-                          href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.DATE/o/asc"
-                          >Datum</a
-                        ></th><th class=""><a
-                          class="ajxl"
-                          href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.CLIENT_SERVICE_ID/o/asc"
-                          >Tätigkeit</a
-                        ></th><th class=""><a
-                          class="ajxl"
-                          href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring_status.NAME/o/asc"
-                          >Status</a
-                        ></th><th class=""><a
-                          class="ajxl"
-                          href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.ALLOWABLE_BILL/o/asc"
-                          >Abrechenbar</a
-                        ></th><th class=""><a
-                          class="ajxl"
-                          href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/contact.NAME_1/o/asc"
-                          >Kontakt</a
-                        ></th><th class=""><a
-                          class="ajxl"
-                          href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.TEXT/o/asc"
-                          >Text</a
-                        ></th><th class=""><a
-                          class="ajxl"
-                          href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/user.LASTNAME/o/asc"
-                          >Ansprechpartner</a
-                        ></th><th width="60" class="r">Zeit h:min</th><th width="60" class="c"></th><th width="70" class="l"></th><th width="10" class="r"><input
-                          type="checkbox"
-                          class="listToggler"
-                          onclick="
-                            toggleCheckboxes($(this), $(this).parents('table').find('tbody input[type=\'checkbox\']'))
-                          "
-                        /></th></tr></thead><tbody><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90001"><td>08.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Nein</a
-                        ></td><td>Soulcode AG <br /><span style="color: gray">Projekt Acme - Back Office </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="UphillConf &amp; QA"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">08:24</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25484"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25484]" id="items_25484" value="25484" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90002"><td>11.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Ja</a
-                        ></td><td>Globex GmbH <br /><span style="color: gray">Projekt Globex - 5y Warranty 2026 </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="Spec dashboard"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">02:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25482"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25482]" id="items_25482" value="25482" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90003"><td>11.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Nein</a
-                        ></td><td>Soulcode AG <br /><span style="color: gray">Projekt Acme - Back Office </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="Weekly"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">00:45</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25483"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25483]" id="items_25483" value="25483" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90004"><td>11.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Ja</a
-                        ></td><td>Globex GmbH <br /><span style="color: gray">Projekt Globex - 5y Warranty 2026 </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="LAGWEB-3452 Implemented B2C Role"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">02:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25480"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25480]" id="items_25480" value="25480" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90005"><td>11.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Ja</a
-                        ></td><td>Globex GmbH <br /><span style="color: gray">Projekt Globex - 5y Warranty 2026 </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="LAGWEB-3453 Implementation dashboard page"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">02:30</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25481"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25481]" id="items_25481" value="25481" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90006"><td>11.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Ja</a
-                        ></td><td>Globex GmbH <br /><span style="color: gray">Projekt Globex - 5y Warranty 2026 </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="LAGWEB-3332: Dashboard presentation meeting and further analyzing and refining current issues with Lukas"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">03:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25479"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25479]" id="items_25479" value="25479" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90007"><td>07.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Ja</a
-                        ></td><td>Globex GmbH <br /><span style="color: gray">Projekt Globex - 5y Warranty 2026 </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="Spec dashboard"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">07:15</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25477"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25477]" id="items_25477" value="25477" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90008"><td>07.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Nein</a
-                        ></td><td>Soulcode AG <br /><span style="color: gray">Projekt Acme - Back Office </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="Standup"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">00:15</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25478"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25478]" id="items_25478" value="25478" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90009"><td>07.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Ja</a
-                        ></td><td>Globex GmbH <br /><span style="color: gray">Projekt Globex - 5y Warranty 2026 </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="LAGWEB-3332 RE &amp; Analyzing"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">04:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25476"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25476]" id="items_25476" value="25476" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90010"><td>17.04.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Nein</a
-                        ></td><td>Soulcode AG <br /><span style="color: gray">Projekt Acme - Members </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="Ferien"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">37:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25444"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25444]" id="items_25444" value="25444" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90011"><td>06.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Ja</a
-                        ></td><td>Globex GmbH <br /><span style="color: gray">Projekt Globex - Projektarbeit 2026 </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="Refinement Meeting"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">01:30</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25441"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25441]" id="items_25441" value="25441" /></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90012"><td>06.05.2026 <br /><span style="color: gray"></span></td><td>Work</td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a
-                          class="changeAllowableBill dotted_link"
-                          rel="tooltip"
-                          data-title="Ändern"
-                          href="/index.php/monitoring/changeAllowableBill/id/99999"
-                          >Nein</a
-                        ></td><td>Soulcode AG <br /><span style="color: gray">Projekt Acme - Back Office </span></td><td><i
-                          class="halflings halflings-info-sign"
-                          rel="popover"
-                          data-placement="left"
-                          data-content="Give marcin more permissions to trigger pipelines"
-                          style="display: inline-block"
-                        ></i></td><td>Doe Jane</td><td class="r">00:15</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#"
-                            >Aktionen <span class="caret"></span
-                          ></a><ul class="dropdown-menu pull-right"><li class="first"><a
-                                class="time_toggle"
-                                id="25442"
-                                href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"
-                                ><i class="halflings halflings-play"></i>Stoppuhr starten</a
-                              ></li><li class=""><a href="/index.php/monitoring/edit/id/99999"
-                                ><i class="glyphicons pencil"></i>Bearbeiten</a
-                              ></li><li class="last"><a
-                                onclick="
-                                  if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) {
-                                    var f = document.createElement('form');
-                                    f.style.display = 'none';
-                                    this.parentNode.appendChild(f);
-                                    f.method = 'post';
-                                    f.action = this.href;
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', 'sf_method');
-                                    m.setAttribute('value', 'delete');
-                                    f.appendChild(m);
-                                    var m = document.createElement('input');
-                                    m.setAttribute('type', 'hidden');
-                                    m.setAttribute('name', '_csrf_token');
-                                    m.setAttribute('value', 'TEST_CSRF_TOKEN');
-                                    f.appendChild(m);
-                                    var jq_f = $(f);
-                                    $.ajax({
-                                      url: jq_f.attr('action'),
-                                      type: 'delete',
-                                      dataType: 'html',
-                                      data: jq_f.serialize(),
-                                      cache: false,
-                                      beforeSend: function (jqXHR, settings) {
-                                        jq_f.parents('.ui-dialog-content').mask('Loading...');
-                                      },
-                                      success: function (data) {
-                                        $('.lf_content.ajxon').trigger('refreshList.monitoring_filter');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                      error: function (jqXHR, textStatus, errorThrown) {
-                                        alert('Es ist ein unbekannter Fehler aufgetreten');
-                                        $('#jqDialog').dialog('close');
-                                      },
-                                    });
-                                  }
-                                  return false;
-                                "
-                                href="/index.php/monitoring/delete/id/99999"
-                                ><i class="icon-remove"></i> Löschen</a
-                              ></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25442]" id="items_25442" value="25442" /></td></tr></tbody><tfoot><tr class="footer_row"><td colspan="2" class="l visible">Total geschätzt: 0 h 0 min</td><td colspan="2"></td><td colspan="2"></td><td class="r visible" colspan="2" hours="5791" mins="24">Total: 5791 h 24 min</td><td colspan="3"></td></tr></tfoot></table></div></div></div></div></div></div><div class="foot"><div class="row-fluid bottomInfoHolder"><div class="pager_info span8"><div class="btn-toolbar" style="margin-top: 0"><div class="btn-group dropup pull-left"><a class="btn dropdown-toggle" data-toggle="dropdown">
-                Einträge 1-100 von 3995 <span class="caret"></span></a><ul class="dropdown-menu"><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/10"
-                    >10 Einträge anzeigen</a
-                  ></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/15"
-                    >15 Einträge anzeigen</a
-                  ></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/20"
-                    >20 Einträge anzeigen</a
-                  ></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/25"
-                    >25 Einträge anzeigen</a
-                  ></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/50"
-                    >50 Einträge anzeigen</a
-                  ></li><li class="active"><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/100"
-                    >100 Einträge anzeigen</a
-                  ></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/200"
-                    >200 Einträge anzeigen</a
-                  ></li></ul></div><div class="pull-left"><a
-                class="btn bx-noIcon-margin"
-                rel="tooltip"
-                title="Aktuelle Liste exportieren"
-                onclick="
-                  if (!this.getAttribute('disabled'))
-                    jq_load_dialog(
-                      '/index.php/filter/export/f/MonitoringFilter/m/monitoring/a/list',
-                      {
-                        autoOpen: false,
-                        bgiframe: false,
-                        close: 'function() { $(this).dialog(\'destroy\'); }',
-                        maxHeight: 2000,
-                        maxWidth: 2024,
-                        modal: true,
-                        resizable: false,
-                        title: 'Als Excelfile herunterladen',
-                        width: 400,
-                      },
-                      '#jqDialog',
-                    );
-                  return false;
-                "
-                href="/index.php/filter/export/f/MonitoringFilter/m/monitoring/a/list"
-                ><i class="glyphicons download_alt"></i></a></div></div></div><div class="mypager span8"><div class="pagination"><ul><li><a class="symbol ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/1">«</a></li><li><a class="symbol ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/1">‹</a></li><li class="active"><a href="#">1</a></li><li><a class="ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/2">2</a></li><li><a class="ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/3">3</a></li><li><a class="ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/4">4</a></li><li><a class="ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/5">5</a></li><li><a class="symbol ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/2">›</a></li><li><a class="symbol ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/40"
-                  >»</a
-                ></li></ul></div></div><div class="mass_mutation_dropdown span8"><select id="mass_mutation_dropdown" class="noselect2"><option value="">Wählen Sie eine Aktion aus</option><option value="">----------------------------------------------</option><option value="/index.php/monitoring/massDelete" class="has_confirm" title="Sind Sie sicher?">
-              Ausgewählte Einträge löschen
-            </option><option value="/index.php/monitoring/export">Excel-Export</option><option value="/index.php/monitoring/massStateChange">Status &amp; Verrechenbarkeit ändern</option></select
-          ><a
-            class="btn attach-fe-action-btn"
-            style="cursor: pointer; margin-left: 5px"
-            onclick="if($(this).parents(&quot;.mass_item_holder&quot;).find(&quot;input:checkbox[name^='items']:checked&quot;).size() &lt; 1) {
+<html><head></head><body class="OfficeBody guuru-chat-initialized"><span class="lgcy"></span><noscript><div class="no-js-error"><h2>Please activate JavaScript in your browser.</h2></div></noscript><div class="lgcy"><div id="header1" class="row-fluid"><div class="span6"><div class="logo_holder"><div class="dropdown company-selection"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="halflings halflings-menu-hamburger cs-icon"></span></a><ul class="dropdown-menu"><li><span class="cs-span-title">Ihre Firma</span></li><li><span class="cs-span">
+                                Acme AG            </span></li><li class="divider"></li><li><span class="cs-span-title">Weitere</span></li><li><a href="https://my.bexio.com">Meine Firma verwalten</a></li><li><a href="https://my.bexio.com/client/new">Neue Firma erstellen</a></li></ul></div><a href="/index.php/user/dashboard/resetSubNav/1"><img style="max-width: 150px; max-height: 42px" src="/img/b4tfqc752ufr/companyLogo.png"></a></div></div><div class="span18 pull-right bx-no-left-margin"><ul class="nav nav-pills pull-right"><li class="pull-right dropdown settings"><a class="dropdown-toggle custom-icon" data-toggle="dropdown" href="/index.php/admin/"><img src="/images/bx-icons/bx-settings.svg" class="custom-icon-img" alt="Einstellungen">
+                                Einstellungen                              <img alt="down" src="/images/bx-icons/fa-caret-down.svg" class="custom-caret"></a><ul class="dropdown-menu pull-right"><li class="admin"><a href="/index.php/admin/">Alle Einstellungen</a></li><li class="divider"></li><li class="company_profile"><a href="/index.php/client_settings/editCompanyProfile">
+                                        Firmenprofil                                    </a></li><li class="templates"><a href="/index.php/documentdesigner/templateList">Dokumenten-Vorlagen</a></li><li class="divider"></li><li class="import_export"><a href="/index.php/admin/importExportSetting">Export</a></li><li class="contact"><a href="/index.php/kontakt_kategorie/list">Kontaktkategorien</a></li><li class="service"><a href="/index.php/client_settings/service_list">Geschäftstätigkeiten</a></li></ul></li><li class="pull-right dropdown settings"><a class="dropdown-toggle custom-icon" data-toggle="dropdown" href="/index.php/admin/"><img src="/images/bx-icons/bx-marketplace.svg" class="custom-icon-img" alt="Marketplace">
+                      Marketplace                    <img alt="down" src="/images/bx-icons/fa-caret-down.svg" class="custom-caret"></a><ul class="dropdown-menu pull-right"><li class="admin"><a target="_blank" href="https://marketplace.bexio.com/de-CH/home?utm_source=internal&amp;utm_medium=link&amp;utm_campaign=20250701-marketplace-de&amp;utm_content=bexio-software">
+                          Neue Apps entdecken                        <i class="halflings halflings-new-window"></i></a></li><li class="admin"><a href="/index.php/admin/apps">
+                            Verbundene Apps                        </a></li></ul></li><li class="pull-right dropdown recommend-dropdown"><a class="dropdown-toggle custom-icon" href="#" data-toggle="dropdown"><img src="/images/bx-icons/bx-heart.svg" class="recommend-icon" alt="Empfehlen Sie uns weiter"><img alt="down" src="/images/bx-icons/fa-caret-down.svg" class="custom-caret"></a><ul class="dropdown-menu pull-right"><li><form target="_blank" action="https://www.bexio.com/actions/app-trial-signup/recommendation/authorise" method="post"><input type="hidden" name="uuid" value="a630d2be-e864-4a97-b8c8-95e6661fcf79"><input type="hidden" name="csn" value="b4tfqc752ufr"><input type="hidden" name="language" value="de-CH"><input type="hidden" name="firstname" value="Jane"><input type="hidden" name="lastname" value="Doe"><input type="hidden" name="token" value="eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkVTNTYXFLOHF1c25rakl4WEFsbE1EZk0zakRLYkJneDd3dlVVMHBsaUhFIn0.eyJleHAiOjE3Nzg2Njg4MzEsImlhdCI6MTc3ODY1NDQzMSwianRpIjoiMmZjODkyNTgtYzE1OC00NDVhLTlhYjktZjU3OWNlNjE4NzkwIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmJleGlvLmNvbS9yZWFsbXMvYmV4aW8iLCJzdWIiOiJhNjMwZDJiZS1lODY0LTRhOTctYjhjOC05NWU2NjYxZmNmNzkiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJvZmZpY2VpZCIsInNpZCI6IjdhY2IzODA3LTc2MDQtNGY3MC05YzZjLWFlYzU0ZDJjMTQ2NSIsInNjb3BlIjoib3BlbmlkIG9mZmxpbmVfYWNjZXNzIHByb2ZpbGUgdGVjaG5pY2FsIGVtYWlsIGludGVybmFsIGFsbCIsImxvZ2luX2lkIjoiYTYzMGQyYmUtZTg2NC00YTk3LWI4YzgtOTVlNjY2MWZjZjc5IiwiY29tcGFueV9pZCI6ImI0dGZxYzc1MnVmciIsInVzZXJfaWQiOjM3MTQxMiwiY29tcGFueV91c2VyX2lkIjoxMn0.DsN2ULeKwC0KbwGkRMUflNKQ2RNQ7rkFT7PVaWd4JcgHavvZLMsyG5DBZnDjfG147KNMDbl-cUoCp6CEtAlfEueBeydnVmynlLc_PPebijXEeUKXLz-evX9jlhMFrGVUhiJxlC6R9R-GsMh98WSStFjH5yqh5pgsek5OLmriKRvA5mDgGO2ipcSlw80mRJ9QSabYUHg6LMi-VcXjMH1hLqOozo0u6TC_qr3Xjdrfrf-VMvRwgnPD6t27L8aX1aWgVHfd6MLZJY6zsde_DEcIMfvMOJmkbLRs2KgAxrworFmt8DqJJr0rQdRk5TwLdsMhFv1vJR33KtarPnKQi8W2Ww"><div class="recommend"><div class="row-fluid"><strong class="span24">Empfehlen Sie uns weiter</strong></div><div class="row-fluid"><p>Weiterempfehlen und profitieren!</p><p>Für jede erfolgreiche Vermittlung werden Sie mit einer Gutschrift auf Ihre nächste bexio-Rechnung belohnt. Details finden Sie in unserem <a href="https://help.bexio.com/s/article/000002443?language=de" target="_blank">Supportbeitrag</a>.</p></div><br><div class="row-fluid"><button class="btn pull-right btn-success" type="submit" name="submit"><i class="halflings halflings-comments icon-white"></i>
+                        Jetzt weiterempfehlen und Gutschrift sichern.                    </button></div></div></form></li></ul></li><li class="user dropdown"><a class="dropdown-toggle" href="/index.php/user/preferenceUserProfile" style="color: #0F78A5" data-toggle="dropdown"><img class="bx-main-user-img" style="padding-right: 4px;height:20px;" src="https://my.bexio.com/profile/images/a630d2be-e864-4a97-b8c8-95e6661fcf79.png?type=thumb">Jane Doe <img alt="down" src="/images/bx-icons/fa-caret-down.svg" class="custom-caret" "=""></a><ul class="dropdown-menu pull-right"><li class="nav_edit_profile"><a href="/index.php/user/preferenceUserProfile">Profil bearbeiten</a></li><li class="nav_logout"><a href="https://idp.bexio.com/endsession/auto?post_logout_redirect_uri=https%3A%2F%2Foffice.bexio.com">Logout</a></li></ul></li></ul></div></div><div class="row-fluid" id="header2"><div class="span24"><div class="navbar-placeholder" style="display: none;"></div><div class="navbar navbar-inverse" style="width: auto;"><div class="navbar-inner"><div class="container"><div class="nav-collapse"><ul class="nav"><li class="nav_dropdown nav_"><a href="/index.php/"><i class="glyphicons home"></i></a></li><li class="nav_dropdown nav_contact"><a href="/index.php/kontakt/list/resetListView/1">Kontakte</a></li><li class="dropdown nav_dropdown nav_kb"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Verkauf <b class="caret"></b></a><ul class="dropdown-menu"><li class="nav_dropdown nav_kb_order"><a href="/index.php/kb_order/list/resetListView/1">Aufträge</a></li><li class="nav_dropdown nav_kb_invoice"><a href="/index.php/kb_invoice/list/resetListView/1">Rechnungen</a></li><li class="nav_dropdown nav_kb_credit_voucher"><a href="/index.php/kb_credit_voucher/list/resetListView/1">Gutschriften</a></li><li class="nav_dropdown nav_kb_more"><a href="/index.php/kb_general/wizardOverview">Weitere</a></li></ul></li><li class="dropdown nav_dropdown active nav_pr_project"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Projekte <b class="caret"></b></a><ul class="dropdown-menu"><li class="nav_dropdown nav_project"><a href="/index.php/pr_project/list/resetListView/1">Projekte</a></li><li class="nav_dropdown active nav_monitoring"><a href="/index.php/monitoring/list/resetListView/1">Zeiten</a></li></ul></li><li class="dropdown nav_dropdown nav_purchase"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Einkauf <b class="caret"></b></a><ul class="dropdown-menu"><li class="nav_dropdown nav_kb_article_order"><a href="/index.php/kb_article_order/list/resetListView/1">Bestellungen</a></li><li class="nav_dropdown nav_kb_bill"><a href="/index.php/kb_bill/list/resetListView/1">Lieferantenrechnungen</a></li><li class="nav_dropdown nav_kb_expense"><a href="/index.php/kb_expense/list/resetListView/1">Aufwendungen</a></li></ul></li><li class="nav_dropdown hidden fm nav_fm"><a href="/index.php/inbox">Posteingang</a></li><li class="nav_dropdown hidden main_nav_sub_apps nav_main_nav_sub_apps"><a href="/index.php/admin/apps#/">Apps</a></li><li class="dropdown nav_dropdown nav_apps"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Mehr <b class="caret"></b></a><ul class="dropdown-menu"><li class="nav_dropdown main_nav_sub_apps pinnable nav_main_nav_sub_apps"><a href="/index.php/admin/apps#/">Apps</a><a class="pin_nav" rel="tooltip" data-placement="right" data-container="body" data-type="main_nav_sub_apps" data-title-replacement="Aus Navigation entfernen" title="In Navigation verankern" href="/index.php/user/pinNavigation/name/main_nav_sub_apps"><i class="glyphicons pushpin icon-grey"></i></a></li><li class="nav_dropdown fm pinnable nav_fm"><a href="/index.php/inbox">Posteingang</a><a class="pin_nav" rel="tooltip" data-placement="right" data-container="body" data-type="fm" data-title-replacement="Aus Navigation entfernen" title="In Navigation verankern" href="/index.php/user/pinNavigation/name/fm"><i class="glyphicons pushpin icon-grey"></i></a></li></ul></li><li class="dropdown nav_dropdown nav_financial_services"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Finanzdienstleistungen <b class="caret"></b></a><ul class="dropdown-menu"><li class="nav_dropdown nav_financial_services"><a target="_blank" href="https://marketplace.bexio.com/de-CH/apps/127056/bexio-pay?utm_source=internal&amp;utm_medium=link&amp;utm_campaign=20250702-bexio-office-de&amp;utm_content=financial-services_bexio-pay">bexio Pay&nbsp;<i class="halflings halflings-new-window" style="font-size: 10px; color: rgb(187,187,187);"></i></a></li></ul></li><li class="navbar-form pull-right globalsearch" onsubmit="return false;"><div class="input-prepend"><span class="add-on"><label for="globalsearch"><i class="glyphicons search"></i></label></span><input type="text" id="globalsearch" data-url="/index.php/search/search" data-results_container="#searchHolder" placeholder="Schnellsuche" style="" x-webkit-speech="x-webkit-speech" class="ui-autocomplete-input" autocomplete="off"></div><div id="searchHolder" class="search-holder"><ul id="ui-id-1" tabindex="0" class="ui-menu ui-widget ui-widget-content ui-autocomplete ui-front" style="display: none;"></ul></div></li></ul></div></div></div></div></div></div></div><bexio-application-header-root ng-version="18.2.4" class="ngBx"><bexio-application-header-shell><bexio-application-header-wrapper _nghost-ng-c780682148=""><!----><div _ngcontent-ng-c780682148="" class="header-wrapper"><div _ngcontent-ng-c780682148="" class="content-left"><button _ngcontent-ng-c780682148="" mat-button="" disableripple="" color="primary" class="company-selection mdc-button mat-mdc-button mat-primary mat-mdc-button-base ng-star-inserted" mat-ripple-loader-uninitialized="" mat-ripple-loader-class-name="mat-mdc-button-ripple" mat-ripple-loader-disabled=""><span class="mat-mdc-button-persistent-ripple mdc-button__ripple"></span><span class="mdc-button__label"><fa-icon _ngcontent-ng-c780682148="" size="md" class="ng-fa-icon"><svg role="img" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="bars" class="svg-inline--fa fa-bars fa-md" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"></path></svg></fa-icon></span><span class="mat-mdc-focus-indicator"></span><span class="mat-mdc-button-touch-target"></span></button><!----><!----><a _ngcontent-ng-c780682148="" href="/index.php/user/dashboard/resetSubNav/1"><img _ngcontent-ng-c780682148="" src=""></a></div><div _ngcontent-ng-c780682148="" class="content-right"><button _ngcontent-ng-c780682148="" mat-button="" color="primary" bexiomenuhover="" class="mat-mdc-menu-trigger mdc-button mat-mdc-button mat-primary mat-mdc-button-base" mat-ripple-loader-uninitialized="" mat-ripple-loader-class-name="mat-mdc-button-ripple" aria-haspopup="menu" aria-expanded="false"><span class="mat-mdc-button-persistent-ripple mdc-button__ripple"></span><span class="mdc-button__label"><img _ngcontent-ng-c780682148="" aria-hidden="true" src="https://my.bexio.com/profile/images/a630d2be-e864-4a97-b8c8-95e6661fcf79.png?type=thumb"><span _ngcontent-ng-c780682148=""></span></span><span class="mat-mdc-focus-indicator"></span><span class="mat-mdc-button-touch-target"></span></button><!----><mat-menu _ngcontent-ng-c780682148="" class="ng-tns-c1923052698-0"><!----></mat-menu><!----><button _ngcontent-ng-c780682148="" mat-button="" color="primary" bexiomenuhover="" class="mat-mdc-menu-trigger mdc-button mat-mdc-button mat-primary mat-mdc-button-base" mat-ripple-loader-uninitialized="" mat-ripple-loader-class-name="mat-mdc-button-ripple" aria-haspopup="menu" aria-expanded="false"><span class="mat-mdc-button-persistent-ripple mdc-button__ripple"></span><span class="mdc-button__label"><fa-icon _ngcontent-ng-c780682148="" size="md" class="ng-fa-icon"><svg role="img" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="store" class="svg-inline--fa fa-store fa-md" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M547.6 103.8L490.3 13.1C485.2 5 476.1 0 466.4 0H109.6C99.9 0 90.8 5 85.7 13.1L28.3 103.8c-29.6 46.8-3.4 111.9 51.9 119.4c4 .5 8.1 .8 12.1 .8c26.1 0 49.3-11.4 65.2-29c15.9 17.6 39.1 29 65.2 29c26.1 0 49.3-11.4 65.2-29c15.9 17.6 39.1 29 65.2 29c26.2 0 49.3-11.4 65.2-29c16 17.6 39.1 29 65.2 29c4.1 0 8.1-.3 12.1-.8c55.5-7.4 81.8-72.5 52.1-119.4zM499.7 254.9l-.1 0c-5.3 .7-10.7 1.1-16.2 1.1c-12.4 0-24.3-1.9-35.4-5.3V384H128V250.6c-11.2 3.5-23.2 5.4-35.6 5.4c-5.5 0-11-.4-16.3-1.1l-.1 0c-4.1-.6-8.1-1.3-12-2.3V384v64c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V384 252.6c-4 1-8 1.8-12.3 2.3z"></path></svg></fa-icon> Marketplace </span><span class="mat-mdc-focus-indicator"></span><span class="mat-mdc-button-touch-target"></span></button><!----><mat-menu _ngcontent-ng-c780682148="" class="ng-tns-c1923052698-1"><!----></mat-menu><button _ngcontent-ng-c780682148="" mat-button="" color="primary" bexiomenuhover="" class="mat-mdc-menu-trigger mdc-button mat-mdc-button mat-primary mat-mdc-button-base ng-star-inserted" mat-ripple-loader-uninitialized="" mat-ripple-loader-class-name="mat-mdc-button-ripple" aria-haspopup="menu" aria-expanded="false"><span class="mat-mdc-button-persistent-ripple mdc-button__ripple"></span><span class="mdc-button__label"><fa-icon _ngcontent-ng-c780682148="" size="md" class="ng-fa-icon"><svg role="img" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="gear" class="svg-inline--fa fa-gear fa-md" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"></path></svg></fa-icon> Einstellungen </span><span class="mat-mdc-focus-indicator"></span><span class="mat-mdc-button-touch-target"></span></button><!----><mat-menu _ngcontent-ng-c780682148="" class="ng-tns-c1923052698-2 ng-star-inserted"><!----></mat-menu><!----></div></div></bexio-application-header-wrapper></bexio-application-header-shell></bexio-application-header-root><bexio-application-navigation-root ng-version="18.2.4" class="ngBx"><bexio-application-navigation-shell><bexio-application-navigation-wrapper _nghost-ng-c1463881055=""><mat-toolbar _ngcontent-ng-c1463881055="" class="mat-toolbar mat-toolbar-single-row"><nav _ngcontent-ng-c1463881055=""><!----></nav><bexio-quick-find _ngcontent-ng-c1463881055="" _nghost-ng-c1673749899=""><div _ngcontent-ng-c1673749899="" class="quick-find"><div _ngcontent-ng-c1673749899="" class="quick-find-icon"><fa-icon _ngcontent-ng-c1673749899="" size="lg" class="ng-fa-icon"><svg role="img" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass fa-lg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"></path></svg></fa-icon></div><input _ngcontent-ng-c1673749899="" type="text" class="quick-find-input ng-untouched ng-pristine ng-valid" placeholder="Schnellsuche"><!----></div><bexio-quick-find-menu _ngcontent-ng-c1673749899="" _nghost-ng-c2698403929=""><!----></bexio-quick-find-menu></bexio-quick-find></mat-toolbar></bexio-application-navigation-wrapper></bexio-application-navigation-shell></bexio-application-navigation-root><main class="application-content"><span class="lgcy"></span><application-wrapper-root _nghost-ng-c790170003="" ng-version="18.2.4"><router-outlet _ngcontent-ng-c790170003=""></router-outlet><app-application-wrapper-root _nghost-ng-c3783977928="" class="ng-star-inserted"><div _ngcontent-ng-c3783977928="" class="wrapper-content"><div _ngcontent-ng-c3783977928="" class="ngBx"><div _ngcontent-ng-c3783977928="" class="row"><div _ngcontent-ng-c3783977928="" class="col-12"><router-outlet _ngcontent-ng-c3783977928=""></router-outlet><bexio-empty-page _nghost-ng-c2725584015="" class="ng-star-inserted"></bexio-empty-page><!----><!----></div></div><bexio-ai-root _ngcontent-ng-c3783977928="" class="bexio-ai-tokens" _nghost-ng-c2302260515=""><!----></bexio-ai-root></div></div></app-application-wrapper-root><!----></application-wrapper-root><span class="lgcy"><!-- Google Tag Manager Datalayer --><!-- End Google Tag Manager Datalayer --><!-- Google Tag Manager --><noscript></noscript><!-- End Google Tag Manager --><div id="contentContainer" class="container-fluid"><div class="bx-canvas"><div class="bx-card-container bx-breadcrumb-container bx-card-container-transparent"><div class="bx-card-title"><div class="bx-flex-wrap"><div class="bx-flex-block bx-shrink bx-flex-align-middle-left"><div><h2 class="active">Zeiten</h2></div></div><div class="bx-flex-block bx-halftop-margin bx-flex-align-middle-left"></div><div class="bx-flex-block bx-shrink bx-flex-align-middle-left"><a class="btn btn-success js-first-btn" href="/index.php/monitoring/edit">
+                            Neue Zeiterfassung                        </a></div></div></div></div></div><div class="row-fluid"><div class="span24"><div class="main_block list" id="monitoring_content"><div class="lf_content mass_item_holder ajxon" id="RVsdfBCb8e" reload_link="/index.php/filter/reload/f/MonitoringFilter/m/monitoring/a/list"><div class="content"><div class="tableBlock"><div class="row-fluid" id="listContainer"><div class="span24"><div class="row-fluid"><div class="span14"><ul class="nav nav-tabs bx-listFilter-ul" id="tab"><li class="bx-listFilter active"><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/empty">Alle<i data-link="/index.php/filter/saveDefaultTab/f/MonitoringFilter/m/monitoring/a/list/fId/empty" class="halflings halflings-glyph-pushpin set_standard_tab" title="Als Standardtab festlegen" data-placement="bottom"></i></a></li><li class="bx-listFilter "><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999">Heute</a></li><li class="bx-listFilter "><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999">Aktuelle Woche</a></li><li class="bx-listFilter "><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999">Aktueller Monat</a></li><li class="bx-listFilter "><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999">Meine</a></li><li class="dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#">Eigene Filter <b class="caret"></b></a><ul class="dropdown-menu"><li><a class="ajxl" href="/index.php/filter/useFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999">Globex PM<i class="glyphicons pencil editFilter" rel="tooltip" title="Filter bearbeiten" href="/index.php/filter/editFilter/f/MonitoringFilter/m/monitoring/a/list/id/99999"></i></a></li></ul></li></ul></div><div class="span10"><div class="filterQuickSearch"><div class="filterActions"><a style="cursor: pointer; margin-right: 10px;" onclick="toggleFilter($(this))" class="btn-filter-open"><i title="Filtern" rel="tooltip" class="halflings halflings-filter"></i> Filtern                    </a></div><form method="post" action="/index.php/filter/quickSearch/f/MonitoringFilter/m/monitoring/a/list"><div class="input-prepend"><span class="add-on"><i class="glyphicons search"></i></span><input id="quickSearch" type="text" name="quickSearch" placeholder="Suche" class="filterQuickSearchField autoselect" value=""></div><label for="quickSearch"></label></form></div></div></div><form method="post" action="/index.php/filter/saveFilter/f/MonitoringFilter/m/monitoring/a/list"><input type="hidden" name="monitoring_filters[_csrf_token]" id="monitoring_filters__csrf_token"><div class="filter row-fluid"><div class="span24"><div class="bx-formular-container bx-formular-filter"><div class="row-fluid bx-formular-container-head bx-bottom-margin"><h2>Filter festlegen</h2><i class="glyphicons remove_2 removeFilter" onclick="toggleFilter($(this));"></i></div><div class="row-fluid bx-formular"><div class="span24"><div class="row-fluid"><div class="span8 bx-formular-inlinecolumn"><div class="control-group "><label class="control-label" for="monitoring_filters_client_service_id">Tätigkeit</label><div class="controls"><div class="input"><div class="select2-container" id="s2id_monitoring_filters_client_service_id" style="width: 100%;"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1"><span class="select2-chosen" id="select2-chosen-5"></span><abbr class="select2-search-choice-close"></abbr><span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen5" class="select2-offscreen">Tätigkeit</label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-5" id="s2id_autogen5"><div class="select2-drop select2-display-none select2-with-searchbox"><div class="select2-search"><label for="s2id_autogen5_search" class="select2-offscreen">Tätigkeit</label><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-5" id="s2id_autogen5_search" placeholder=""></div><ul class="select2-results" role="listbox" id="select2-results-5"></ul></div></div><select name="monitoring_filters[client_service_id]" id="monitoring_filters_client_service_id" title="Tätigkeit" class="select2-offscreen" tabindex="-1"><option value="" selected="selected"></option><option value="1">Work</option></select></div></div></div><div class="control-group "><label class="control-label" for="monitoring_filters_date">Datum</label><div class="controls"><div class="input"><div class="input-append datepicker bx-datapicker"><input placeholder="Von" type="text" name="monitoring_filters[date][from]" value="" style="width:80px;" id="monitoring_filters_date_from" class="hasDatepicker"><span class="add-on"><label for="monitoring_filters_date_from"><i class="halflings halflings-glyph-calendar"></i></label></span></div><span class="bx-date-delimiter">–</span><div class="input-append datepicker bx-datapicker"><input placeholder="Bis" type="text" name="monitoring_filters[date][to]" value="" style="width:80px;" id="monitoring_filters_date_to" class="hasDatepicker"><span class="add-on"><label for="monitoring_filters_date_to"><i class="halflings halflings-glyph-calendar"></i></label></span></div><div class="exclude"></div></div></div></div></div><div class="span8 bx-formular-inlinecolumn"><div class="control-group "><label class="control-label" for="monitoring_filters_contact_id">Kontakt</label><div class="controls"><div class="input"><input type="hidden" name="monitoring_filters[contact_id]" id="monitoring_filters_contact_id"><input type="text" name="autocomplete_monitoring_filters[contact_id]" value="" class="noautocompleter ac_input" placeholder="Bitte geben Sie einen Suchbegriff ein" id="autocomplete_monitoring_filters_contact_id" autocomplete="off"><a href="/index.php/lookup/index/model/Contact/name/monitoring_filters_contact_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRDb250YWN0JTVDJTJGZmllbGRJZCU1QyUyRm1vbml0b3JpbmdfZmlsdGVyc19jb250YWN0X2lkJTVDJTJGZGlhbG9nJTVDJTJGY2hvb3NlckRpYWxvZyUzRmNhbGxiYWNrJTNEY2FsbGJhY2tfcXVpY2tfYWRkX2F1dG9jb21wbGV0ZSUyMiUyQyUyMnF1aWNrQWRkRGlhbG9nT3B0aW9ucyUyMiUzQSU3QiUyMnRpdGxlJTIyJTNBJTIyTmV1ZXIlMjBLb250YWt0JTIyJTdEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMk5ldWVyJTIwS29udGFrdCUyMiU3RA%3D%3D" onclick="jq_load_dialog('/index.php/lookup/index/model/Contact/name/monitoring_filters_contact_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRDb250YWN0JTVDJTJGZmllbGRJZCU1QyUyRm1vbml0b3JpbmdfZmlsdGVyc19jb250YWN0X2lkJTVDJTJGZGlhbG9nJTVDJTJGY2hvb3NlckRpYWxvZyUzRmNhbGxiYWNrJTNEY2FsbGJhY2tfcXVpY2tfYWRkX2F1dG9jb21wbGV0ZSUyMiUyQyUyMnF1aWNrQWRkRGlhbG9nT3B0aW9ucyUyMiUzQSU3QiUyMnRpdGxlJTIyJTNBJTIyTmV1ZXIlMjBLb250YWt0JTIyJTdEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMk5ldWVyJTIwS29udGFrdCUyMiU3RA%3D%3D',{autoOpen:false, bgiframe:false, close:'function() { $(this).dialog(\'destroy\'); }', maxHeight:2000, maxWidth:2024, modal:true, open:function(event,ui){ $('#searchField').focus();}, resizable:false, title:'Liste', width:850},'#chooserDialog'); $(this).blur(); return false;" class="btn"><i class="glyphicons address_book"></i></a></div></div></div><div class="control-group "><label class="control-label" for="monitoring_filters_user_id">Ansprechpartner</label><div class="controls"><div class="input"><div class="select2-container" id="s2id_monitoring_filters_user_id" style="width: 100%;"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1"><span class="select2-chosen" id="select2-chosen-6"></span><abbr class="select2-search-choice-close"></abbr><span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen6" class="select2-offscreen">Ansprechpartner</label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-6" id="s2id_autogen6"><div class="select2-drop select2-display-none select2-with-searchbox"><div class="select2-search"><label for="s2id_autogen6_search" class="select2-offscreen">Ansprechpartner</label><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-6" id="s2id_autogen6_search" placeholder=""></div><ul class="select2-results" role="listbox" id="select2-results-6"></ul></div></div><select name="monitoring_filters[user_id]" id="monitoring_filters_user_id" title="Ansprechpartner" class="select2-offscreen" tabindex="-1"><option value="" selected="selected"></option><option value="8">Roe Richard</option><option value="6">Gray Robin</option><option value="11">Smith Sam</option><option value="14">Brown Pat</option><option value="12">Doe Jane</option><option value="1">Klein Anna</option><option value="7">Klein (Test Account) Anna</option><option value="3">Weber Tom</option><option value="13">Weber (Test Account) Tom</option><option value="17">Fischer Max</option><option value="15">Meier Eva</option><option value="2">Wolf Leo</option><option value="5">Berg Nils</option><option value="4">Stein Otto</option></select></div></div></div><div class="control-group "><label class="control-label" for="monitoring_filters_pr_project_id">Projekt</label><div class="controls"><div class="input"><input type="hidden" name="monitoring_filters[pr_project_id]" id="monitoring_filters_pr_project_id"><input type="text" name="autocomplete_monitoring_filters[pr_project_id]" value="" class="noautocompleter ac_input" placeholder="Bitte geben Sie einen Suchbegriff ein" id="autocomplete_monitoring_filters_pr_project_id" autocomplete="off"><a href="/index.php/lookup/index/model/PrProject/name/monitoring_filters_pr_project_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRQclByb2plY3QlNUMlMkZmaWVsZElkJTVDJTJGbW9uaXRvcmluZ19maWx0ZXJzX3ByX3Byb2plY3RfaWQlNUMlMkZkaWFsb2clNUMlMkZjaG9vc2VyRGlhbG9nJTNGY2FsbGJhY2slM0RjYWxsYmFja19xdWlja19hZGRfYXV0b2NvbXBsZXRlJTIyJTJDJTIycXVpY2tBZGREaWFsb2dPcHRpb25zJTIyJTNBJTVCJTVEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMiUyMiU3RA%3D%3D" onclick="jq_load_dialog('/index.php/lookup/index/model/PrProject/name/monitoring_filters_pr_project_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRQclByb2plY3QlNUMlMkZmaWVsZElkJTVDJTJGbW9uaXRvcmluZ19maWx0ZXJzX3ByX3Byb2plY3RfaWQlNUMlMkZkaWFsb2clNUMlMkZjaG9vc2VyRGlhbG9nJTNGY2FsbGJhY2slM0RjYWxsYmFja19xdWlja19hZGRfYXV0b2NvbXBsZXRlJTIyJTJDJTIycXVpY2tBZGREaWFsb2dPcHRpb25zJTIyJTNBJTVCJTVEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMiUyMiU3RA%3D%3D',{autoOpen:false, bgiframe:false, close:'function() { $(this).dialog(\'destroy\'); }', maxHeight:2000, maxWidth:2024, modal:true, open:function(event,ui){ $('#searchField').focus();}, resizable:false, title:'Liste', width:940},'#chooserDialog'); $(this).blur(); return false;" class="btn"><i class="glyphicons newspaper"></i></a></div></div></div></div><div class="span8 bx-formular-inlinecolumn"><div class="control-group "><label class="control-label" for="monitoring_filters_monitoring_status_id">Status</label><div class="controls"><div class="input"><div class="select2-container" id="s2id_monitoring_filters_monitoring_status_id" style="width: 100%;"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1"><span class="select2-chosen" id="select2-chosen-7"></span><abbr class="select2-search-choice-close"></abbr><span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen7" class="select2-offscreen">Status</label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-7" id="s2id_autogen7"><div class="select2-drop select2-display-none select2-with-searchbox"><div class="select2-search"><label for="s2id_autogen7_search" class="select2-offscreen">Status</label><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-7" id="s2id_autogen7_search" placeholder=""></div><ul class="select2-results" role="listbox" id="select2-results-7"></ul></div></div><select name="monitoring_filters[monitoring_status_id]" id="monitoring_filters_monitoring_status_id" title="Status" class="select2-offscreen" tabindex="-1"><option value="" selected="selected"></option><option value="1">Offen</option><option value="2">In Arbeit</option><option value="3">Erledigt</option><option value="4">Fakturiert</option><option value="5">Geschlossen</option></select></div></div></div><div class="control-group "><label class="control-label" for="monitoring_filters_allowable_bill">Eintrag ist abrechenbar</label><div class="controls"><div class="input"><div class="select2-container" id="s2id_monitoring_filters_allowable_bill" style="width: 100%;"><a href="javascript:void(0)" class="select2-choice" tabindex="-1"><span class="select2-chosen" id="select2-chosen-8">Egal</span><abbr class="select2-search-choice-close"></abbr><span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen8" class="select2-offscreen">Eintrag ist abrechenbar</label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-8" id="s2id_autogen8"><div class="select2-drop select2-display-none select2-with-searchbox"><div class="select2-search"><label for="s2id_autogen8_search" class="select2-offscreen">Eintrag ist abrechenbar</label><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-8" id="s2id_autogen8_search" placeholder=""></div><ul class="select2-results" role="listbox" id="select2-results-8"></ul></div></div><select name="monitoring_filters[allowable_bill]" id="monitoring_filters_allowable_bill" title="Eintrag ist abrechenbar" class="select2-offscreen" tabindex="-1"><option value="" selected="selected">Egal</option><option value="1">Ja</option><option value="0">Nein</option></select></div></div></div><div class="control-group "><label class="control-label" for="monitoring_filters_pr_package_id">Arbeitspaket</label><div class="controls"><div class="input"><input type="hidden" name="monitoring_filters[pr_package_id]" id="monitoring_filters_pr_package_id"><input type="text" name="autocomplete_monitoring_filters[pr_package_id]" value="" class="noautocompleter ac_input" placeholder="Bitte geben Sie einen Suchbegriff ein" id="autocomplete_monitoring_filters_pr_package_id" autocomplete="off"><a href="/index.php/lookup/index/model/PrPackage/name/monitoring_filters_pr_package_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRQclBhY2thZ2UlNUMlMkZmaWVsZElkJTVDJTJGbW9uaXRvcmluZ19maWx0ZXJzX3ByX3BhY2thZ2VfaWQlNUMlMkZkaWFsb2clNUMlMkZjaG9vc2VyRGlhbG9nJTNGY2FsbGJhY2slM0RjYWxsYmFja19xdWlja19hZGRfYXV0b2NvbXBsZXRlJTIyJTJDJTIycXVpY2tBZGREaWFsb2dPcHRpb25zJTIyJTNBJTVCJTVEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMiUyMiU3RA%3D%3D" onclick="jq_load_dialog('/index.php/lookup/index/model/PrPackage/name/monitoring_filters_pr_package_id/dialog/chooserDialog/addOptions/JTdCJTIyaGFzUXVpY2tBZGQlMjIlM0FmYWxzZSUyQyUyMnF1aWNrQWRkVXJsJTIyJTNBJTIyJTVDJTJGaW5kZXgucGhwJTVDJTJGbG9va3VwJTVDJTJGcXVpY2tBZGRQclBhY2thZ2UlNUMlMkZmaWVsZElkJTVDJTJGbW9uaXRvcmluZ19maWx0ZXJzX3ByX3BhY2thZ2VfaWQlNUMlMkZkaWFsb2clNUMlMkZjaG9vc2VyRGlhbG9nJTNGY2FsbGJhY2slM0RjYWxsYmFja19xdWlja19hZGRfYXV0b2NvbXBsZXRlJTIyJTJDJTIycXVpY2tBZGREaWFsb2dPcHRpb25zJTIyJTNBJTVCJTVEJTJDJTIycXVpY2tBZGRUaXRsZSUyMiUzQSUyMiUyMiU3RA%3D%3D',{autoOpen:false, bgiframe:false, close:'function() { $(this).dialog(\'destroy\'); }', maxHeight:2000, maxWidth:2024, modal:true, open:function(event,ui){ $('#searchField').focus();}, resizable:false, title:'Liste', width:940},'#chooserDialog'); $(this).blur(); return false;" class="btn"><i class="glyphicons newspaper"></i></a></div></div></div></div></div></div></div><hr><button class="btn btn-primary"><i class="glyphicons ok_2"></i> Filter anwenden</button><button class="btn" onclick="saveFilter($(this).closest('form')); return false;"><i class="halflings halflings-floppy-disk"></i> Filter speichern</button></div></div></div></form><div class="list"><div class="dataTableHolder"><table id="dataTable" class="table table-striped table-condensed table-hover jsTable"><thead><tr><th class=""><a class="ajxl" href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.DATE/o/asc">Datum</a></th><th class=""><a class="ajxl" href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.CLIENT_SERVICE_ID/o/asc">Tätigkeit</a></th><th class=""><a class="ajxl" href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring_status.NAME/o/asc">Status</a></th><th class=""><a class="ajxl" href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.ALLOWABLE_BILL/o/asc">Abrechenbar</a></th><th class=""><a class="ajxl" href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/contact.NAME_1/o/asc">Kontakt</a></th><th class=""><a class="ajxl" href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.TEXT/o/asc">Text</a></th><th class=""><a class="ajxl" href="/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/user.LASTNAME/o/asc">Ansprechpartner</a></th><th width="60" class="r">Zeit h:min</th><th width="60" class="c"></th><th width="70" class="l"></th><th width="10" class="r"><input type="checkbox" class="listToggler" onclick="toggleCheckboxes($(this), $(this).parents('table').find('tbody input[type=\'checkbox\']'));"></th></tr></thead><tbody><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90001"><td>08.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Nein</a></td><td>Acme AG        <br><span style="color: gray;">Projekt Acme - Know-how  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="UpHill Conference &amp; QA" style="display: inline-block;"></i></td><td>Weber Tom</td><td class="r">08:24</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25486" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25486]" id="items_25486" value="25486"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90002"><td>11.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Ja</a></td><td><br><span style="color: gray;"></span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="Worked on structuring and refining the target account qualification process for soulcode outreach. Defined the key criteria used to evaluate enterprise accounts such as digital complexity, CMS environment, website architecture, and commercial fit, while improving the workflow used to prioritise high-potential opportunities." style="display: inline-block;"></i></td><td>Fischer Max</td><td class="r">04:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25485" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25485]" id="items_25485" value="25485"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90003"><td>08.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Nein</a></td><td>Acme AG        <br><span style="color: gray;">Projekt Acme - Back Office  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="UphillConf" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">08:24</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25484" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25484]" id="items_25484" value="25484"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90004"><td>11.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Ja</a></td><td>Globex GmbH        <br><span style="color: gray;">Projekt Globex  - 5y Warranty 2026  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="Spec dashboard" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">02:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25482" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25482]" id="items_25482" value="25482"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90005"><td>11.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Nein</a></td><td>Acme AG        <br><span style="color: gray;">Projekt Acme - Back Office  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="Weekly" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">00:45</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25483" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25483]" id="items_25483" value="25483"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90006"><td>11.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Ja</a></td><td>Globex GmbH        <br><span style="color: gray;">Projekt Globex  - 5y Warranty 2026  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="LAGWEB-3452 Implemented B2C Role" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">02:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25480" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25480]" id="items_25480" value="25480"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90007"><td>11.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Ja</a></td><td>Globex GmbH        <br><span style="color: gray;">Projekt Globex  - 5y Warranty 2026  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="LAGWEB-3453 Implementation dashboard page" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">02:30</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25481" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25481]" id="items_25481" value="25481"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90008"><td>11.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Ja</a></td><td>Globex GmbH        <br><span style="color: gray;">Projekt Globex  - 5y Warranty 2026  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="LAGWEB-3332: Dashboard presentation meeting and further analyzing and refining current issues with Lukas" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">03:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25479" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25479]" id="items_25479" value="25479"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90009"><td>07.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Ja</a></td><td>Globex GmbH        <br><span style="color: gray;">Projekt Globex  - 5y Warranty 2026  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="Spec dashboard" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">07:15</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25477" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25477]" id="items_25477" value="25477"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90010"><td>07.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Nein</a></td><td>Acme AG        <br><span style="color: gray;">Projekt Acme - Back Office  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="Standup" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">00:15</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25478" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25478]" id="items_25478" value="25478"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90011"><td>07.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Ja</a></td><td>Globex GmbH        <br><span style="color: gray;">Projekt Globex  - 5y Warranty 2026  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="LAGWEB-3332 RE &amp; Analyzing" style="display: inline-block;"></i></td><td>Doe Jane</td><td class="r">04:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25476" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25476]" id="items_25476" value="25476"></td></tr><tr list_link="/index.php/monitoring/show/id/99999" class="link" id="item90012"><td>04.05.2026        <br><span style="color: gray;"></span></td><td>Work </td><td><span class="label label-blue">Erledigt</span></td><td class="nolink"><a class="changeAllowableBill dotted_link" rel="tooltip" data-title="Ändern" href="/index.php/monitoring/changeAllowableBill/id/99999">Nein</a></td><td>Acme AG        <br><span style="color: gray;">Projekt Acme - Members  </span></td><td style=""><i class="halflings halflings-info-sign" rel="popover" data-placement="left" data-content="Vacation" style="display: inline-block;"></i></td><td>Berg Nils</td><td class="r">42:00</td><td class="c"></td><td class="r nolink td_dropdown visible"><div class="btn-group   bx-no-margin"><a class="btn dropdown-toggle btn-mini" data-toggle="dropdown" href="#">Aktionen <span class="caret"></span></a><ul class="dropdown-menu pull-right"><li class="first"><a class="time_toggle" id="25475" href="/index.php/monitoring/resume/id/99999/a/list/m/monitoring/f/MonitoringFilter"><i class="halflings halflings-play"></i>Stoppuhr starten</a></li><li class=""><a href="/index.php/monitoring/edit/id/99999"><i class="glyphicons pencil"></i>Bearbeiten</a></li><li class="last"><a onclick="if (confirm('Sind Sie sicher, dass Sie diese Leistung löschen wollen?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'post'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', 'sf_method'); m.setAttribute('value', 'delete'); f.appendChild(m);var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_csrf_token'); m.setAttribute('value', 'TEST_CSRF_TOKEN'); f.appendChild(m);var jq_f = $(f);$.ajax({
+        url:        jq_f.attr('action'),
+        type:       'delete',
+        dataType:   'html',
+        data:       jq_f.serialize(),
+        cache:      false,
+        beforeSend: function (jqXHR, settings) {
+            jq_f.parents('.ui-dialog-content').mask('Loading...');
+        },
+        success:    function(data){
+            $(&quot;.lf_content.ajxon&quot;).trigger(&quot;refreshList.monitoring_filter&quot;); $(&quot;#jqDialog&quot;).dialog(&quot;close&quot;);
+        },
+        error:      function (jqXHR, textStatus, errorThrown) {
+            alert('Es ist ein unbekannter Fehler aufgetreten'); $('#jqDialog').dialog('close');
+        }
+    }); };return false;" href="/index.php/monitoring/delete/id/99999"><i class="icon-remove"></i> Löschen</a></li></ul></div></td><td width="10" class="nolink r"><input type="checkbox" name="items[25475]" id="items_25475" value="25475"></td></tr></tbody><tfoot><tr class="footer_row"><td colspan="2" class="l visible">
+            Total geschätzt: 0 h  0 min        </td><td colspan="2"></td><td colspan="2"></td><td class="r visible" colspan="2" hours="50590" mins="24">
+            Total: 50590 h  24 min        </td><td colspan="3"></td></tr></tfoot></table></div></div></div></div></div></div><div class="foot"><div class="row-fluid bottomInfoHolder"><div class="pager_info span8"><div class="btn-toolbar" style="margin-top: 0;"><div class="btn-group dropup pull-left"><a class="btn dropdown-toggle" data-toggle="dropdown">
+                                                    Einträge 1-100 von 25174                                                <span class="caret"></span></a><ul class="dropdown-menu"><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/10">10 Einträge anzeigen</a></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/15">15 Einträge anzeigen</a></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/20">20 Einträge anzeigen</a></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/25">25 Einträge anzeigen</a></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/50">50 Einträge anzeigen</a></li><li class="active"><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/100">100 Einträge anzeigen</a></li><li class=""><a class="ajxl" href="/index.php/filter/setPagination/f/MonitoringFilter/m/monitoring/a/list/nb/200">200 Einträge anzeigen</a></li></ul></div><div class="pull-left"><a class="btn bx-noIcon-margin" rel="tooltip" title="Aktuelle Liste exportieren" onclick="if (!this.getAttribute('disabled')) jq_load_dialog('/index.php/filter/export/f/MonitoringFilter/m/monitoring/a/list',{autoOpen:false, bgiframe:false, close:'function() { $(this).dialog(\'destroy\'); }', maxHeight:2000, maxWidth:2024, modal:true, resizable:false, title:'Als Excelfile herunterladen', width:400},'#jqDialog'); return false;" href="/index.php/filter/export/f/MonitoringFilter/m/monitoring/a/list"><i class="glyphicons download_alt"></i></a></div></div></div><div class="mypager span8"><div class="pagination"><ul><li><a class="symbol ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/1">«</a></li><li><a class="symbol ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/1">‹</a></li><li class="active"><a href="#">1</a></li><li><a class="ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/2">2</a></li><li><a class="ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/3">3</a></li><li><a class="ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/4">4</a></li><li><a class="ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/5">5</a></li><li><a class="symbol ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/2">›</a></li><li><a class="symbol ajxl" href="/index.php/filter/setPage/f/MonitoringFilter/m/monitoring/a/list/p/252">»</a></li></ul></div></div><div class="mass_mutation_dropdown span8"><select id="mass_mutation_dropdown" class="noselect2"><option value="">Wählen Sie eine Aktion aus</option><option value="">----------------------------------------------</option><option value="/index.php/monitoring/massDelete" class="has_confirm" title="Sind Sie sicher?">Ausgewählte Einträge löschen</option><option value="/index.php/monitoring/export">Excel-Export</option><option value="/index.php/monitoring/massStateChange">Status &amp; Verrechenbarkeit ändern</option></select><a class="btn attach-fe-action-btn" style="cursor: pointer; margin-left: 5px;" onclick="if($(this).parents(&quot;.mass_item_holder&quot;).find(&quot;input:checkbox[name^='items']:checked&quot;).size() < 1) {
     alert(&quot;Bitte wählen Sie mindestens einen Eintrag aus.&quot;);
     return false;
 }var selectedDropdown = $(this).parents('.mass_item_holder').find('#mass_mutation_dropdown :selected');
@@ -1198,6 +235,6 @@ f.appendChild(m);$(this).parents(&quot;.mass_item_holder&quot;).find(&quot;input
     jq_load_dialog(selectedDropdown.val(), selectedDropdown.data(), '#jqDialog', $(f).serialize());
 } else if (!f.action?.includes('/autoReconcile')) {
     f.submit();
-}"
-            >GO</a
-          ></div></div></div></div></div>
+}">GO</a></div></div></div></div></div></div></div></div><div id="loading"></div><div id="loading_inner" style="display: none;"></div><a onclick="createReport()" title="Support" class="usersnap hidden-print">Support</a></span></main><bexio-application-footer-root ng-version="18.2.4" class="ngBx"><bexio-application-footer-shell><bexio-application-footer-wrapper _nghost-ng-c1182105042=""><div _ngcontent-ng-c1182105042="" class="footer-wrapper"><div _ngcontent-ng-c1182105042="" class="footer-content"><div _ngcontent-ng-c1182105042=""><div _ngcontent-ng-c1182105042="">Acme AG</div><bexio-button _ngcontent-ng-c1182105042="" hostid="a735686a-c5de-4294-83ae-b7d3142fcc8d" aria-selected="true" _nghost-ng-c2812624312="" aria-label="CORE.COMPONENTS.CONTACT_SEARCH_FORM.CREATE_NEW_CONTACT" style="width: auto;"><div _ngcontent-ng-c2812624312="" class="ButtonWrapper"><!----><!----><!----><!----><!----><!----><!----><!----><a _ngcontent-ng-c2812624312="" tabindex="0" class="u-anchor Button--link" type="button" style="justify-content: center;"><div _ngcontent-ng-c2812624312="" class="Button-content" style="justify-content: center; min-height: 32px;"><!----><span _ngcontent-ng-c2812624312="" class="Button-label" style="width: auto;"> Hilfe und Support </span><!----><!----><!----><!----></div><!----></a><!----><!----><!----><!----><!----><!----><!----></div><!----><!----></bexio-button></div><div _ngcontent-ng-c1182105042="" class="content-right"><div _ngcontent-ng-c1182105042=""><bexio-button _ngcontent-ng-c1182105042="" hostid="a735686a-c5de-4294-83ae-b7d3142fcc8d" aria-selected="true" _nghost-ng-c2812624312="" aria-label="CORE.COMPONENTS.CONTACT_SEARCH_FORM.CREATE_NEW_CONTACT" style="width: auto;"><div _ngcontent-ng-c2812624312="" class="ButtonWrapper"><!----><!----><!----><!----><!----><!----><!----><!----><a _ngcontent-ng-c2812624312="" tabindex="0" class="u-anchor Button--link" type="button" style="justify-content: center;"><div _ngcontent-ng-c2812624312="" class="Button-content" style="justify-content: center; min-height: 32px;"><!----><span _ngcontent-ng-c2812624312="" class="Button-label" style="width: auto;"> Facebook </span><!----><!----><!----><!----></div><!----></a><!----><!----><!----><!----><!----><!----><!----></div><!----><!----></bexio-button> | <bexio-button _ngcontent-ng-c1182105042="" hostid="a735686a-c5de-4294-83ae-b7d3142fcc8d" aria-selected="true" _nghost-ng-c2812624312="" aria-label="CORE.COMPONENTS.CONTACT_SEARCH_FORM.CREATE_NEW_CONTACT" style="width: auto;"><div _ngcontent-ng-c2812624312="" class="ButtonWrapper"><!----><!----><!----><!----><!----><!----><!----><!----><a _ngcontent-ng-c2812624312="" tabindex="0" class="u-anchor Button--link" type="button" style="justify-content: center;"><div _ngcontent-ng-c2812624312="" class="Button-content" style="justify-content: center; min-height: 32px;"><!----><span _ngcontent-ng-c2812624312="" class="Button-label" style="width: auto;"> Blog </span><!----><!----><!----><!----></div><!----></a><!----><!----><!----><!----><!----><!----><!----></div><!----><!----></bexio-button></div><div _ngcontent-ng-c1182105042=""><bexio-button _ngcontent-ng-c1182105042="" hostid="a735686a-c5de-4294-83ae-b7d3142fcc8d" aria-selected="true" _nghost-ng-c2812624312="" aria-label="CORE.COMPONENTS.CONTACT_SEARCH_FORM.CREATE_NEW_CONTACT" style="width: auto;"><div _ngcontent-ng-c2812624312="" class="ButtonWrapper"><!----><!----><!----><!----><!----><!----><!----><!----><a _ngcontent-ng-c2812624312="" tabindex="0" class="u-anchor Button--link" type="button" style="justify-content: center;"><div _ngcontent-ng-c2812624312="" class="Button-content" style="justify-content: center; min-height: 32px;"><!----><span _ngcontent-ng-c2812624312="" class="Button-label" style="width: auto;"> © bexio ag </span><!----><!----><!----><!----></div><!----></a><!----><!----><!----><!----><!----><!----><!----></div><!----><!----></bexio-button></div></div></div></div></bexio-application-footer-wrapper></bexio-application-footer-shell></bexio-application-footer-root><span role="status" aria-live="polite" class="select2-hidden-accessible"></span><span role="status" aria-live="polite" class="select2-hidden-accessible"></span><span role="status" aria-live="polite" class="select2-hidden-accessible"></span><span role="status" aria-live="polite" class="select2-hidden-accessible"></span><div role="status" aria-live="assertive" aria-relevant="additions" class="ui-helper-hidden-accessible"></div><div id="ui-datepicker-div" class="ui-datepicker ui-widget ui-widget-content ui-helper-clearfix ui-corner-all"></div><div class="cdk-overlay-container ngBx"></div><style>
+  #chmln .chmln-list-trigger { z-index: 1147483640!important; }
+</style></body></html>

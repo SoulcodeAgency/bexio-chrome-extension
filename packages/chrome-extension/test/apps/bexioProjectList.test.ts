@@ -1,19 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
 
-// KNOWN ISSUE: renderHtml() calls
-//   document.getElementsByClassName("globalsearch")[0].insertAdjacentHTML(...)
-// The monitoring-list fixture (and all available fixtures) lack a .globalsearch
-// element (full bexio nav bar not captured). Without mocking renderHtml, the async
-// initializeExtension() call produces an unhandled TypeError that Vitest cannot
-// suppress via window.addEventListener("unhandledrejection", ...) in jsdom.
-// We therefore mock renderHtml to a no-op to isolate the observer/path-routing
-// logic. The UI injection behaviour is documented in tooltip-replacement.md.
-vi.mock(
-  "@bexio-chrome-extension/chrome-extension/src/apps/bexioProjectList/renderHtml",
-  () => ({ default: vi.fn().mockResolvedValue(undefined) }),
-);
-
+// The monitoring-list fixture now includes the full bexio body (incl. .globalsearch),
+// so renderHtml() runs against a realistic DOM and we exercise the actual code path
+// rather than a mock — `#PopoverTextSwitcher` should end up next to .globalsearch.
 describe("bexioProjectList content script", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -21,30 +11,42 @@ describe("bexioProjectList content script", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("imports without throwing on the monitoring list page and injects its UI", async () => {
-    // Set the pathname the script checks for.
+  it("on /monitoring/list, imports, runs renderHtml, and injects #PopoverTextSwitcher next to .globalsearch", async () => {
     vi.stubGlobal("location", {
       ...window.location,
       pathname: "/index.php/monitoring/list",
     } as Location);
     loadFixture("monitoring-list");
+    expect(document.getElementsByClassName("globalsearch").length).toBeGreaterThan(0);
 
-    // The module resolves at import time (initializeExtension() is called without await,
-    // so renderHtml() and convertPopover() run async in the background).
+    // index.ts calls initializeExtension() at top level — fire-and-forget; the real
+    // renderHtml() is async, so we let microtasks + a tiny tick settle.
     const mod = await import(
       "@bexio-chrome-extension/chrome-extension/src/apps/bexioProjectList/index"
     );
     expect(mod).toBeDefined();
-
-    // Allow async tasks (mocked renderHtml, convertPopover) to settle.
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // renderHtml is mocked; the real #PopoverTextSwitcher would only appear if a
-    // .globalsearch nav element is present in the DOM.
-    // KNOWN ISSUE: #PopoverTextSwitcher is NOT injected in the test because:
-    //   (a) renderHtml is mocked (the real call crashes without .globalsearch), and
-    //   (b) even if un-mocked, the fixture lacks .globalsearch so renderHtml throws.
-    // The selector for the toggle button is: #PopoverTextSwitcher
+    const toggle = document.getElementById("PopoverTextSwitcher");
+    expect(toggle).not.toBeNull();
+    expect(toggle?.tagName.toLowerCase()).toBe("button");
+  });
+
+  it("renderHtml throws when .globalsearch is absent (documents a known fragility)", async () => {
+    // Load a real fixture, then strip the nav so renderHtml has nothing to insert next to.
+    // We import renderHtml directly (NOT the app entry point) so the failure is a normal
+    // rejected promise we can await — not an unhandled rejection at module-load time.
+    loadFixture("monitoring-list");
+    for (const el of Array.from(document.getElementsByClassName("globalsearch"))) {
+      el.remove();
+    }
+    const { default: renderHtml } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/apps/bexioProjectList/renderHtml"
+    );
+    // KNOWN ISSUE: renderHtml has no fallback when bexio's .globalsearch is missing —
+    // it throws "Cannot read properties of undefined (reading 'insertAdjacentHTML')".
+    // Mirrored in docs/architecture/tooltip-replacement.md.
+    await expect(renderHtml()).rejects.toThrow(/insertAdjacentHTML|undefined/);
     expect(document.getElementById("PopoverTextSwitcher")).toBeNull();
   });
 });

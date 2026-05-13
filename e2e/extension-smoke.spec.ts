@@ -150,34 +150,34 @@ test("side panel HTML loads and mounts React without errors", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 3 (monitoring/list + #PopoverTextSwitcher) is SKIPPED.
-//
-// The monitoring/list content script (bexioProjectList/renderHtml.ts) calls
-//   document.getElementsByClassName("globalsearch")[0].insertAdjacentHTML(...)
-// which throws if `.globalsearch` is absent from the DOM. The anonymised
-// monitoring-list.html fixture was trimmed to remove that element, so the
-// content script throws at injection time on the fixture.
-//
-// Rather than fight the fixture or the content script (both must stay unchanged
-// this round), we document this as a known issue and skip the test.
-// See docs/architecture/testing.md for the manual walkthrough step that covers
-// the Text-mode toggle on a real bexio page.
+// Test 3: content script injects the #PopoverTextSwitcher ("Text mode") toggle
+// on monitoring/list. The monitoring-list.html fixture is now a full-body
+// capture, so `.globalsearch` is present and bexioProjectList/renderHtml.ts
+// can insert its button next to it.
 // ---------------------------------------------------------------------------
-test.skip("content script injects #PopoverTextSwitcher on monitoring/list (skipped — fixture missing .globalsearch)", async () => {
+test("content script injects #PopoverTextSwitcher on monitoring/list", async () => {
   const fixture = readFileSync(path.join(FIXTURES, "monitoring-list.html"), "utf8");
   const page = await context.newPage();
 
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+
+  // The fixture already begins with `<html>…<body>…`, so don't double-wrap.
   await page.route(
     "https://office.bexio.com/index.php/monitoring/list",
     (route) =>
       route.fulfill({
         contentType: "text/html",
-        body: `<!doctype html><html><head><title>t</title></head><body>${fixture}</body></html>`,
+        body: fixture.startsWith("<!doctype")
+          ? fixture
+          : `<!doctype html>${fixture}`,
       }),
   );
 
   await page.goto("https://office.bexio.com/index.php/monitoring/list");
   await expect(page.locator("#PopoverTextSwitcher")).toBeAttached({ timeout: 10_000 });
+
+  expect(errors, `unexpected page errors:\n${errors.join("\n")}`).toEqual([]);
 
   await page.close();
 });
