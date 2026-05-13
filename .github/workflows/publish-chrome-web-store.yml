@@ -1,0 +1,54 @@
+name: publish-chrome-web-store
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to (re)publish (e.g. 1.4.0). Required for workflow_dispatch.
+        required: true
+      publish:
+        description: Actually publish to the public CWS (vs upload-only smoke test)?
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chrome-web-store-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci --workspaces --include-workspace-root
+
+      - name: Build & package
+        run: pwsh -File ./Build.ps1 -CreatePackage
+
+      - name: Upload + publish to Chrome Web Store
+        uses: mnao305/chrome-extension-upload@v5
+        with:
+          file-path: dist/bexio-chrome-extension.zip
+          extension-id: ${{ secrets.CWS_EXTENSION_ID }}
+          client-id: ${{ secrets.CWS_CLIENT_ID }}
+          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          publish: ${{ github.event.inputs.publish != 'false' }}
+
+      - name: Attach zip to the GitHub Release
+        if: github.event_name == 'release'
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/bexio-chrome-extension.zip --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
