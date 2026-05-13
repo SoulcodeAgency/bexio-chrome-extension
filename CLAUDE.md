@@ -33,7 +33,7 @@ Per-package builds (run from repo root):
 
 Lint (side panel only): `npm run lint -w @bexio-chrome-extension/side-panel-import`.
 
-There is **no test suite** — `npm test` in `packages/shared` is a stub. "Test" in the release docs means manual testing in the browser.
+Tests: there is now a Vitest suite — `npm test` (all projects, including a slow build smoke test that shells out to `Build.ps1`), `npm run test:fast` (Vitest minus `*.slow.test.ts`), `npm run test:watch`, plus `npm run test:e2e` (a thin Playwright "extension-smoke" layer — opt-in; needs `npx playwright install chromium` once and a built `unpacked/`). See `docs/architecture/testing.md`. Tests pin **current** behaviour (bugs included, flagged `// KNOWN ISSUE:`). DOM-dependent tests load anonymised captured bexio HTML from `packages/chrome-extension/test/fixtures/bexio/`. "Test" in the release docs (`RELEASE.md`) still refers to the manual in-browser walkthrough — that checklist is in `docs/architecture/testing.md`.
 
 Loading locally: build, then in Chrome → Extensions → Load unpacked → select the `unpacked/` folder.
 
@@ -51,6 +51,18 @@ Run `npm run createRelease` (`CreateRelease.ps1`); see `RELEASE.md`. It bumps th
 - **Manipulating bexio's form** is fiddly: the page uses jQuery/select2 widgets, so `src/utils/trigger*.ts` and `src/utils/waitFor*.ts` simulate input events and poll for async-loaded options; `src/selectors/` centralizes the DOM selectors. When bexio markup changes, those two folders are where breakage lives.
 - **Persistence**: everything is `chrome.storage.local` via `packages/shared/chromeStorage*.ts` — `chromeStorageTemplateEntries` (templates), `chromeStorageImportData` (ManicTime import buffer), `chromeStorageSettings` (UI prefs like active tab, "apply notes"). Templates are `TemplateEntry` objects (`types.ts`).
 - **ManicTime import flow** lives in `packages/sidePanel-import/src/components/ImportEntries/` — clipboard CSV is parsed (`utils/csvParser.ts`), entries are auto-matched to templates (`AutoMapTemplatesV3.ts`, also checks template `keywords`), and applying an entry posts an `EntryExchangeData` (and optionally a `TemplateExchangeData`) message to the content script.
+
+## Architecture deep-dives
+
+Detailed, behaviour-pinned docs for the topics that have a test suite — **read the relevant one before changing the corresponding code**:
+
+- `docs/architecture/storage.md` — `chrome.storage.local` model, the `entries` key, settings keys, the `TemplateEntry` shape, the array-only assumptions in `chromeStorage.remove`/`update`, known issues.
+- `docs/architecture/form-layer.md` — the bexio jQuery/select2/jQuery-UI form, the synthetic-event recipe per field type (`trigger*`), the `waitFor*` polling, the `fillForm` order + `timeEntryBillable` rule, the read-back path, the module-load quirk, and a "blast radius" map of fragile selectors.
+- `docs/architecture/tooltip-replacement.md` — which bexio pages get the tooltip→text treatment, the per-page `MutationObserver` setup, the convert/revert cycle, the "Text mode" toggle, known issues (incl. the unverified `kb_invoice/show` branch).
+- `docs/architecture/build-and-release.md` — the workspace layout, `Build.ps1` flag matrix, the Vite + `@crxjs/vite-plugin` quirks, the `createRelease.ps1` sequence, the gotchas (`Build.ps1` swallows sub-build errors; `@swc/core` likely vestigial).
+- `docs/architecture/testing.md` — the three test layers, the commands, the chrome fake, the module-load quirk, the fixture-capture procedure, and the manual real-bexio walkthrough checklist.
+
+The design spec and implementation plan that produced this suite are in `docs/superpowers/specs/` and `docs/superpowers/plans/`.
 
 ## Conventions
 

@@ -1593,13 +1593,13 @@ git commit -m "docs: add testing architecture doc (harness, fixtures, manual wal
 **Files:**
 - Modify: `CLAUDE.md`
 
-- [ ] **Step 1: Add a section to `CLAUDE.md`** (after the "Architecture notes" section) titled `## Architecture deep-dives` with a short intro ("Detailed, behaviour-pinned docs for the topics that have a test suite — read these before changing the corresponding code:") and a bullet list linking: `docs/architecture/storage.md`, `docs/architecture/form-layer.md`, `docs/architecture/tooltip-replacement.md`, `docs/architecture/build-and-release.md`, `docs/architecture/testing.md`. Also add a one-line note under the existing "There is no test suite" sentence (in the Commands section) correcting it: "There is now a Vitest suite — `npm test` (incl. a slow build smoke test) / `npm run test:fast` / `npm run test:watch`, plus `npm run test:e2e` (Playwright extension-smoke, opt-in). See `docs/architecture/testing.md`."
-- [ ] **Step 2: Run the full suite one last time**
+- [x] **Step 1: Add a section to `CLAUDE.md`** (after the "Architecture notes" section) titled `## Architecture deep-dives` with a short intro ("Detailed, behaviour-pinned docs for the topics that have a test suite — read these before changing the corresponding code:") and a bullet list linking: `docs/architecture/storage.md`, `docs/architecture/form-layer.md`, `docs/architecture/tooltip-replacement.md`, `docs/architecture/build-and-release.md`, `docs/architecture/testing.md`. Also add a one-line note under the existing "There is no test suite" sentence (in the Commands section) correcting it: "There is now a Vitest suite — `npm test` (incl. a slow build smoke test) / `npm run test:fast` / `npm run test:watch`, plus `npm run test:e2e` (Playwright extension-smoke, opt-in). See `docs/architecture/testing.md`."
+- [x] **Step 2: Run the full suite one last time**
 
 Run: `npm test`
 Expected: all Vitest projects pass (incl. the slow build smoke test). Then `npm run test:fast` — passes, and faster.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add CLAUDE.md
 git commit -m "docs: link architecture deep-dives from CLAUDE.md; note the test suite exists"
