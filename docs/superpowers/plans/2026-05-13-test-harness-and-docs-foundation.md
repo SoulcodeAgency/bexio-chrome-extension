@@ -1426,14 +1426,14 @@ git commit -m "docs: add form-layer architecture doc + TSDoc"
 - Modify: `package.json` (root)
 - Create: `e2e/playwright.config.ts`
 
-- [ ] **Step 1: Install Playwright (exact-pinned)**
+- [x] **Step 1: Install Playwright (exact-pinned)**
 ```bash
 npm install --save-dev --save-exact @playwright/test
 npx playwright install chromium
 ```
 (`npx playwright install` is needed because `.npmrc` `ignore-scripts=true` suppresses the auto-download.)
 
-- [ ] **Step 2: Create `e2e/playwright.config.ts`**
+- [x] **Step 2: Create `e2e/playwright.config.ts`**
 ```ts
 import { defineConfig } from "@playwright/test";
 import path from "node:path";
@@ -1454,12 +1454,12 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 3: Verify Playwright runs (no tests yet)**
+- [x] **Step 3: Verify Playwright runs (no tests yet)**
 
 Run: `npx playwright test --config e2e/playwright.config.ts --list`
 Expected: "No tests found" (or lists nothing) — no crash.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add package.json package-lock.json e2e/playwright.config.ts
 git commit -m "chore(test): add playwright + e2e config (extension-smoke layer)"
@@ -1473,8 +1473,8 @@ git commit -m "chore(test): add playwright + e2e config (extension-smoke layer)"
 - Create: `e2e/extension-smoke.spec.ts`
 - Create (if `file://` doesn't satisfy the content-script matches): `e2e/support/static-server.ts`
 
-- [ ] **Step 1: Decide page-serving strategy.** The manifest's content scripts only run on `https://office.bexio.com/...` URLs. To make them run against a local fixture, the cleanest options are: (a) Playwright `context.route("https://office.bexio.com/**", route => route.fulfill({ body: fixtureHtml, contentType: "text/html" }))` — intercepts the navigation and serves the fixture while the URL still matches the manifest pattern; **prefer this**. (b) failing that, a tiny local HTTPS server + a manifest tweak in a test-only copy of `unpacked/` (more work — avoid).
-- [ ] **Step 2: Write `e2e/extension-smoke.spec.ts`**
+- [x] **Step 1: Decide page-serving strategy.** The manifest's content scripts only run on `https://office.bexio.com/...` URLs. To make them run against a local fixture, the cleanest options are: (a) Playwright `context.route("https://office.bexio.com/**", route => route.fulfill({ body: fixtureHtml, contentType: "text/html" }))` — intercepts the navigation and serves the fixture while the URL still matches the manifest pattern; **prefer this**. (b) failing that, a tiny local HTTPS server + a manifest tweak in a test-only copy of `unpacked/` (more work — avoid).
+- [x] **Step 2: Write `e2e/extension-smoke.spec.ts`**
 ```ts
 import { test, expect, chromium, type BrowserContext } from "@playwright/test";
 import { execFileSync } from "node:child_process";
@@ -1555,16 +1555,16 @@ test("side panel HTML loads and mounts React without errors", async () => {
 ```
 Implementer notes: getting the extension id in headless Chromium is the fiddly bit — `context.serviceWorkers()` (or `context.backgroundPages()` for MV2; MV3 uses service workers) is the reliable source; wait for it with `await context.waitForEvent("serviceworker")` in `beforeAll` if the array is empty initially. If headless extension loading doesn't work in the installed Chromium version, switch to `headless: false` with `xvfb` on CI / a visible window locally, and document that in `testing.md`. The `#root` selector for the side panel comes from `packages/sidePanel-import/index.html` — confirm it (Vite's React template uses `<div id="root">`).
 
-- [ ] **Step 3: Run, expect PASS**
+- [x] **Step 3: Run, expect PASS**
 
 Run: `npm run test:e2e`
 Expected: 3 passed (or `side panel` test `skipped` if the extension id can't be resolved — acceptable, note it).
 
-- [ ] **Step 4: Confirm e2e is NOT part of `npm test`**
+- [x] **Step 4: Confirm e2e is NOT part of `npm test`**
 
 Run: `npm test` and verify no Playwright/browser launch happens (only Vitest projects run).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add e2e/extension-smoke.spec.ts e2e/support/
 git commit -m "test(e2e): add playwright extension-smoke test (content scripts inject, side panel mounts)"
@@ -1577,8 +1577,8 @@ git commit -m "test(e2e): add playwright extension-smoke test (content scripts i
 **Files:**
 - Create: `docs/architecture/testing.md`
 
-- [ ] **Step 1: Write the doc** covering: the three test layers (Vitest unit/integration, Playwright extension-smoke, manual real-bexio walkthrough) and which is the safety net; the commands (`npm test` = all Vitest incl. the slow build test; `npm run test:fast` = Vitest minus `*.slow.test.ts`; `npm run test:watch`; `npm run test:e2e` = Playwright, needs `npx playwright install chromium` once and a built `unpacked/`); the three Vitest projects + their environments + the chrome fake (and that it throws on un-faked `chrome.*`); the **module-load quirk** rule (load fixture → then `await import`, with `vi.resetModules()`); the **fixture-capture procedure** (point at `packages/chrome-extension/test/fixtures/bexio/README.md`, summarise: open the bexio page logged in → run the `copy(...)` console snippet from the README → drop into `_raw/` → run the anonymise/trim pass → write the `.md` sibling; `_raw/` is git-ignored); the build-smoke-test caveat (needs PowerShell; skipped if `pwsh`/`powershell` absent); and the **manual real-bexio walkthrough checklist** — a numbered list: load `unpacked/` as an unpacked extension in your own Chrome, log into your own bexio, then: (1) on `monitoring/edit` confirm the Templates block appears, the filter works, "Add" saves the current form as a template, a template button fills the form, "Delete" removes one; (2) on `monitoring/list` (and a project Times tab, and a work-package Times tab) toggle "Text mode" and confirm tooltips become inline text and toggling back reverts; (3) open the side panel, confirm the Templates and Import tabs work, the active tab persists across reopen, importing a ManicTime clipboard export populates the table and an entry's ▶️ button fills the bexio form; (4) note that the `kb_invoice` "tracked time" tooltip page is currently unverified (bexio UI changed). State clearly this checklist is run by a human, not automated, and is a candidate for a future Playwright-against-real-bexio spec.
-- [ ] **Step 2: Commit**
+- [x] **Step 1: Write the doc** covering: the three test layers (Vitest unit/integration, Playwright extension-smoke, manual real-bexio walkthrough) and which is the safety net; the commands (`npm test` = all Vitest incl. the slow build test; `npm run test:fast` = Vitest minus `*.slow.test.ts`; `npm run test:watch`; `npm run test:e2e` = Playwright, needs `npx playwright install chromium` once and a built `unpacked/`); the three Vitest projects + their environments + the chrome fake (and that it throws on un-faked `chrome.*`); the **module-load quirk** rule (load fixture → then `await import`, with `vi.resetModules()`); the **fixture-capture procedure** (point at `packages/chrome-extension/test/fixtures/bexio/README.md`, summarise: open the bexio page logged in → run the `copy(...)` console snippet from the README → drop into `_raw/` → run the anonymise/trim pass → write the `.md` sibling; `_raw/` is git-ignored); the build-smoke-test caveat (needs PowerShell; skipped if `pwsh`/`powershell` absent); and the **manual real-bexio walkthrough checklist** — a numbered list: load `unpacked/` as an unpacked extension in your own Chrome, log into your own bexio, then: (1) on `monitoring/edit` confirm the Templates block appears, the filter works, "Add" saves the current form as a template, a template button fills the form, "Delete" removes one; (2) on `monitoring/list` (and a project Times tab, and a work-package Times tab) toggle "Text mode" and confirm tooltips become inline text and toggling back reverts; (3) open the side panel, confirm the Templates and Import tabs work, the active tab persists across reopen, importing a ManicTime clipboard export populates the table and an entry's ▶️ button fills the bexio form; (4) note that the `kb_invoice` "tracked time" tooltip page is currently unverified (bexio UI changed). State clearly this checklist is run by a human, not automated, and is a candidate for a future Playwright-against-real-bexio spec.
+- [x] **Step 2: Commit**
 ```bash
 git add docs/architecture/testing.md
 git commit -m "docs: add testing architecture doc (harness, fixtures, manual walkthrough)"
