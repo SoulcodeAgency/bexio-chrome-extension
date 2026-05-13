@@ -1266,7 +1266,7 @@ git commit -m "test: pin triggerContactField + waitFor* polling helpers"
 
 `fillForm(id, timeEntryBillable?)`: loads templates from storage, finds the one with that `id`, then `triggerField(workFieldID, "work")`, `triggerField(statusFieldID, status)`, `triggerContactField(contactField, contact)`, `triggerField(contactPersonID, contactPerson)`, `triggerField(projectFieldID, project)`, `triggerField(packageFieldID, packageValue)`, `triggerCheckbox(billableCheckbox, timeEntryBillable ?? billable)`, toggles the loader, and focuses `#MonitoringForm .save`.
 
-- [ ] **Step 1: Write the test** — strategy: seed a template in the chrome-storage fake, load the fixture, spy on the trigger modules with `vi.mock(...)` (mock `triggerField`, `triggerContactField`, `triggerCheckbox`, and `loader`) so we assert *orchestration* (which functions called, with what args, in what order) without depending on jsdom faithfully reproducing select2:
+- [x] **Step 1: Write the test** — strategy: seed a template in the chrome-storage fake, load the fixture, spy on the trigger modules with `vi.mock(...)` (mock `triggerField`, `triggerContactField`, `triggerCheckbox`, and `loader`) so we assert *orchestration* (which functions called, with what args, in what order) without depending on jsdom faithfully reproducing select2:
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
@@ -1341,11 +1341,11 @@ describe("fillForm", () => {
 ```
 Implementer notes: confirm the exact call **order** from `fillForm.ts` and assert it precisely (compare the `calls` array to an expected array). `vi.mock` is hoisted — keep the factory functions self-contained (no outer refs except module-level `calls`, which is allowed because `vi.mock` factories may reference hoisted `vi` and module-scope vars declared with `var`/`let` *after* hoisting only if you use `vi.hoisted` — to be safe, declare `const calls` and the mocks may need `vi.hoisted(() => ({ calls: [] as string[] }))`; use that pattern if Vitest errors about referencing `calls` before initialisation).
 
-- [ ] **Step 2: Run, expect PASS**
+- [x] **Step 2: Run, expect PASS**
 
 Run: `npx vitest run --project chrome-extension test/utils/fillForm.test.ts`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add packages/chrome-extension/test/utils/fillForm.test.ts
 git commit -m "test: pin fillForm orchestration (field order, billable precedence, loader, focus)"
@@ -1359,13 +1359,13 @@ git commit -m "test: pin fillForm orchestration (field order, billable precedenc
 - Source: `packages/chrome-extension/src/utils/readFormData.ts`, `packages/chrome-extension/src/utils/readTextFromSelect2.ts`
 - Test: `packages/chrome-extension/test/utils/readFormData.test.ts`
 
-- [ ] **Step 1: Read `readTextFromSelect2.ts`** (not quoted in the spec). It takes a select2 inner input element and returns the chosen text — probably from the `.select2-chosen` span. Write `readTextFromSelect2` tests against `monitoring-edit-filled.html`: pass the work/status/project/package/contactPerson inner inputs (via the selectors module) and assert the returned strings match the (anonymised) chosen text in the fixture.
-- [ ] **Step 2: Write `readFormData` tests.** `readFormData` is interactive — it calls `prompt()`, `alert()`, `confirm()`, `generateHash`, loads/saves templates, and calls `initializeExtension()`. To test it: `vi.spyOn(globalThis, "prompt").mockReturnValue("My Template")`, `vi.spyOn(globalThis, "alert").mockImplementation(() => {})`, `vi.spyOn(globalThis, "confirm").mockReturnValue(true)`, `vi.mock` the `apps/bexioTimetrackingTemplates/index` module's `initializeExtension` to a spy, load `monitoring-edit-filled.html`, then call `readFormData()` and assert: a new entry was saved to `chrome.storage.local` under `entries` with the expected `work/status/contact/project/package/billable/contactPerson/templateName` (anonymised values from the fixture) and a 64-hex-char `id`; that `prompt` returning `null` triggers `alert` and aborts (nothing saved). Keep assertions to what's robust given jsdom can't run select2 — if `readTextFromSelect2` returns `""` for everything in jsdom because the `.select2-chosen` spans aren't wired the way the code expects, **pin that** (`templateName` would then fall back through the `||` chain) and note it.
-- [ ] **Step 3: Run, expect PASS**
+- [x] **Step 1: Read `readTextFromSelect2.ts`** (not quoted in the spec). It takes a select2 inner input element and returns the chosen text — probably from the `.select2-chosen` span. Write `readTextFromSelect2` tests against `monitoring-edit-filled.html`: pass the work/status/project/package/contactPerson inner inputs (via the selectors module) and assert the returned strings match the (anonymised) chosen text in the fixture.
+- [x] **Step 2: Write `readFormData` tests.** `readFormData` is interactive — it calls `prompt()`, `alert()`, `confirm()`, `generateHash`, loads/saves templates, and calls `initializeExtension()`. To test it: `vi.spyOn(globalThis, "prompt").mockReturnValue("My Template")`, `vi.spyOn(globalThis, "alert").mockImplementation(() => {})`, `vi.spyOn(globalThis, "confirm").mockReturnValue(true)`, `vi.mock` the `apps/bexioTimetrackingTemplates/index` module's `initializeExtension` to a spy, load `monitoring-edit-filled.html`, then call `readFormData()` and assert: a new entry was saved to `chrome.storage.local` under `entries` with the expected `work/status/contact/project/package/billable/contactPerson/templateName` (anonymised values from the fixture) and a 64-hex-char `id`; that `prompt` returning `null` triggers `alert` and aborts (nothing saved). Keep assertions to what's robust given jsdom can't run select2 — if `readTextFromSelect2` returns `""` for everything in jsdom because the `.select2-chosen` spans aren't wired the way the code expects, **pin that** (`templateName` would then fall back through the `||` chain) and note it.
+- [x] **Step 3: Run, expect PASS**
 
 Run: `npx vitest run --project chrome-extension test/utils/readFormData.test.ts`
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add packages/chrome-extension/test/utils/readFormData.test.ts
 git commit -m "test: pin readFormData / readTextFromSelect2 against filled fixture"
@@ -1379,17 +1379,17 @@ git commit -m "test: pin readFormData / readTextFromSelect2 against filled fixtu
 - Source: `packages/chrome-extension/src/utils/loader.ts`, `delay.ts`, `trimAll.ts`, `pressEnter.ts`, `generateHash.ts`
 - Test: `packages/chrome-extension/test/utils/misc-utils.test.ts`
 
-- [ ] **Step 1: Read each source file.** Then write tests:
+- [x] **Step 1: Read each source file.** Then write tests:
   - `delay(ms)` — returns a promise that resolves after `ms`; with fake timers, `const p = delay(100); let done=false; p.then(()=>done=true); await vi.advanceTimersByTimeAsync(99); expect(done).toBe(false); await vi.advanceTimersByTimeAsync(1); expect(done).toBe(true);`
   - `trimAll(input)` — read the impl; it's used as `trimAll(packageValue)` and `trimAll(workField)` (note: `workField` is an Element!), so it must tolerate both strings and elements/null. Test: `trimAll("  a  b ")` → pin the result (likely `"ab"` or `"a b"`); `trimAll(null)` / `trimAll(undefined)` → pin (probably `""`); `trimAll(someElement)` → pin.
   - `loader.toggleDisplayLoader(show?)` — needs `#SoulcodeExtensionLoader` in the DOM (present in `monitoring-edit.html`, or build a minimal `<div id="SoulcodeExtensionLoader" style="display:none">`). `toggleDisplayLoader()` → `display: flex` (or whatever "show" sets); `toggleDisplayLoader(false)` → `display: none`. Pin actual values.
   - `pressEnter(element)` — dispatches a keydown/keyup with key "Enter"/keyCode 13. Spy with `vi.fn()` on the element for `keydown`; assert it was called with a `KeyboardEvent` whose `key === "Enter"` (and `keyCode`/`which` === 13 if the code sets them).
   - `generateHash(string)` — SHA-256 hex. `crypto.subtle` is available in Node 22's global `crypto`. Assert `await generateHash("abc")` === the known SHA-256 of "abc" (`"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"`), and that it's 64 lowercase hex chars.
-- [ ] **Step 2: Run, expect PASS**
+- [x] **Step 2: Run, expect PASS**
 
 Run: `npx vitest run --project chrome-extension test/utils/misc-utils.test.ts`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add packages/chrome-extension/test/utils/misc-utils.test.ts
 git commit -m "test: pin loader / delay / trimAll / pressEnter / generateHash"
@@ -1403,14 +1403,14 @@ git commit -m "test: pin loader / delay / trimAll / pressEnter / generateHash"
 - Create: `docs/architecture/form-layer.md`
 - Modify (TSDoc only): `packages/chrome-extension/src/selectors/selectors.ts`, the `waitFor*` files, `packages/chrome-extension/src/utils/fillForm.ts`
 
-- [ ] **Step 1: Write the doc** covering: why this layer exists (bexio's form is built on jQuery + select2 + jQuery-UI autocomplete/datepicker/timepicker widgets, so you can't just set `.value` — you must drive the widgets); the field map (Tätigkeit=`monitoring_client_service_id`/select2 → template `work`-ish; Status=`monitoring_monitoring_status_id`/select2; Kontakt=`monitoring_contact_id` hidden + `autocomplete_monitoring_contact_id` text autocomplete; Kontaktperson=`monitoring_sub_contact_id`/select2; Projekt=`monitoring_pr_project_id`/select2 (options AJAX-loaded); Arbeitspaket=`monitoring_pr_package_id`/select2; abrechenbar=`monitoring_allowable_bill` checkbox; Datum=`monitoring_date` datepicker; Dauer=`monitoring_duration` timepicker; Bemerkungen=`monitoring_text` → tinymce iframe `#monitoring_text_ifr`/`#tinymce`); the synthetic-event recipe per field type (what `triggerField`/`triggerContactField`/`triggerCheckbox`/`triggerDate`/`triggerDuration`/`pressEnter` actually dispatch); why the `waitFor*` polling exists (select2 options and the autocomplete results load async) and each helper's timeout; the `fillForm` field order and the `timeEntryBillable ?? billable` precedence rule and the loader-toggle + save-button-focus tail; the read-back path (`readFormData` → `readTextFromSelect2` → templates storage); the **module-load quirk** (selector consts are captured at import time, which is why the content script only works because it's injected after the page renders, and why tests load the fixture before importing); and a **"blast radius" map** — the selectors/assumptions most likely to break when bexio changes markup (the `#s2id_monitoring_*` ids, the `#autocomplete_monitoring_contact_id` autocomplete contract, the tinymce iframe id, the `.save` submit button, the `select2-chosen` text-extraction in `readTextFromSelect2`), each cross-referenced to the test that would catch it.
-- [ ] **Step 2: Add TSDoc** on `selectors.ts` (the import-time-capture caveat), each `waitFor*` (interval/timeout/success-condition/timeout-behaviour), and `fillForm` (the orchestration order + the billable rule). **No behaviour changes.**
-- [ ] **Step 3: Verify suite still green**
+- [x] **Step 1: Write the doc** covering: why this layer exists (bexio's form is built on jQuery + select2 + jQuery-UI autocomplete/datepicker/timepicker widgets, so you can't just set `.value` — you must drive the widgets); the field map (Tätigkeit=`monitoring_client_service_id`/select2 → template `work`-ish; Status=`monitoring_monitoring_status_id`/select2; Kontakt=`monitoring_contact_id` hidden + `autocomplete_monitoring_contact_id` text autocomplete; Kontaktperson=`monitoring_sub_contact_id`/select2; Projekt=`monitoring_pr_project_id`/select2 (options AJAX-loaded); Arbeitspaket=`monitoring_pr_package_id`/select2; abrechenbar=`monitoring_allowable_bill` checkbox; Datum=`monitoring_date` datepicker; Dauer=`monitoring_duration` timepicker; Bemerkungen=`monitoring_text` → tinymce iframe `#monitoring_text_ifr`/`#tinymce`); the synthetic-event recipe per field type (what `triggerField`/`triggerContactField`/`triggerCheckbox`/`triggerDate`/`triggerDuration`/`pressEnter` actually dispatch); why the `waitFor*` polling exists (select2 options and the autocomplete results load async) and each helper's timeout; the `fillForm` field order and the `timeEntryBillable ?? billable` precedence rule and the loader-toggle + save-button-focus tail; the read-back path (`readFormData` → `readTextFromSelect2` → templates storage); the **module-load quirk** (selector consts are captured at import time, which is why the content script only works because it's injected after the page renders, and why tests load the fixture before importing); and a **"blast radius" map** — the selectors/assumptions most likely to break when bexio changes markup (the `#s2id_monitoring_*` ids, the `#autocomplete_monitoring_contact_id` autocomplete contract, the tinymce iframe id, the `.save` submit button, the `select2-chosen` text-extraction in `readTextFromSelect2`), each cross-referenced to the test that would catch it.
+- [x] **Step 2: Add TSDoc** on `selectors.ts` (the import-time-capture caveat), each `waitFor*` (interval/timeout/success-condition/timeout-behaviour), and `fillForm` (the orchestration order + the billable rule). **No behaviour changes.**
+- [x] **Step 3: Verify suite still green**
 
 Run: `npx vitest run --project chrome-extension`
 Expected: all pass (this also runs the slow build test — that's fine, or use `--exclude "**/*.slow.test.ts"` to skip it here).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add docs/architecture/form-layer.md packages/chrome-extension/src/selectors/selectors.ts packages/chrome-extension/src/utils/waitFor*.ts packages/chrome-extension/src/utils/fillForm.ts
 git commit -m "docs: add form-layer architecture doc + TSDoc"
