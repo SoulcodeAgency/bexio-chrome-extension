@@ -159,8 +159,10 @@ button cannot be injected in unit tests. The crash is an unhandled async rejecti
   current bexio is unconfirmed; the `observeBillingModalTable` function references
   `jqDialog.getElementsByClassName("list block")[0]` (note the space — this is a two-class
   selector, not a compound class) which may not match the actual element structure.
-- **Fixture captured in converted state:** the `monitoring-list.html` fixture was captured while
-  the extension was active (popovers already hidden, `.new-popover-text` divs already present).
-  The `convertPopover` test therefore pins the no-op/idempotency path, not the initial
-  conversion from a fresh page. Capturing a "pre-conversion" fixture would allow testing the
-  actual first-render conversion path.
+- **`monitoring-list.html` was captured post-conversion:** the raw capture was taken while the
+  extension was active in Text mode (popovers hidden, `.new-popover-text` divs already injected,
+  extension-set `<td>` background-colors present). The committed fixture was **decontaminated**
+  back to the pristine pre-conversion bexio state (divs removed, `<i>`s un-hidden, backgrounds
+  cleared) so `test/utils/convertPopover.test.ts` exercises the real first-render conversion path.
+  See `packages/chrome-extension/test/fixtures/bexio/_raw/__build-fixtures.cjs` (git-ignored) for
+  exactly how the fixtures were produced.
