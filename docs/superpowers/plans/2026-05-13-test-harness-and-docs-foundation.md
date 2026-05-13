@@ -867,7 +867,7 @@ git commit -m "docs: add build-and-release architecture doc"
 - Source under test: `packages/chrome-extension/src/selectors/projectTable_TextCell.ts`
 - Test: `packages/chrome-extension/test/selectors/projectTable_TextCell.test.ts`
 
-- [ ] **Step 1: Write the test**
+- [x] **Step 1: Write the test**
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
@@ -911,11 +911,11 @@ describe("projectTable_TextCell selectors", () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect PASS.** If `getPopoverNodes().length` is `0`, the fixture trimming in Task 0.5 dropped all tooltip rows — go back and re-trim that fixture to keep ≥3 rows with `i[rel='popover']`.
+- [x] **Step 2: Run, expect PASS.** If `getPopoverNodes().length` is `0`, the fixture trimming in Task 0.5 dropped all tooltip rows — go back and re-trim that fixture to keep ≥3 rows with `i[rel='popover']`.
 
 Run: `npx vitest run --project chrome-extension test/selectors/projectTable_TextCell.test.ts`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add packages/chrome-extension/test/selectors/projectTable_TextCell.test.ts
 git commit -m "test: pin projectTable_TextCell popover selectors against fixtures"
@@ -929,7 +929,7 @@ git commit -m "test: pin projectTable_TextCell popover selectors against fixture
 - Source under test: `packages/chrome-extension/src/utils/convertPopover.ts`
 - Test: `packages/chrome-extension/test/utils/convertPopover.test.ts`
 
-- [ ] **Step 1: Write the test** — note `convertPopover` reads `chromeStorageSettings.loadRemovePopoversSetting()` (default `false`), so to exercise the "convert" path the test must first `chrome.storage.local.set({ removePopoversSetting: true })`.
+- [x] **Step 1: Write the test** — note `convertPopover` reads `chromeStorageSettings.loadRemovePopoversSetting()` (default `false`), so to exercise the "convert" path the test must first `chrome.storage.local.set({ removePopoversSetting: true })`.
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
@@ -1000,11 +1000,11 @@ describe("convertPopover", () => {
 ```
 Implementer notes: `convertPopover` uses `DOMPurify` — it imports `dompurify` which works in jsdom. If DOMPurify init complains under jsdom, it usually needs a `window`; jsdom provides one, so it should be fine. `getComputedStyle`/`element.style.backgroundColor` returns the CSS-serialised form (`rgb(...)`), hence the `"rgb(255, 226, 188)"` expectation for `#ffe2bc` and `"antiquewhite"` would serialise to itself or to rgb — verify against the actual jsdom output and adjust the literal if needed (this is a "pin actual behaviour" assertion).
 
-- [ ] **Step 2: Run, expect PASS** (adjust colour literals to whatever jsdom actually produces; that's pinning, not fixing)
+- [x] **Step 2: Run, expect PASS** (adjust colour literals to whatever jsdom actually produces; that's pinning, not fixing)
 
 Run: `npx vitest run --project chrome-extension test/utils/convertPopover.test.ts`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add packages/chrome-extension/test/utils/convertPopover.test.ts
 git commit -m "test: pin convertPopover convert/revert/idempotency behaviour against fixture"
@@ -1020,8 +1020,8 @@ git commit -m "test: pin convertPopover convert/revert/idempotency behaviour aga
 
 The module currently does its work at import time (`initializeExtension()` + `observingTableModifications()`) and the path→node logic is not exported. **Do not refactor the source.** Instead, this test does what it can without exporting internals: load a fixture, set `window.location` (jsdom allows `Object.defineProperty(window, "location", …)` or `history.pushState`), import the module, and assert observable effects — i.e. that after import (with `removePopoversSetting` falsy) nothing crashed and `renderHtml()` ran (it should have added the "Text mode" toggle button; check for whatever id/class `renderHtml.ts` injects — read `packages/chrome-extension/src/apps/bexioProjectList/renderHtml.ts` to find it). If the module throws on import under jsdom because some bexio global is missing, wrap the import in the test and assert the specific failure, then add a `// KNOWN ISSUE:` note and document it — that itself is a finding worth recording.
 
-- [ ] **Step 1: Read `renderHtml.ts` and `index.ts` carefully; decide what is observable.**
-- [ ] **Step 2: Write the test** — at minimum:
+- [x] **Step 1: Read `renderHtml.ts` and `index.ts` carefully; decide what is observable.**
+- [x] **Step 2: Write the test** — at minimum:
 ```ts
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
@@ -1045,11 +1045,11 @@ describe("bexioProjectList content script", () => {
 ```
 Fill in the real injected-element selector in Step 1's reading. If `vi.stubGlobal("location", …)` doesn't take effect for the module's `location.pathname` check, use `Object.defineProperty(window, "location", { value: new URL(...) , configurable: true })` before import, or `window.history.pushState({}, "", "/index.php/monitoring/list")`.
 
-- [ ] **Step 3: Run, expect PASS** (or a documented, asserted failure)
+- [x] **Step 3: Run, expect PASS** (or a documented, asserted failure)
 
 Run: `npx vitest run --project chrome-extension test/apps/bexioProjectList.test.ts`
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add packages/chrome-extension/test/apps/bexioProjectList.test.ts
 git commit -m "test: smoke-test bexioProjectList content script import + UI injection"
@@ -1063,13 +1063,13 @@ git commit -m "test: smoke-test bexioProjectList content script import + UI inje
 - Create: `docs/architecture/tooltip-replacement.md`
 - Modify (TSDoc only): `packages/chrome-extension/src/utils/convertPopover.ts`, `packages/chrome-extension/src/apps/bexioProjectList/index.ts`, `packages/chrome-extension/src/selectors/projectTable_TextCell.ts`
 
-- [ ] **Step 1: Write the doc** covering: which bexio pages the `bexioProjectList` content script matches (`monitoring/list`, `pr_project/listMonitoring/*`, `pr_project/showPackage/*`, and the **deferred/uncertain** `kb_invoice/show/id/*` — note that the "weitere Positionen → erfasste Zeit" path appears to have changed in current bexio and the `kb_invoice` branch is unverified, flagged for a follow-up); the per-page `MutationObserver` setup in `index.ts` and **why** (bexio re-renders these tables via its own AJAX; the observer re-runs `convertPopover` on `childList` changes); the convert/revert cycle in `convertPopover.ts` (toggled by `removePopoversSetting`, default `false`); the DOMPurify sanitisation step and the HTML-entity decoding via a temp `<div>`; the alternating row colours; the "Text mode / Popover mode" toggle button injected by `renderHtml.ts` and where it appears; and how to add coverage for a new page (capture a fixture, add a row to the selectors test).
-- [ ] **Step 2: Add TSDoc** — doc comment on `convertPopover` (the setting gate, the idempotency check via `visiblePopoverNodes`, the sanitise+decode flow), on `getPopoverNodes`/`getPopoverNodeText` (the `i[rel='popover']` / `data-content` contract), and on the observer factory in `index.ts` (why "once per mutation batch"). **No behaviour changes.**
-- [ ] **Step 3: Verify suite still green**
+- [x] **Step 1: Write the doc** covering: which bexio pages the `bexioProjectList` content script matches (`monitoring/list`, `pr_project/listMonitoring/*`, `pr_project/showPackage/*`, and the **deferred/uncertain** `kb_invoice/show/id/*` — note that the "weitere Positionen → erfasste Zeit" path appears to have changed in current bexio and the `kb_invoice` branch is unverified, flagged for a follow-up); the per-page `MutationObserver` setup in `index.ts` and **why** (bexio re-renders these tables via its own AJAX; the observer re-runs `convertPopover` on `childList` changes); the convert/revert cycle in `convertPopover.ts` (toggled by `removePopoversSetting`, default `false`); the DOMPurify sanitisation step and the HTML-entity decoding via a temp `<div>`; the alternating row colours; the "Text mode / Popover mode" toggle button injected by `renderHtml.ts` and where it appears; and how to add coverage for a new page (capture a fixture, add a row to the selectors test).
+- [x] **Step 2: Add TSDoc** — doc comment on `convertPopover` (the setting gate, the idempotency check via `visiblePopoverNodes`, the sanitise+decode flow), on `getPopoverNodes`/`getPopoverNodeText` (the `i[rel='popover']` / `data-content` contract), and on the observer factory in `index.ts` (why "once per mutation batch"). **No behaviour changes.**
+- [x] **Step 3: Verify suite still green**
 
 Run: `npx vitest run --project chrome-extension test/selectors/projectTable_TextCell.test.ts test/utils/convertPopover.test.ts test/apps/bexioProjectList.test.ts`
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add docs/architecture/tooltip-replacement.md packages/chrome-extension/src/utils/convertPopover.ts packages/chrome-extension/src/apps/bexioProjectList/index.ts packages/chrome-extension/src/selectors/projectTable_TextCell.ts
 git commit -m "docs: add tooltip-replacement architecture doc + TSDoc"
