@@ -1,6 +1,39 @@
 import { defineConfig } from "vitest/config";
 import path from "node:path";
 
+// Subpath aliases for @bexio-chrome-extension/shared/* — must come before the
+// bare-package alias so that Vite's prefix-match doesn't swallow them.
+const sharedSubpathAliases = [
+  {
+    find: "@bexio-chrome-extension/shared/chromeStorageTemplateEntries",
+    replacement: path.resolve(__dirname, "packages/shared/chromeStorageTemplateEntries.ts"),
+  },
+  {
+    find: "@bexio-chrome-extension/shared/chromeStorageSettings",
+    replacement: path.resolve(__dirname, "packages/shared/chromeStorageSettings.ts"),
+  },
+  {
+    find: "@bexio-chrome-extension/shared/chromeStorageImportData",
+    replacement: path.resolve(__dirname, "packages/shared/chromeStorageImportData.ts"),
+  },
+  {
+    find: "@bexio-chrome-extension/shared/chromeStorage",
+    replacement: path.resolve(__dirname, "packages/shared/chromeStorage.ts"),
+  },
+  {
+    find: "@bexio-chrome-extension/shared/types",
+    replacement: path.resolve(__dirname, "packages/shared/types.ts"),
+  },
+  {
+    find: "@bexio-chrome-extension/shared",
+    replacement: path.resolve(__dirname, "packages/shared/index.ts"),
+  },
+  {
+    find: "@bexio-chrome-extension/chrome-extension",
+    replacement: path.resolve(__dirname, "packages/chrome-extension"),
+  },
+];
+
 // Root config with all three workspace projects inline (vitest.workspace.ts is
 // deprecated since Vitest 3.2; projects live here now).
 export default defineConfig({
@@ -11,10 +44,7 @@ export default defineConfig({
     projects: [
       {
         resolve: {
-          alias: {
-            "@bexio-chrome-extension/shared": path.resolve(__dirname, "packages/shared/index.ts"),
-            "@bexio-chrome-extension/chrome-extension": path.resolve(__dirname, "packages/chrome-extension"),
-          },
+          alias: sharedSubpathAliases,
         },
         test: {
           name: "shared",
@@ -26,10 +56,7 @@ export default defineConfig({
       },
       {
         resolve: {
-          alias: {
-            "@bexio-chrome-extension/shared": path.resolve(__dirname, "packages/shared/index.ts"),
-            "@bexio-chrome-extension/chrome-extension": path.resolve(__dirname, "packages/chrome-extension"),
-          },
+          alias: sharedSubpathAliases,
         },
         test: {
           name: "chrome-extension",

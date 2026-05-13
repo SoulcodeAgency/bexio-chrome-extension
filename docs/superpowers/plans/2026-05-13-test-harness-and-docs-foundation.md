@@ -609,7 +609,7 @@ git commit -m "test(shared): pin templateEntries / settings / importData storage
 - Source under test: `packages/shared/sortTemplates.ts`, `packages/shared/getTemplateName.ts`, `packages/shared/confirmTemplateDeletion.ts`
 - Test: `packages/shared/test/sortTemplates.test.ts`, `packages/shared/test/getTemplateName.test.ts`, `packages/shared/test/confirmTemplateDeletion.test.ts`
 
-- [ ] **Step 1: `getTemplateName.test.ts`**
+- [x] **Step 1: `getTemplateName.test.ts`**
 ```ts
 import { describe, expect, it } from "vitest";
 import getTemplateName from "../getTemplateName";
@@ -630,7 +630,7 @@ describe("getTemplateName", () => {
 });
 ```
 
-- [ ] **Step 2: `sortTemplates.test.ts`**
+- [x] **Step 2: `sortTemplates.test.ts`**
 ```ts
 import { describe, expect, it } from "vitest";
 import sortTemplates from "../sortTemplates";
@@ -653,14 +653,14 @@ describe("sortTemplates", () => {
 });
 ```
 
-- [ ] **Step 3: `confirmTemplateDeletion.test.ts`** — read `packages/shared/confirmTemplateDeletion.ts` first. It almost certainly wraps `window.confirm`. Test with `vi.spyOn(globalThis, "confirm")` returning `true`/`false` and assert the return value / side effect. If it also touches storage, assert via the chrome fake. Follow the patterns above.
+- [x] **Step 3: `confirmTemplateDeletion.test.ts`** — read `packages/shared/confirmTemplateDeletion.ts` first. It almost certainly wraps `window.confirm`. Test with `vi.spyOn(globalThis, "confirm")` returning `true`/`false` and assert the return value / side effect. If it also touches storage, assert via the chrome fake. Follow the patterns above.
 
-- [ ] **Step 4: Run, expect PASS**
+- [x] **Step 4: Run, expect PASS**
 
 Run: `npx vitest run --project shared test/sortTemplates.test.ts test/getTemplateName.test.ts test/confirmTemplateDeletion.test.ts`
 Expected: all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add packages/shared/test/sortTemplates.test.ts packages/shared/test/getTemplateName.test.ts packages/shared/test/confirmTemplateDeletion.test.ts
 git commit -m "test(shared): pin sortTemplates / getTemplateName / confirmTemplateDeletion"
