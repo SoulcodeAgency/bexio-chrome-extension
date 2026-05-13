@@ -1,0 +1,146 @@
+# Build & Release Tooling
+
+This document covers the workspace layout, build pipeline, release sequence, and known gotchas for the `bexio-chrome-extension` monorepo.
+
+---
+
+## Workspace Layout
+
+The repository uses **npm workspaces** with three packages:
+
+| Package | Name | Purpose | Build step? |
+|---|---|---|---|
+| `packages/shared` | `@bexio-chrome-extension/shared` | Shared TypeScript utilities and types (chrome storage wrappers, template helpers) consumed by both other packages | None — source files are imported directly via the workspace symlink |
+| `packages/chrome-extension` | `@bexio-chrome-extension/chrome-extension` | The Chrome extension content scripts and popup | `vite build` / `vite build --mode development` |
+| `packages/sidePanel-import` | `@bexio-chrome-extension/side-panel-import` | The React side-panel app that lives in the Chrome Side Panel | `vite build` / `vite build --mode development` |
+
+`shared` has no build step. Its `package.json` `"main"` points to `index.ts` and the other packages import it via the npm workspace symlink (`node_modules/@bexio-chrome-extension/shared → packages/shared`). In tests, Vitest's path aliases replicate this resolution (see `vitest.config.ts`).
+
+---
+
+## `Build.ps1` Flag Matrix
+
+`Build.ps1` (repo root) orchestrates both package builds. Invoke it via the root npm script `npm run build:project`.
+
+| Flag | Effect |
+|---|---|
+| *(none)* | Builds both `chrome-extension` and `sidePanel-import` in **production** mode (`vite build`) |
+| `-Development` | Builds both packages in **development** mode (`vite build --mode development`); output is not minified |
+| `-IgnoreExtension` | Skips the `chrome-extension` build |
+| `-IgnoreSidePanel` | Skips the `sidePanel-import` build |
+| `-CreatePackage` | After both builds, zips `unpacked/` into `dist/bexio-chrome-extension.zip` and opens the Chrome Web Store developer console |
+
+Flags can be combined. For example, to build only the side panel in dev mode:
+```powershell
+npm run build:project -- -Development -IgnoreExtension
+```
+
+Or via PowerShell directly:
+```powershell
+powershell -File Build.ps1 -Development -IgnoreExtension
+```
+
+---
+
+## Output Directories
+
+| Directory | Contents | Audience |
+|---|---|---|
+| `unpacked/` | The loadable, unpacked Chrome extension (manifest + built JS/CSS/assets + side-panel sub-directory) | Load via `chrome://extensions` → "Load unpacked"; used as the smoke-test target |
+| `unpacked/sidePanel-import/` | The built React side-panel app nested inside `unpacked/` | Served by Chrome as a side-panel page; referenced by the extension's manifest |
+| `dist/` | A zip of `unpacked/` named `bexio-chrome-extension.zip` | Chrome Web Store upload (created only when `-CreatePackage` is passed) |
+
+Both `unpacked/` and `dist/` are git-ignored.
+
+---
+
+## Vite + `@crxjs/vite-plugin` Pipeline
+
+### `chrome-extension` build (`packages/chrome-extension/vite.config.js`)
+
+- Uses [`@crxjs/vite-plugin`](https://crxjs.dev/) which reads the source `manifest.json` and performs several transformations: it rewrites `content_scripts[].js` entry paths from `.ts` source files to the built `.js` output names, and injects HMR glue in development mode.
+- **`assetsDir: ""`** — disables Vite's default `assets/` sub-folder for JS chunks, keeping all scripts at the `unpacked/` root. Without this, content-script paths in the built manifest would include the sub-folder.
+- **`chunkFileNames: "[name].js"` / `entryFileNames: "[name].js"`** — strips the content hash from output filenames. This is required because Chrome extensions load scripts by exact filename from the manifest; hash-suffixed names would break on every build.
+- **`outDir: "../../unpacked"`** — the build outputs to the repo-level `unpacked/` directory (two levels up from `packages/chrome-extension/`).
+- **`emptyOutDir: true`** — clears `unpacked/` before each build (only in the extension build; see note on race conditions below).
+- **`minify: mode === "production"`** — minification only in production builds.
+
+The source `manifest.json` lives at `packages/chrome-extension/public/manifest.json`. The `@crxjs` plugin reads it at build time and writes a transformed copy to `unpacked/manifest.json`. The source manifest must have its `version` field in sync with `package.json` before a build — this sync is performed by `updateManifest.js` (see Release Sequence below). If they diverge, the built `unpacked/manifest.json` will carry the source manifest's (stale) version; the smoke test in Task 2.2 catches this invariant.
+
+### `sidePanel-import` build (`packages/sidePanel-import/vite.config.ts`)
+
+- **`base: "/sidePanel-import/"`** — sets the public base URL so asset references in the HTML are absolute from the extension root.
+- **`outDir: "../../unpacked/sidePanel-import"`** — outputs into the `sidePanel-import/` sub-directory inside `unpacked/`.
+- **React deduplication aliases** — the config pins `react` and `react-dom` to `../../node_modules/react` and `../../node_modules/react-dom` (the root workspace's copies). This prevents duplicate React instances when `shared` or other packages also import React transitively.
+- **`manualChunks: undefined`** — disables Rollup's default code-splitting for the side panel; the entire app bundles into a single JS file.
+
+---
+
+## Release Sequence (`createRelease.ps1`)
+
+The script is interactive and must be run manually from the `develop` branch (or a feature branch). Steps in order:
+
+1. **Version bump prompt** — asks `patch`, `minor`, or `major`; runs the corresponding `npm run version:{patch|minor|major}` script, which calls `npm --no-git-tag-version version <type>`. This bumps the `version` field in the **root `package.json` only** (the `--no-git-tag-version` flag suppresses the automatic git commit and tag that `npm version` normally creates).
+
+2. **Confirmation** — prints the new version and waits for Enter before proceeding.
+
+3. **`build:newExtensionRelease`** (`npm run build:project -- -createPackage`) — triggers `Build.ps1 -CreatePackage`, which builds both packages in **production** mode and zips the result to `dist/bexio-chrome-extension.zip`.
+
+4. **Changelog generation** — runs `npx git-cliff --tag <version> > CHANGELOG.md`. `git-cliff` reads `cliff.toml` (see below) to format conventional commits since the last tag into a human-readable changelog.
+
+5. **`version:updateManifest`** (`node updateManifest.js`) — reads `./package.json` for the new version, regex-replaces the `"version"` field in `packages/chrome-extension/public/manifest.json`, and stamps today's date (en-US locale: `"May 13, 2026"`) into `package.json`'s `"date"` field.
+
+6. **Commit, tag, merge** — stages everything (`git add .`), waits for confirmation, commits as `Release: <version>`, creates a git tag `<version>` (bare, no `v` prefix), checkouts `main`, merges the tag, runs `git push --all`, and returns to `develop`.
+
+### `cliff.toml`
+
+`cliff.toml` (repo root) configures `git-cliff` for changelog generation:
+
+- Parses commits following the **Conventional Commits** spec (`conventional_commits = true`).
+- Groups commits into sections: Features, Bug Fixes, Documentation, Performance, Refactor, Styling, Testing, Miscellaneous Tasks, Security, Revert.
+- Includes non-conventional commits (`filter_unconventional = false`, `filter_commits = false`) so no commit is silently dropped from the changelog.
+- Tag pattern `[0-9.]*` matches bare version tags like `1.3.6` (no `v` prefix).
+- Output format: `## [version] - YYYY-MM-DD` sections.
+
+---
+
+## Gotchas
+
+### `Build.ps1` swallows sub-build errors
+
+Each build step is wrapped in a `try/catch`. If `vite build` exits with a non-zero code (e.g. a TypeScript error), PowerShell's `catch` block prints a red warning message but **does not re-throw or exit**. The script continues to the next step and reports success. As a result:
+
+- A failing extension build followed by a successful side-panel build will print "OK" for both.
+- `unpacked/` may be stale or partially built.
+- The exit code of `npm run build:project` will be **0** even when a sub-build failed.
+
+The smoke test (Task 2.2) guards against the most visible symptom (missing or wrong-versioned files), but it cannot distinguish a genuinely fresh build from a stale one if `unpacked/` already existed from a prior run.
+
+### `@swc/core` appears vestigial
+
+`@swc/core@1.15.8` is listed as a `dependency` in both `packages/chrome-extension/package.json` and `packages/sidePanel-import/package.json`. Recent commits (`fix(build) Fix esbuild manually`, `fix(build) Getting rid of swc`) suggest that the SWC-based transform was removed. Neither Vite config references `@swc/core` directly. It is likely safe to remove, but doing so is out of scope here — the dependency is noted for a future cleanup.
+
+### `.npmrc`: `save-exact` + `ignore-scripts`
+
+The `.npmrc` at repo root sets:
+
+```ini
+save-exact=true
+ignore-scripts=true
+```
+
+- **`save-exact=true`** — every `npm install --save[-dev]` pins an exact version (no `^` or `~`). This ensures reproducible installs.
+- **`ignore-scripts=true`** — npm lifecycle scripts (`postinstall`, `prepare`, etc.) are not run automatically. This means tools that require a post-install step — such as `@playwright/test` (which needs `playwright install` to download browser binaries) — must be set up manually after installation.
+
+### Branch model
+
+- Active development happens on the **`develop`** branch (and feature branches branching from it).
+- Releases land on **`main`** via the `createRelease.ps1` merge step.
+- Never commit directly to `main`; it should only ever receive fast-forward merges of tagged release commits.
+
+---
+
+## What the Tests Guard
+
+- **Task 2.1** (`test/updateManifest.test.ts`) — pins that `updateManifest.js` correctly copies the `version` from `package.json` into `manifest.json` and stamps today's date into `package.json`, without touching other manifest fields. Runs in a temp directory so it cannot corrupt the real files.
+- **Task 2.2** (`test/build-smoke.slow.test.ts`) — runs an actual `Build.ps1 -Development` end-to-end and asserts: `unpacked/manifest.json` exists and parses; its `version` matches root `package.json`; every JS/CSS file referenced in `content_scripts` and `background.service_worker` exists in `unpacked/`; `unpacked/sidePanel-import/index.html` exists. This test is tagged `.slow` and excluded from `npm run test:fast`; it runs as part of the full `npm test` suite.
