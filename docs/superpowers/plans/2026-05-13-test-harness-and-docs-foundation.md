@@ -507,7 +507,7 @@ git commit -m "test: add anonymised + trimmed bexio DOM fixtures"
 - Source under test: `packages/shared/chromeStorage.ts`
 - Test: `packages/shared/test/chromeStorage.test.ts`
 
-- [ ] **Step 1: Write the test file** (worked example for the first case; the rest follow the same pattern):
+- [x] **Step 1: Write the test file** (worked example for the first case; the rest follow the same pattern):
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as cs from "../chromeStorage";
@@ -541,12 +541,12 @@ Cases to cover (one `it` each):
 | update: custom idKey | `cs.save([{slug:"a"}], "k", )`… actually `update(entry, key, idKey)` — `cs.save([{slug:"x",v:1}],"k")` then `cs.update({slug:"x",v:2} as any,"k","slug")` then `cs.load("k")` | `[{slug:"x",v:2}]` |
 | clear: removes the key | `cs.save([1],"k")` then `cs.clear("k")` then `cs.load("k")` | `=== undefined` |
 
-- [ ] **Step 2: Run, expect PASS** (these test existing code)
+- [x] **Step 2: Run, expect PASS** (these test existing code)
 
 Run: `npx vitest run --project shared test/chromeStorage.test.ts`
 Expected: all pass. If any "KNOWN ISSUE" case fails because the actual behaviour differs from what's written above, **change the test to match the actual behaviour** and update the `// KNOWN ISSUE:` note accordingly — do not change `chromeStorage.ts`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add packages/shared/test/chromeStorage.test.ts
 git commit -m "test(shared): pin chromeStorage load/save/remove/update/clear behaviour"
