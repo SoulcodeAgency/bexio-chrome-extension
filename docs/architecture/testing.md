@@ -136,14 +136,10 @@ The procedure is documented in full in
 - `monitoring-edit.html` — the time-entry edit form (empty)
 - `monitoring-edit-filled.html` — the same form with values pre-filled
 - `monitoring-edit.tinymce-iframe.html` — the TinyMCE iframe body
-- `monitoring-list.html` — the time-entry list (trimmed rows)
+- `monitoring-list.html` — full-body capture of the time-entry list (with `.globalsearch` so renderHtml can inject its toggle button; rows trimmed to 12)
 - `pr_project-listMonitoring.html` — a project's times tab (trimmed rows)
 - `pr_project-showPackage.html` — a work-package's times tab (trimmed rows)
-
-**Not captured: `kb_invoice-show`.**
-The "Tracked time" tooltip path on the invoice page appears to have changed in
-bexio (the element path / modal id no longer matches the README snippet).
-This page is currently unverified — see the manual walkthrough note in Section 5.4.
+- `kb_invoice-show.html` — full-body capture of an invoice with the "Zeiten importieren" modal open; the modal's table rows trimmed to 12. Path through the UI: **Verkauf → Rechnungen → \<invoice\> → Positionen → "Weitere Positionen" → "Zeit/Leistung"**.
 
 ---
 
@@ -263,11 +259,11 @@ is explicitly out of scope for this round).
 6. Click the ▶ (play / fill) button on one row — confirm the
    `monitoring/edit` form in the main tab is populated with that entry's values.
 
-### 5.4 — `kb_invoice` tracked-time tooltip (currently unverified)
+### 5.4 — `kb_invoice` tracked-time tooltip (`kb_invoice/show/id/*`)
 
-The invoice page's "Tracked time" tooltip modal previously injected by the
-`bexioProjectList` content script (`kb_invoice/show/id/*` URL match) appears
-to have changed in a recent bexio update. The element path used by the content
-script no longer matches the current DOM. **This step is currently unverified
-and is listed here as a known gap.** Do not include it in a release sign-off
-until it has been re-validated against the current bexio UI.
+On an invoice detail page, navigate **Positionen → "Weitere Positionen" →
+"Zeit/Leistung"** to open the "Zeiten importieren" modal. Toggle "Text mode" via
+the `#PopoverTextSwitcher` button in the bexio nav — the info-icon popovers in
+the modal table should turn into inline text and the rows should pick up the
+alternating background colours. Toggle back and confirm the modal reverts. The
+fixture `kb_invoice-show.html` covers the same DOM under `test/fixtures/bexio/`.

@@ -26,8 +26,12 @@ describe("projectTable_TextCell selectors", () => {
     expect(getPopoverNodeText(first)).toBe(first.getAttribute("data-content"));
   });
 
-  it("works the same on the project listMonitoring and showPackage fixtures", async () => {
-    for (const fixture of ["pr_project-listMonitoring", "pr_project-showPackage"]) {
+  it("works the same on the project listMonitoring / showPackage / kb_invoice fixtures", async () => {
+    for (const fixture of [
+      "pr_project-listMonitoring",
+      "pr_project-showPackage",
+      "kb_invoice-show",
+    ]) {
       vi.resetModules();
       document.body.innerHTML = "";
       loadFixture(fixture);

@@ -20,17 +20,20 @@ these patterns:
 | `/index.php/monitoring/list` | `#monitoring_content` | `observerTimeTrackingPage()` |
 | `/index.php/pr_project/listMonitoring` | `.listBlock` (first) | `observerProjectPage()` |
 | `/index.php/pr_project/showPackage` | `#ui-id-5` | `observerProjectWorkPackagePage()` |
-| `/index.php/kb_invoice/show/id` | `#jqDialog` (modal) | `observeBillingPage()` **[deferred / unverified]** |
+| `/index.php/kb_invoice/show/id` | `#jqDialog` (modal) → `.block.list` inside it | `observeBillingPage()` → `observeBillingModalTable()` |
 
-### Deferred: `kb_invoice/show/id`
+### `kb_invoice/show/id` — the "Zeiten importieren" modal
 
-The `observeBillingPage()` function and its inner `observeBillingModalTable()` were written to
-handle invoice detail pages where additional time entries are shown in a modal. **This branch is
-unverified against the current bexio application.** The "weitere Positionen → erfasste Zeit"
-navigation path that was the original entry point appears to have changed in current bexio; the
-`#jqDialog` modal may no longer appear, or its structure may differ. No fixture was captured for
-this path. A follow-up task should verify whether the path still exists and, if so, capture a
-fixture.
+The `observeBillingPage()` function and its inner `observeBillingModalTable()` handle the invoice
+detail page where a modal lists tracked time entries that can be imported as invoice line items.
+Original docs referred to this as "weitere Positionen → erfasste Zeit"; in current bexio the
+navigation is **Verkauf → Rechnungen → \<invoice\> → Positionen → "Weitere Positionen" →
+"Zeit/Leistung"**, which opens the `#jqDialog` modal titled "Zeiten importieren". `observeBillingPage`
+watches `#jqDialog` itself (so we can re-attach when the modal opens), and `observeBillingModalTable`
+then watches the `.block.list` wrapper inside it (so we re-convert when the user paginates/filters
+within the modal). Fixture: `kb_invoice-show.html`. Note that the content script's class lookup is
+`getElementsByClassName("list block")[0]` (with a space — a two-class match), which works regardless
+of the actual class order; in the current capture the wrapper is `class="block list"`.
 
 ---
 
@@ -157,11 +160,11 @@ test (`e2e/extension-smoke.spec.ts`) covers the success path against the same fi
   nav bar is present. The `monitoring-list.html` fixture includes it, so the happy path is
   covered, but a future bexio redesign that drops/renames `.globalsearch` will break this code.
   Both the success path and the negative path are pinned in `test/apps/bexioProjectList.test.ts`.
-- **`kb_invoice/show/id` branch unverified:** `observeBillingPage()` and
-  `observeBillingModalTable()` target `#jqDialog` and `.list.block` inside it. The path in
-  current bexio is unconfirmed; the `observeBillingModalTable` function references
-  `jqDialog.getElementsByClassName("list block")[0]` (note the space — this is a two-class
-  selector, not a compound class) which may not match the actual element structure.
+- **`kb_invoice/show/id` modal table selector is class-order-dependent — but coincidentally works:**
+  `observeBillingModalTable` uses `jqDialog.getElementsByClassName("list block")[0]` (with a space —
+  a two-class match, not a compound `.list.block` selector). The current bexio markup wraps the
+  table in `<div class="block list">` (block first), which still matches because
+  `getElementsByClassName` is order-independent. Pinned by the `kb_invoice-show.html` fixture.
 - **`monitoring-list.html` was captured post-conversion:** the raw capture was taken while the
   extension was active in Text mode (popovers hidden, `.new-popover-text` divs already injected,
   extension-set `<td>` background-colors present). The committed fixture was **decontaminated**

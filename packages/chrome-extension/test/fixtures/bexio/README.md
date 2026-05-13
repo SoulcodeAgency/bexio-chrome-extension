@@ -21,10 +21,10 @@ then paste into the given file under `_raw/`.
 | `monitoring-edit.html` *(top priority)* | `https://office.bexio.com/index.php/monitoring/edit` (new time entry form) | `copy(document.getElementById('MonitoringForm').outerHTML)` |
 | `monitoring-edit.tinymce-iframe.html` *(optional, for the description-field path)* | same page | `copy(document.querySelector('#monitoring_text_ifr').contentWindow.document.documentElement.outerHTML)` |
 | `monitoring-edit-filled.html` *(optional, for `readFormData` tests)* | open an existing entry: `…/monitoring/edit/id/<id>` | `copy(document.getElementById('MonitoringForm').outerHTML)` |
-| `monitoring-list.html` | `https://office.bexio.com/index.php/monitoring/list` (have ≥1 row with a description, i.e. a tooltip icon) | `copy(document.getElementById('monitoring_content').outerHTML)` |
+| `monitoring-list-full.html` | `https://office.bexio.com/index.php/monitoring/list` (have ≥1 row with a description, i.e. a tooltip icon) | `copy(document.body.outerHTML)` — full body so `.globalsearch` is included |
 | `pr_project-listMonitoring.html` | a project → "Times" tab | `copy(document.getElementsByClassName('listBlock')[0].outerHTML)` |
 | `pr_project-showPackage.html` | a work package → time-tracking tab | `copy(document.getElementById('ui-id-5')?.outerHTML ?? document.querySelector('.content').outerHTML)` |
-| `kb_invoice-show-jqdialog.html` | an invoice → "More items" → "Tracked time" (modal open) | `copy(document.getElementById('jqDialog').outerHTML)` |
+| `kb_invoice-show-full.html` | an invoice → **Positionen → "Weitere Positionen" → "Zeit/Leistung"** (the "Zeiten importieren" modal must be **open and populated** when you copy) | `copy(document.body.outerHTML)` — full body |
 
 Notes:
 - For the tooltip fixtures (`monitoring-list`, `pr_project-*`, `kb_invoice-*`), make
