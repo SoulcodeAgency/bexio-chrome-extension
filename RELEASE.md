@@ -1,11 +1,26 @@
 # How to make a new release
 
-## Automatically
+**Two ways to release.** The automatic CI path is the default; the manual local-script path is preserved as a fallback. Pick one per release — don't interleave. See `docs/architecture/publishing.md` for the full picture; this file is the day-to-day cheat sheet.
 
-Simply run the script `npm run createRelease`.  
+## Automatic — via `release-please` (preferred)
+
+1. Merge your feature/fix PRs to `main` with conventional-commit messages (`feat: …`, `fix: …`, `BREAKING CHANGE:` for major bumps; `chore:` / `docs:` / `test:` / `refactor:` don't trigger a release).
+2. `release-please` opens (or amends) a Pull Request titled `chore(main): release <version>` containing the version bump, manifest sync, and changelog entry.
+3. When you're ready to ship, review and **merge that Release PR**.
+4. Merging triggers the tag + GitHub Release + `publish-chrome-web-store` workflow, which builds the extension and publishes it to the Chrome Web Store. Hands-off.
+
+If the publish workflow fails after a Release PR merge, re-run it from the Actions tab — `publish-chrome-web-store` → "Run workflow" → enter the tag.
+
+**First-time setup required:** the four `CWS_*` GitHub Actions secrets must be configured before the first release; see `docs/architecture/publishing.md` → "One-time setup".
+
+## Manual — via `createRelease.ps1` (fallback)
+
+Use this when you need to bypass the automated flow: emergency releases, debugging the CI workflow, or releasing without conventional-commit hygiene. **This path requires manually uploading the produced zip via the Chrome Web Store dev console at the end** — it does not trigger the publish workflow.
+
+Simply run the script `npm run createRelease`.
 It will handle the version update, tagging, committing and pushing automatically.
 
-## Manually
+### Manual step-by-step (if you can't run the script)
 
 - Test current version
 - Run npm script `version:minor` (or what you need) to increase version number
