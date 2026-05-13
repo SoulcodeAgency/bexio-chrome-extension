@@ -697,7 +697,7 @@ git commit -m "docs: add storage architecture doc + TSDoc for shared storage lay
 - Source under test (NOT modified): `packages/chrome-extension/updateManifest.js` — wait: confirm location. The script is at repo root: `updateManifest.js`. Use that path.
 - Test: `packages/chrome-extension/test/updateManifest.test.ts` *(fast — no Vite build; the temp-dir + `node` spawn is quick enough to keep in the default `test:fast` set; do NOT give it the `.slow` suffix)*
 
-- [ ] **Step 1: Write the failing test `packages/chrome-extension/test/updateManifest.test.ts`**
+- [x] **Step 1: Write the failing test `packages/chrome-extension/test/updateManifest.test.ts`**
 ```ts
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
@@ -755,12 +755,12 @@ describe("updateManifest.js", () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect PASS**
+- [x] **Step 2: Run, expect PASS**
 
 Run: `npx vitest run --project chrome-extension test/updateManifest.test.ts`
 Expected: 2 passed. If the `require("fs-extra")` inside the script fails → adjust `NODE_PATH` (it must point at the repo's `node_modules` that actually contains `fs-extra`). If the script's relative paths don't line up, re-read `updateManifest.js` and replicate exactly what it reads/writes.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add packages/chrome-extension/test/updateManifest.test.ts
 git commit -m "test: pin updateManifest.js version/date rewrite via temp dir"
@@ -773,7 +773,7 @@ git commit -m "test: pin updateManifest.js version/date rewrite via temp dir"
 **Files:**
 - Test: `packages/chrome-extension/test/build-smoke.slow.test.ts` *(`.slow` suffix → excluded by `test:fast`, included by `test`)*
 
-- [ ] **Step 1: Write the test `packages/chrome-extension/test/build-smoke.slow.test.ts`**
+- [x] **Step 1: Write the test `packages/chrome-extension/test/build-smoke.slow.test.ts`**
 ```ts
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
@@ -832,12 +832,12 @@ Notes for the implementer:
 - `manifest.json` in the repo declares content scripts as `/src/apps/...index.ts` and `bexioTimetrackingTemplates.css`; after the crxjs build the manifest *in `unpacked/`* will have rewritten paths to the built `.js`/`.css` filenames. So we read the **built** manifest (from `unpacked/`), not the source one — which is exactly what step 1 does.
 - If `npm run build:project` proves flaky to invoke from inside Vitest on the dev machine, fall back to calling `powershell -File Build.ps1 -Development` directly via `execFileSync`. Document whichever works in `docs/architecture/testing.md` (Task 5.3).
 
-- [ ] **Step 2: Run, expect PASS** (this actually builds — takes ~10–60s)
+- [x] **Step 2: Run, expect PASS** (this actually builds — takes ~10–60s)
 
 Run: `npx vitest run --project chrome-extension test/build-smoke.slow.test.ts`
 Expected: 1 passed. Confirm it's **excluded** by the fast run: `npm run test:fast` then check this test did not execute.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add packages/chrome-extension/test/build-smoke.slow.test.ts
 git commit -m "test: add build smoke test (slow, asserts unpacked/ + manifest invariants)"
@@ -850,8 +850,8 @@ git commit -m "test: add build smoke test (slow, asserts unpacked/ + manifest in
 **Files:**
 - Create: `docs/architecture/build-and-release.md`
 
-- [ ] **Step 1: Write the doc** covering: the npm-workspaces layout (`packages/shared`, `packages/sidePanel-import`, `packages/chrome-extension`) and that `shared` has no build step; the `Build.ps1` flag matrix (`-Development` → `build:dev` vs `build`; `-IgnoreExtension`, `-IgnoreSidePanel`, `-CreatePackage`); what ends up in `unpacked/` (the loadable extension) vs `dist/` (the store zip); the Vite + `@crxjs/vite-plugin` pipeline and its quirks (`assetsDir: ""`, `chunkFileNames`/`entryFileNames` hash-stripping, output redirected to `../../unpacked`; the side-panel build's `base: "/sidePanel-import/"`, its `outDir: ../../unpacked/sidePanel-import`, and the React-dedupe aliases); the full `createRelease.ps1` sequence (prompt for patch/minor/major → `version:*` which only bumps `package.json` with `--no-git-tag-version` → `build:newExtensionRelease` → `git-cliff --tag <v>` → `version:updateManifest` (`updateManifest.js`: copies version into `manifest.json`, stamps `date` into `package.json`) → commit `Release: <v>` → tag → checkout `main` → merge tag → `git push --all` → checkout `develop`); `cliff.toml`'s role; **the gotchas:** `Build.ps1`'s `catch` blocks swallow sub-build errors so a "successful" run can leave `unpacked/` stale; `@swc/core` is listed as a dependency in two packages but recent commits suggest it's vestigial; `.npmrc` has `save-exact=true` + `ignore-scripts=true` so deps are pinned and lifecycle scripts (incl. `playwright install`) must be run manually; the dev branch is `develop`, releases land on `main`. Reference `Task 2.1`/`2.2` for what the tests guard.
-- [ ] **Step 2: Commit**
+- [x] **Step 1: Write the doc** covering: the npm-workspaces layout (`packages/shared`, `packages/sidePanel-import`, `packages/chrome-extension`) and that `shared` has no build step; the `Build.ps1` flag matrix (`-Development` → `build:dev` vs `build`; `-IgnoreExtension`, `-IgnoreSidePanel`, `-CreatePackage`); what ends up in `unpacked/` (the loadable extension) vs `dist/` (the store zip); the Vite + `@crxjs/vite-plugin` pipeline and its quirks (`assetsDir: ""`, `chunkFileNames`/`entryFileNames` hash-stripping, output redirected to `../../unpacked`; the side-panel build's `base: "/sidePanel-import/"`, its `outDir: ../../unpacked/sidePanel-import`, and the React-dedupe aliases); the full `createRelease.ps1` sequence (prompt for patch/minor/major → `version:*` which only bumps `package.json` with `--no-git-tag-version` → `build:newExtensionRelease` → `git-cliff --tag <v>` → `version:updateManifest` (`updateManifest.js`: copies version into `manifest.json`, stamps `date` into `package.json`) → commit `Release: <v>` → tag → checkout `main` → merge tag → `git push --all` → checkout `develop`); `cliff.toml`'s role; **the gotchas:** `Build.ps1`'s `catch` blocks swallow sub-build errors so a "successful" run can leave `unpacked/` stale; `@swc/core` is listed as a dependency in two packages but recent commits suggest it's vestigial; `.npmrc` has `save-exact=true` + `ignore-scripts=true` so deps are pinned and lifecycle scripts (incl. `playwright install`) must be run manually; the dev branch is `develop`, releases land on `main`. Reference `Task 2.1`/`2.2` for what the tests guard.
+- [x] **Step 2: Commit**
 ```bash
 git add docs/architecture/build-and-release.md
 git commit -m "docs: add build-and-release architecture doc"
