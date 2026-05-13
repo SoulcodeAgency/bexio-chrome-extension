@@ -1087,7 +1087,7 @@ git commit -m "docs: add tooltip-replacement architecture doc + TSDoc"
 - Source: `packages/chrome-extension/src/selectors/selectors.ts`, `billableCheckbox.ts`, `contactField.ts`, `dateField.ts`, `descriptionField.ts`, `durationField.ts`
 - Test: `packages/chrome-extension/test/selectors/formSelectors.test.ts`
 
-- [ ] **Step 1: Write the test**
+- [x] **Step 1: Write the test**
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
@@ -1134,11 +1134,11 @@ describe("form selectors (against monitoring-edit fixture)", () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect PASS**
+- [x] **Step 2: Run, expect PASS**
 
 Run: `npx vitest run --project chrome-extension test/selectors/formSelectors.test.ts`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add packages/chrome-extension/test/selectors/formSelectors.test.ts
 git commit -m "test: pin form selectors against monitoring-edit fixture"
@@ -1152,8 +1152,8 @@ git commit -m "test: pin form selectors against monitoring-edit fixture"
 - Source: `packages/chrome-extension/src/utils/triggerField.ts`, `triggerCheckbox.ts`, `triggerDate.ts`, `triggerDuration.ts`
 - Tests: `packages/chrome-extension/test/utils/triggerField.test.ts`, `triggerCheckbox.test.ts`, `triggerDate.test.ts`, `triggerDuration.test.ts`
 
-- [ ] **Step 1: Read each of these four source files** (they were not quoted in the spec). For each, note: what element it targets, what value/state it sets, what events it dispatches (`input`, `change`, `keydown`, custom), whether it `await`s a `delay`/`waitFor*`, and whether it depends on a select2 container being present.
-- [ ] **Step 2: Write `triggerCheckbox.test.ts`** (the simplest — worked example):
+- [x] **Step 1: Read each of these four source files** (they were not quoted in the spec). For each, note: what element it targets, what value/state it sets, what events it dispatches (`input`, `change`, `keydown`, custom), whether it `await`s a `delay`/`waitFor*`, and whether it depends on a select2 container being present.
+- [x] **Step 2: Write `triggerCheckbox.test.ts`** (the simplest — worked example):
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
@@ -1188,13 +1188,13 @@ describe("triggerCheckbox", () => {
   // If triggerCheckbox no-ops when current state already equals target, add a case pinning that.
 }); 
 ```
-- [ ] **Step 3: Write `triggerDate.test.ts` and `triggerDuration.test.ts`** following the same pattern: load fixture, import the selector + the trigger, call it with a value (`"13.05.2026"` for date; `"01:30"` for duration — match the format the code expects, discovered in Step 1), assert `input.value` and that the expected events fired (spy with `vi.fn()` on the element). Use fake timers if the source `await`s a delay.
-- [ ] **Step 4: Write `triggerField.test.ts`** — `triggerField(selectorId, value)` operates on a select2 widget: it likely sets the underlying `<select>` value (or the `select2-chosen` text) and dispatches `change`. From the fixture, `#s2id_monitoring_monitoring_status_id` has options `Offen/In Arbeit/Erledigt/Fakturiert/Geschlossen`. Test: `triggerField(statusFieldID, "In Arbeit")` results in the select's value/selected option being "In Arbeit" (or whatever the code actually does — pin it). Also test the `value === null` branch (the code is called with `null` from `fillForm` for absent fields) — assert it does nothing / clears, per actual behaviour.
-- [ ] **Step 5: Run all four, expect PASS** (adjust assertions to actual behaviour where the source differs from the assumptions above)
+- [x] **Step 3: Write `triggerDate.test.ts` and `triggerDuration.test.ts`** following the same pattern: load fixture, import the selector + the trigger, call it with a value (`"13.05.2026"` for date; `"01:30"` for duration — match the format the code expects, discovered in Step 1), assert `input.value` and that the expected events fired (spy with `vi.fn()` on the element). Use fake timers if the source `await`s a delay.
+- [x] **Step 4: Write `triggerField.test.ts`** — `triggerField(selectorId, value)` operates on a select2 widget: it likely sets the underlying `<select>` value (or the `select2-chosen` text) and dispatches `change`. From the fixture, `#s2id_monitoring_monitoring_status_id` has options `Offen/In Arbeit/Erledigt/Fakturiert/Geschlossen`. Test: `triggerField(statusFieldID, "In Arbeit")` results in the select's value/selected option being "In Arbeit" (or whatever the code actually does — pin it). Also test the `value === null` branch (the code is called with `null` from `fillForm` for absent fields) — assert it does nothing / clears, per actual behaviour.
+- [x] **Step 5: Run all four, expect PASS** (adjust assertions to actual behaviour where the source differs from the assumptions above)
 
 Run: `npx vitest run --project chrome-extension test/utils/triggerField.test.ts test/utils/triggerCheckbox.test.ts test/utils/triggerDate.test.ts test/utils/triggerDuration.test.ts`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add packages/chrome-extension/test/utils/triggerField.test.ts packages/chrome-extension/test/utils/triggerCheckbox.test.ts packages/chrome-extension/test/utils/triggerDate.test.ts packages/chrome-extension/test/utils/triggerDuration.test.ts
 git commit -m "test: pin triggerField / triggerCheckbox / triggerDate / triggerDuration"
@@ -1208,8 +1208,8 @@ git commit -m "test: pin triggerField / triggerCheckbox / triggerDate / triggerD
 - Source: `packages/chrome-extension/src/utils/triggerContactField.ts`, `waitForContacts.ts`, `waitForSearchBoxField.ts`, `waitForSearchBoxFieldToBeRemoved.ts`, `waitForSelectOptions.ts`
 - Tests: `packages/chrome-extension/test/utils/triggerContactField.test.ts`, `packages/chrome-extension/test/utils/waitFor.test.ts`
 
-- [ ] **Step 1: Read all five source files.** Note each `waitFor*`'s polling interval, timeout, success condition, and resolve/reject behaviour on timeout.
-- [ ] **Step 2: Write `waitFor.test.ts`** — pattern for a polling helper, using fake timers and mutating the DOM mid-wait:
+- [x] **Step 1: Read all five source files.** Note each `waitFor*`'s polling interval, timeout, success condition, and resolve/reject behaviour on timeout.
+- [x] **Step 2: Write `waitFor.test.ts`** — pattern for a polling helper, using fake timers and mutating the DOM mid-wait:
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
@@ -1245,12 +1245,12 @@ describe("waitFor* helpers", () => {
 });
 ```
 Fill in the real call signatures and the real timeout/success semantics from Step 1. Write one resolve-path and one timeout-path test per `waitFor*` helper.
-- [ ] **Step 3: Write `triggerContactField.test.ts`** — `triggerContactField(contactField, contactValue)` drives the jQuery-UI autocomplete (`#autocomplete_monitoring_contact_id`): it likely sets `.value`, dispatches `keydown`/`input` to trigger the autocomplete, waits for results, and picks one. In jsdom none of bexio's autocomplete JS runs, so the realistic assertions are: it sets `contactField.value` to the requested string and fires the expected events; if it `await`s a `waitFor*` that can never succeed in jsdom, it should time out gracefully — pin that. Use fake timers.
-- [ ] **Step 4: Run, expect PASS** (adjust to actual behaviour)
+- [x] **Step 3: Write `triggerContactField.test.ts`** — `triggerContactField(contactField, contactValue)` drives the jQuery-UI autocomplete (`#autocomplete_monitoring_contact_id`): it likely sets `.value`, dispatches `keydown`/`input` to trigger the autocomplete, waits for results, and picks one. In jsdom none of bexio's autocomplete JS runs, so the realistic assertions are: it sets `contactField.value` to the requested string and fires the expected events; if it `await`s a `waitFor*` that can never succeed in jsdom, it should time out gracefully — pin that. Use fake timers.
+- [x] **Step 4: Run, expect PASS** (adjust to actual behaviour)
 
 Run: `npx vitest run --project chrome-extension test/utils/triggerContactField.test.ts test/utils/waitFor.test.ts`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add packages/chrome-extension/test/utils/triggerContactField.test.ts packages/chrome-extension/test/utils/waitFor.test.ts
 git commit -m "test: pin triggerContactField + waitFor* polling helpers"
