@@ -33,6 +33,10 @@ npm run test:watch    # Vitest in watch mode (useful during development)
 npm run test:e2e      # Playwright extension-smoke (separate; opt-in)
 ```
 
+The interactive Vitest UI is not wired up (it needs the `@vitest/ui` dependency, which we
+deliberately don't add). If you want it for a debugging session:
+`npm i -D -E @vitest/ui && npx vitest --ui`.
+
 ### `npm run test:e2e` prerequisites (one-time setup)
 
 1. Install the Playwright Chromium browser:
@@ -53,7 +57,7 @@ npm run test:e2e      # Playwright extension-smoke (separate; opt-in)
 
 ## 3. Vitest workspace — three projects
 
-The root `vitest.workspace.ts` defines three projects:
+The root `vitest.config.ts` (via its `test.projects` array) defines three projects. (There is also a `vitest.workspace.ts`, kept as a tombstone with a comment — Vitest 4 deprecated the standalone workspace file in favour of `test.projects`, so that file is *not* what's loaded.)
 
 | Project | Root | Environment | What it tests |
 | --- | --- | --- | --- |
