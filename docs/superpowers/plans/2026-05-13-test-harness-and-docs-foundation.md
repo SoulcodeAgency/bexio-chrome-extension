@@ -560,7 +560,7 @@ git commit -m "test(shared): pin chromeStorage load/save/remove/update/clear beh
 - Source under test: `packages/shared/chromeStorageTemplateEntries.ts`, `packages/shared/chromeStorageSettings.ts`, `packages/shared/chromeStorageImportData.ts`
 - Test: `packages/shared/test/chromeStorageTemplateEntries.test.ts`, `packages/shared/test/chromeStorageSettings.test.ts`, `packages/shared/test/chromeStorageImportData.test.ts`
 
-- [ ] **Step 1: `chromeStorageTemplateEntries.test.ts`** — worked example + cases:
+- [x] **Step 1: `chromeStorageTemplateEntries.test.ts`** — worked example + cases:
 ```ts
 import { describe, expect, it } from "vitest";
 import * as te from "../chromeStorageTemplateEntries";
@@ -580,7 +580,7 @@ describe("chromeStorageTemplateEntries", () => {
 ```
 Cases: `saveTemplates` then `loadTemplates` round-trips an array; `loadTemplates` reads from the `"entries"` key (set via `chrome.storage.local.set({entries:[…]})`, then `loadTemplates()` returns it); `deleteTemplate(id)` removes that entry; `updateTemplate` shallow-merges by `id`.
 
-- [ ] **Step 2: `chromeStorageSettings.test.ts`** — cases:
+- [x] **Step 2: `chromeStorageSettings.test.ts`** — cases:
 | Function | No value stored → | After `save…(x)` → `load…()` |
 | --- | --- | --- |
 | `loadApplyNotesSetting` | `true` | echoes `x` (test with `false`) |
@@ -588,14 +588,14 @@ Cases: `saveTemplates` then `loadTemplates` round-trips an array; `loadTemplates
 | `loadActiveTabId` | `undefined` | echoes `x` (test with `"import"`) |
 Also assert the storage keys are what the module exports: after `saveApplyNotesSetting(false)`, `chrome.storage.local.get("applyNotesSetting")` → `{ applyNotesSetting: false }`; same for `activeTabId` / `removePopoversSetting`.
 
-- [ ] **Step 3: `chromeStorageImportData.test.ts`** — read `packages/shared/chromeStorageImportData.ts` first (it wasn't quoted in the spec); write round-trip + default tests for whatever load/save/clear functions it exports, following the same pattern. If it stores under its own key, assert that key.
+- [x] **Step 3: `chromeStorageImportData.test.ts`** — read `packages/shared/chromeStorageImportData.ts` first (it wasn't quoted in the spec); write round-trip + default tests for whatever load/save/clear functions it exports, following the same pattern. If it stores under its own key, assert that key.
 
-- [ ] **Step 4: Run all three, expect PASS**
+- [x] **Step 4: Run all three, expect PASS**
 
 Run: `npx vitest run --project shared test/chromeStorageTemplateEntries.test.ts test/chromeStorageSettings.test.ts test/chromeStorageImportData.test.ts`
 Expected: all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add packages/shared/test/chromeStorageTemplateEntries.test.ts packages/shared/test/chromeStorageSettings.test.ts packages/shared/test/chromeStorageImportData.test.ts
 git commit -m "test(shared): pin templateEntries / settings / importData storage wrappers"
