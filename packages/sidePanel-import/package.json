@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "build:watch": "vite build --watch --mode development",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -19,6 +19,7 @@
     "undici": "7.18.0"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@types/chrome": "0.2.2",
     "@types/node": "25.0.3",
     "@types/react": "19.2.17",
@@ -27,9 +28,10 @@
     "@typescript-eslint/parser": "8.65.0",
     "@vitejs/plugin-react": "^6.0.4",
     "antd": "6.5.2",
-    "eslint": "9.39.2",
+    "eslint": "10.8.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.3",
+    "globals": "17.8.0",
     "sass": "1.102.0",
     "typescript": "5.9.3",
     "vite": "^8.1.5"

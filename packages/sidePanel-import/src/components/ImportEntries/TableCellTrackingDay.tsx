@@ -25,10 +25,8 @@ const TableCellTrackingDay = (props: ImportEntriesTableCellProps) => {
     button = <Button onClick={() => props.onButtonClickReset()}>✅</Button>;
   }
 
-  let tableCell = <td>{props.fieldValue}</td>;
-  if (entryIsEmpty) {
-    tableCell = <td></td>;
-  } else {
+  let tableCell = <td></td>;
+  if (!entryIsEmpty) {
     tableCell = (
       <td>
         {props.fieldValue}
