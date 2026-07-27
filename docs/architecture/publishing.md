@@ -96,18 +96,29 @@ Four GitHub Actions secrets must be configured in repo settings → Secrets and 
 
 Procedure (run once, by the listing owner):
 
-1. **Pick the Google account that owns the credentials.** It must have at least "Editor" rights on the CWS listing. Stay signed in to it for the next steps.
+1. **Pick the Google account that owns the credentials.** It needs at least the **Item Manager** role on the CWS listing (the four roles are Viewer, Item Manager, Editor, Admin; Item Manager is enough to upload packages). Stay signed in to it for every step below — client id, secret and refresh token must all originate from this one account, or the upload fails on permissions. Use a function account (e.g. `dev@…`) rather than a personal one: the Chrome Web Store API does not support service accounts, so the pipeline permanently depends on this human account existing.
 2. **Create or pick a Google Cloud project** at `https://console.cloud.google.com/`. Enable the **Chrome Web Store API**: APIs & Services → Library → search "Chrome Web Store API" → Enable.
-3. **Create an OAuth 2.0 client** of type **Desktop app**: APIs & Services → Credentials → "Create credentials" → "OAuth client ID". First time, you'll be prompted to configure the consent screen — pick "External", set app name (e.g. "Soulcode CWS Publisher"), add yourself as a test user. Then back to creating the client: type "Desktop app", give it a name (e.g. "cws-publisher"), save. Copy the resulting Client ID + Client secret.
+3. **Configure the consent screen**, then **create an OAuth 2.0 client** of type **Desktop app**. Both live under **Google Auth Platform** (`console.cloud.google.com/auth/overview`) in the current console.
+   - Consent screen: app name (e.g. "Soulcode CWS Publisher"), support + contact email, user type **External** ("Internal" requires a Google Cloud Organization and is unavailable here).
+   - **Then set the publishing status to "In production"** (Audience → "Publish app"). This is not optional: with user type External and status "Testing", Google issues refresh tokens that **expire after 7 days**, so the pipeline would start failing with a 401 a week later. Publishing does not make the app discoverable — there is no directory of OAuth clients, and it is unusable without the client id *and* secret.
+   - Client: Clients → "Create client" → type **Desktop app** (*not* "Chrome extension" — that type is for an extension authenticating end users). Name it e.g. "cws-publisher (GitHub Actions)".
+   - **Download the JSON immediately.** The client secret is shown only once. A lost secret can be regenerated on the same client, but not recovered.
 4. **Get the refresh token.** Easiest via the `chrome-webstore-upload-keys` CLI:
 
    ```bash
    npx --yes chrome-webstore-upload-keys
    ```
 
-   It will ask for the client id + secret, open a browser tab on a Google consent page, ask you to approve the app's access (you have to "Continue" past the "unverified app" warning since the consent screen is in dev/test mode), and print the refresh token to your terminal. Copy that.
+   It will ask for the client id + secret, open a browser tab on a Google consent page, and print the refresh token to your terminal. Two things to watch: **check which account the consent screen is using** (it must be the account from step 1 — easy to get wrong with several Google accounts in one browser), and expect the **"Google hasn't verified this app"** warning — click "Advanced" → "Go to … (unsafe)". The app is unverified because it is only ever used internally; verification is not required for that.
 5. **Add all four values to repo secrets.** GitHub repo → Settings → Secrets and variables → Actions → "New repository secret", four times, names matching exactly: `CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`.
-6. **Smoke test.** Actions tab → `publish-chrome-web-store` → "Run workflow" → enter the current latest tag (e.g. `1.3.5`) and set `publish: false`. The workflow builds and uploads to CWS as a *draft* visible only in the dev console. Verify the draft, then either discard it or publish manually from the dev console.
+6. **Smoke test — credentials only.** Actions tab → `publish-chrome-web-store` → "Run workflow" → current latest tag, `publish: false`.
+
+   Note what this can and cannot prove. The CWS API rejects any upload whose manifest version is not **higher** than the published one ("If you have not increased the version field in your extension's manifest file, this will fail"), and the latest tag by definition carries the published version. So a full dry run is not possible — but the failure mode is still informative:
+
+   - **401 / 403 from Google** → one of the four secrets is wrong, or the API was enabled in a different project.
+   - **An error about the version number** → the credentials work. That is the result you want here.
+
+   The first genuine end-to-end upload therefore happens on the first real release.
 
 ### What if the refresh token gets revoked?
 
@@ -134,7 +145,7 @@ gh workflow run publish-chrome-web-store.yml \
   -f tag=1.4.0 \
   -f publish=true
 
-# Smoke test (upload-only, draft)
+# Credentials check (upload-only; expected to fail on the version number, see "Smoke test" above)
 gh workflow run publish-chrome-web-store.yml \
   -f tag=1.3.5 \
   -f publish=false
