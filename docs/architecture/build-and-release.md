@@ -58,6 +58,8 @@ Both `unpacked/` and `dist/` are git-ignored.
 
 ## Vite + `@crxjs/vite-plugin` Pipeline
 
+Both packages build with **Vite 8**, which bundles with **Rolldown** internally (Vite ≤ 7 used Rollup for bundling and esbuild for transforms; Vite 8 has no esbuild dependency at all). The `rollupOptions` keys in both configs are still honoured — Rolldown accepts them as compatible aliases.
+
 ### `chrome-extension` build (`packages/chrome-extension/vite.config.js`)
 
 - Uses [`@crxjs/vite-plugin`](https://crxjs.dev/) which reads the source `manifest.json` and performs several transformations: it rewrites `content_scripts[].js` entry paths from `.ts` source files to the built `.js` output names, and injects HMR glue in development mode.
@@ -66,6 +68,7 @@ Both `unpacked/` and `dist/` are git-ignored.
 - **`outDir: "../../unpacked"`** — the build outputs to the repo-level `unpacked/` directory (two levels up from `packages/chrome-extension/`).
 - **`emptyOutDir: true`** — clears `unpacked/` before each build (only in the extension build; see note on race conditions below).
 - **`minify: mode === "production"`** — minification only in production builds.
+- **`withUniqueChunkNames(...)`** — a local wrapper around the `crx()` plugin array that works around a Rolldown incompatibility in `@crxjs/vite-plugin` (as of 2.7.1): Rolldown derives `emitFile` refIds from the chunk `name` alone, and the plugin emits every content script under its basename. Both content scripts are `index.ts`, so their refIds collided and the build failed with `Content script fileName is undefined`. The wrapper rewrites colliding `index.*` chunk names to the entry's parent directory name, so the content-script bundles come out as `bexioTimetrackingTemplates.js` and `bexioProjectList.js` (under Vite 5/Rollup they were `index.ts.js` and `index.ts2.js`). The built manifest references small `*-loader.js` files that dynamically import these chunks — that indirection is standard `@crxjs` output, and the chunk names stay hash-free via `entryFileNames`/`chunkFileNames` as before. If a future `@crxjs/vite-plugin` release emits unique chunk names itself, the wrapper can be deleted.
 
 The source `manifest.json` lives at `packages/chrome-extension/public/manifest.json`. The `@crxjs` plugin reads it at build time and writes a transformed copy to `unpacked/manifest.json`. The source manifest must have its `version` field in sync with `package.json` before a build — this sync is performed by `updateManifest.js` (see Release Sequence below). If they diverge, the built `unpacked/manifest.json` will carry the source manifest's (stale) version; the smoke test in Task 2.2 catches this invariant.
 
@@ -74,7 +77,11 @@ The source `manifest.json` lives at `packages/chrome-extension/public/manifest.j
 - **`base: "/sidePanel-import/"`** — sets the public base URL so asset references in the HTML are absolute from the extension root.
 - **`outDir: "../../unpacked/sidePanel-import"`** — outputs into the `sidePanel-import/` sub-directory inside `unpacked/`.
 - **React deduplication aliases** — the config pins `react` and `react-dom` to `../../node_modules/react` and `../../node_modules/react-dom` (the root workspace's copies). This prevents duplicate React instances when `shared` or other packages also import React transitively.
-- **`manualChunks: undefined`** — disables Rollup's default code-splitting for the side panel; the entire app bundles into a single JS file.
+- **`manualChunks: undefined`** — disables the bundler's default code-splitting for the side panel; the entire app bundles into a single JS file. Rolldown still honours this key under Vite 8.
+
+### The `overrides` block is gone — do not bring it back
+
+The root `package.json` used to force `esbuild` and `rollup` versions via an `overrides` block (added in `becd607`, "Fix security issue") because Vite 5 declared support only for older esbuild versions. Forcing a build tool's dependencies past their declared range is exactly what broke the build when Dependabot proposed esbuild 0.28.1. Vite 8 bundles Rolldown and depends on neither esbuild nor rollup, so the overrides — and the matching Dependabot `ignore` entries — were removed. If a security advisory ever hits a Vite-internal dependency again, upgrade Vite instead of overriding.
 
 ---
 
