@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.3.5...1.4.0) (2026-07-27)
+
+
+### Bug Fixes
+
+* **changelog:** store CHANGELOG.md as UTF-8 instead of UTF-16 ([44e4a05](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/44e4a057e3f037a25610995f01e1c4a69437696e))
+* **ci:** pin the CWS upload action to v6.0.0, which actually exists ([c514bb5](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/c514bb5b7ee0f73a1bb8412bdd0e8ce8332f100c))
+* **test:** invoke Build.ps1 with the detected PowerShell binary in the build smoke test ([6d1ea63](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/6d1ea63e8989f2b8d24e86a24c4fa4d88511c952))
+
 ## [1.3.5] - 2026-01-05
 
 ### Bug Fixes
