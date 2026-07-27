@@ -22,23 +22,11 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     ignore:
-      # esbuild and rollup are force-pinned by the `overrides` block in the root
-      # package.json (added in becd607, "Fix security issue"), which pushes them
-      # past what vite 5.4 declares support for — vite asks for esbuild ^0.21.3
-      # and gets 0.27.2. That works by luck, and stops working on the next bump:
-      # esbuild 0.28.1 refuses to lower destructuring to the configured browser
-      # target, so vite:esbuild-transpile fails with 1045 errors in the side
-      # panel (observed on PR #46).
-      #
-      # Holding them costs nothing today: 0.27.2 sits in a gap where no live
-      # advisory applies (GHSA-67mh-4wv8-2f99 covers <= 0.24.2,
-      # GHSA-g7r4-m6w7-qqqr covers 0.27.3–0.28.0, and the high-severity
-      # GHSA-gv7w-rqvm-qjhr has been withdrawn).
-      #
-      # The real fix is upgrading vite so the overrides can be deleted and
-      # esbuild/rollup track it again. Drop these two entries when that happens.
-      - dependency-name: esbuild
-      - dependency-name: rollup
+      # TypeScript 7 ships the Go-native compiler; typescript-eslint does not
+      # support it yet. Revisit once typescript-eslint declares TS 7 support.
+      - dependency-name: typescript
+        versions:
+          - ">=7"
     groups:
       npm-minor-patch:
         update-types:
