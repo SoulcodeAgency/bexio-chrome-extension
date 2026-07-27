@@ -1,0 +1,149 @@
+name: Dependabot auto-merge
+
+# Auto-merge low-risk Dependabot PRs once CI is green. Adapted from the same
+# mechanism in SoulcodeAgency/Diurna.
+#
+# The semver ceiling plus green CI is the accepted safety boundary: patch,
+# minor and grouped updates merge themselves, majors always wait for a human.
+# Two things make that bounded here:
+#   - Dependabot commits are `chore(deps):`, which does not trigger a release
+#     (see docs/architecture/publishing.md). An auto-merged update therefore
+#     lands on main but reaches Chrome Web Store users only with the next
+#     deliberate feat:/fix: release, not immediately.
+#   - Everything shipped is bundled by Vite, so a bad update surfaces in the
+#     build smoke test before it can reach a package.
+#
+# Triggered by workflow_run on CI completion so it runs in the default-branch
+# context with the repo's normal GITHUB_TOKEN — Dependabot's own token is
+# read-only and cannot approve or merge. `main` is unprotected and there are no
+# required checks, so this workflow's own check aggregation IS the gate.
+
+on:
+  workflow_run:
+    workflows: [Node.js CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  actions: read
+
+jobs:
+  auto-merge:
+    name: Dependabot auto-merge
+    # Only act on a successful CI run for a Dependabot PR from this repo, never
+    # a fork.
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+      # This job's own check-run name — excluded from the wait loop below so it
+      # never deadlocks waiting on itself.
+      SELF_CHECK: Dependabot auto-merge
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          # 24 so the classifier can run as TypeScript without a build step.
+          node-version: '24'
+
+      - name: Resolve PR for the head branch
+        id: pr
+        run: |
+          pr=$(gh pr list --repo "$REPO" --head "$HEAD_BRANCH" --state open \
+            --json number,title,author --jq '.[0]')
+          if [ -z "$pr" ] || [ "$pr" = "null" ]; then
+            echo "No open PR for branch '$HEAD_BRANCH'; nothing to do."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Re-confirm Dependabot authorship. gh renders the bot login as either
+          # 'dependabot[bot]' or 'app/dependabot' depending on version, so match
+          # on substring rather than an exact string.
+          author=$(echo "$pr" | jq -r '.author.login')
+          case "$author" in
+            *dependabot*) : ;;
+            *)
+              echo "PR author '$author' is not Dependabot; skipping."
+              echo "found=false" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
+          {
+            echo "found=true"
+            echo "number=$(echo "$pr" | jq -r '.number')"
+            echo "title<<TITLE_EOF"
+            echo "$pr" | jq -r '.title'
+            echo "TITLE_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Wait for all checks on the head SHA
+        if: steps.pr.outputs.found == 'true'
+        run: |
+          # Aggregate every check-run on the PR head commit (this is the gate —
+          # see header). Exclude our own run. Treat cancelled/skipped/neutral as
+          # benign; fail only on failure / timed_out / action_required.
+          for attempt in $(seq 1 60); do
+            checks=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100" \
+              --jq '.check_runs')
+            incomplete=$(echo "$checks" | jq --arg self "$SELF_CHECK" \
+              '[.[] | select(.name != $self) | select(.status != "completed")] | length')
+            if [ "$incomplete" -eq 0 ]; then
+              echo "$checks" > /tmp/checks.json
+              break
+            fi
+            echo "attempt $attempt/60: $incomplete check(s) still running; waiting 10s…"
+            sleep 10
+            if [ "$attempt" -eq 60 ]; then
+              echo "::error::Checks on $HEAD_SHA did not complete within 10 minutes."
+              exit 1
+            fi
+          done
+
+          bad=$(jq -r --arg self "$SELF_CHECK" \
+            '[.[] | select(.name != $self)
+                 | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "action_required")
+                 | .name] | join(", ")' /tmp/checks.json)
+          if [ -n "$bad" ]; then
+            echo "::error::Failing checks on $HEAD_SHA: $bad"
+            exit 1
+          fi
+          echo "All checks on $HEAD_SHA are green (cancelled/skipped treated as benign)."
+
+      - name: Classify update and merge or comment
+        if: steps.pr.outputs.found == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_TITLE: ${{ steps.pr.outputs.title }}
+        run: |
+          bucket=$(node scripts/classify-dependabot-update.ts "$PR_TITLE")
+          echo "PR #$PR_NUMBER '$PR_TITLE' → $bucket"
+          case "$bucket" in
+            patch|minor|group)
+              # Best-effort approval: if the org disables "Actions can approve
+              # PRs" this fails, but nothing requires the approval, so don't let
+              # a blocked approval stop the merge.
+              gh pr review "$PR_NUMBER" --repo "$REPO" --approve \
+                --body "Auto-approved: \`$bucket\` Dependabot update, CI green." \
+                || echo "::warning::Approval failed (org policy?); merging anyway."
+              # Squash keeps the conventional-commit PR title as the commit
+              # message, so these stay chore(deps): and trigger no release.
+              gh pr merge "$PR_NUMBER" --repo "$REPO" --squash --delete-branch
+              echo "Merged PR #$PR_NUMBER ($bucket)."
+              ;;
+            *)
+              gh pr comment "$PR_NUMBER" --repo "$REPO" --body \
+                "🤖 Auto-merge skipped — this update is classified as \`$bucket\` (major or unclassifiable). Majors always need a human; please review and merge manually."
+              echo "Left PR #$PR_NUMBER open for manual review ($bucket)."
+              ;;
+          esac

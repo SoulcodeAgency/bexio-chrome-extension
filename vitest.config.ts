@@ -75,6 +75,17 @@ export default defineConfig({
           include: ["test/**/*.test.ts"],
         },
       },
+      {
+        test: {
+          // Repo tooling that isn't part of any package — currently the
+          // Dependabot PR classifier, whose output decides whether a PR
+          // auto-merges without review.
+          name: "scripts",
+          root: "./scripts",
+          environment: "node",
+          include: ["**/*.test.ts"],
+        },
+      },
     ],
   },
 });

@@ -1,0 +1,39 @@
+# Dependabot version updates.
+#
+# This is separate from Dependabot *security* updates, which are enabled at the
+# repository level and need no config file — those only react to published
+# advisories. The config below keeps dependencies current on a schedule, and
+# adds the github-actions ecosystem, which security updates never cover. That
+# gap is why actions/checkout@v4 quietly sat on the deprecated Node 20 runtime
+# until a warning with a removal date showed up in the logs.
+#
+# Grouping bundles minor+patch into a few PRs instead of one per package.
+# Majors are deliberately excluded from the groups so they arrive individually
+# and never auto-merge — see .github/workflows/dependabot-auto-merge.yml, whose
+# `group` bucket is only safe to merge because of that exclusion.
+version: 2
+updates:
+  # npm: this is an npm-workspaces monorepo with a single root lockfile, so the
+  # root entry covers packages/chrome-extension, packages/sidePanel-import and
+  # packages/shared as well.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
