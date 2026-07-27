@@ -12,7 +12,7 @@
 
 If the publish workflow fails after a Release PR merge, re-run it from the Actions tab — `publish-chrome-web-store` → "Run workflow" → enter the tag.
 
-**First-time setup required:** the four `CWS_*` GitHub Actions secrets must be configured before the first release; see `docs/architecture/publishing.md` → "One-time setup".
+**First-time setup required:** the four `CWS_*` GitHub Actions secrets must be configured before the first release; see `docs/architecture/publishing.md` → "One-time setup", or `docs/architecture/publishing-setup.de.md` for the same steps as a German checklist.
 
 ## Manual — via `createRelease.ps1` (fallback)
 

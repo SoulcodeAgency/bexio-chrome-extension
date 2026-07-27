@@ -83,6 +83,8 @@ Recommendation: pick one path per release and stick with it.
 
 ## One-time setup (required before the first CI release)
 
+> Prefer to work through this as a tick-off list in German? See `docs/architecture/publishing-setup.de.md` — same steps, checklist form.
+
 Four GitHub Actions secrets must be configured in repo settings → Secrets and variables → Actions:
 
 | Secret | What it is | Source |
@@ -147,5 +149,6 @@ gh workflow run publish-chrome-web-store.yml \
 - `RELEASE.md` — day-to-day cheat sheet for both paths
 - `createRelease.ps1`, `Build.ps1`, `updateManifest.js` — the local-script path
 - `docs/architecture/build-and-release.md` — the build pipeline behind both paths, plus the manual release sequence in detail
+- `docs/architecture/publishing-setup.de.md` — the one-time setup as a German checklist
 - Spec: `docs/superpowers/specs/2026-05-13-cws-publishing-automation-design.md`
 - Tracking issue: [#32](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/32)
