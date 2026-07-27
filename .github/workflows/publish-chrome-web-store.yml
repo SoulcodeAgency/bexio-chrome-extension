@@ -38,7 +38,9 @@ jobs:
         run: pwsh -File ./Build.ps1 -CreatePackage
 
       - name: Upload + publish to Chrome Web Store
-        uses: mnao305/chrome-extension-upload@v5
+        # This action publishes exact tags only — there is no moving `v5`/`v6`
+        # major tag, so the version must be spelled out in full.
+        uses: mnao305/chrome-extension-upload@v6.0.0
         with:
           file-path: dist/bexio-chrome-extension.zip
           extension-id: ${{ secrets.CWS_EXTENSION_ID }}
