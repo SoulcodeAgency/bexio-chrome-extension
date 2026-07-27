@@ -4,7 +4,8 @@
 
 ## Automatic — via `release-please` (preferred)
 
-1. Merge your feature/fix PRs to `main` with conventional-commit messages (`feat: …`, `fix: …`, `BREAKING CHANGE:` for major bumps; `chore:` / `docs:` / `test:` / `refactor:` don't trigger a release).
+1. Merge your feature/fix PRs to `main` with conventional-commit messages (`feat: …` or `fix: …` trigger a release; `chore:` / `docs:` / `test:` / `refactor:` don't).
+   - **Every release is a minor bump** — `1.3.5` → `1.4.0` → `1.5.0`. Patch numbers are for local dev builds only. For a major, put `Release-As: 2.0.0` in a commit body.
 2. `release-please` opens (or amends) a Pull Request titled `chore(main): release <version>` containing the version bump, manifest sync, and changelog entry.
 3. When you're ready to ship, review and **merge that Release PR**.
 4. Merging triggers the tag + GitHub Release + `publish-chrome-web-store` workflow, which builds the extension and publishes it to the Chrome Web Store. Hands-off.

@@ -7,7 +7,7 @@ This file is the canonical documentation for how releases reach the Chrome Web S
 | | Automatic (CI) | Manual (local script) |
 | --- | --- | --- |
 | Trigger | Merge a Release PR on `main` | Run `npm run createRelease` locally |
-| Who bumps the version | `release-please` (from conventional-commit history) | The human running the script (picks patch/minor/major interactively) |
+| Who bumps the version | `release-please` — always a minor bump (see below) | The human running the script (picks patch/minor/major interactively) |
 | Who regenerates `CHANGELOG.md` | `release-please` (from conventional commits) | `git-cliff` invoked by the script |
 | Who syncs `manifest.json` version | `release-please` `extra-files` JSONPath | `updateManifest.js` invoked by the script |
 | Who builds & zips | The publish workflow on `ubuntu-latest` | The human's local machine |
@@ -31,17 +31,21 @@ New commits to `main` cause `release-please` to **amend the same PR** — it doe
 4. When you're ready: review the Release PR, click Merge.
 5. The merge commit triggers `release-please` to push the tag (e.g. `1.4.0`) and create a GitHub Release. The Release-published event fires `publish-chrome-web-store.yml`, which builds the extension, uploads it to the CWS API, publishes it, and attaches the zip to the GitHub Release as an artifact.
 
-### Conventional commits: what bumps what
+### Conventional commits: what triggers a release
 
-| Commit prefix | Bump |
+**Every store release is a minor bump** — `1.3.5` → `1.4.0` → `1.5.0` → … This is set by `"versioning": "always-bump-minor"` in `release-please-config.json`. Commit types decide *whether* a release happens and how the changelog is grouped; they no longer decide the size of the bump.
+
+| Commit prefix | Effect |
 | --- | --- |
-| `feat: …`, `feat(scope): …` | minor (e.g. `1.3.5` → `1.4.0`) |
-| `fix: …`, `fix(scope): …` | patch (e.g. `1.3.5` → `1.3.6`) |
-| `feat!: …`, `fix!: …`, or any commit with a `BREAKING CHANGE:` footer | major (e.g. `1.3.5` → `2.0.0`) |
+| `feat: …`, `feat(scope): …` | release, listed under "Features" |
+| `fix: …`, `fix(scope): …` | release, listed under "Bug Fixes" |
+| `feat!: …`, `fix!: …`, or any commit with a `BREAKING CHANGE:` footer | release, flagged as breaking in the changelog — still a minor bump. Use `Release-As: 2.0.0` if a breaking change deserves a major |
 | `chore:`, `docs:`, `test:`, `refactor:`, `style:`, `ci:`, `build:`, `perf:` | no release |
 | Anything not starting with a recognized prefix | no release (silent) |
 
-Scoped variants (`fix(release):`, `feat(side-panel):`) work identically to their unscoped form.
+Scoped variants (`fix(release):`, `feat(side-panel):`) work identically to their unscoped form. Note that scope does **not** exempt a commit from triggering a release: `fix(test):` is still a `fix` and will open a Release PR. Use `test:` or `chore(test):` for test-only work.
+
+**Why always-minor:** patch numbers are reserved for local dev builds (`npm run build:devRelease` bumps the patch on your machine so you can tell loaded unpacked builds apart — never commit that bump). The store version is the only version that matters, and it moves in minors. Individual fixes are still listed by name in the changelog under the minor's heading. To go back to standard semver, remove the `versioning` line — the change is not retroactive.
 
 **Silent-no-release warning:** if you merge a feature using a non-conventional commit message (or `chore:` by mistake), no Release PR will appear. Look at the message before merging. If you've already merged and want a release anyway, add an empty `feat:` or `fix:` commit to `main` ("nudge commit") — `release-please` will pick it up on the next push.
 
@@ -73,7 +77,7 @@ Use this when you need to bypass the automated flow: emergency releases, debuggi
 
 ## Coexistence
 
-The two paths don't conflict. `release-please` tracks the latest git tag on `main` and computes the next version on top of it, whatever produced that tag. If `createRelease.ps1` tagged `1.3.7` and pushed, `release-please` will batch the next minor/patch on top of `1.3.7` in its next Release PR. If a Release PR was already open when the local script ran, `release-please` will update the Release PR on the next push to `main` (rebasing onto the local-script commit). `manifest.json` and `package.json` are last-write-wins on overlap — no race condition, just whichever path finalises last.
+The two paths don't conflict. `release-please` tracks the latest git tag on `main` and computes the next version on top of it, whatever produced that tag. If `createRelease.ps1` tagged `1.3.7` and pushed, `release-please` will batch the next minor on top of `1.3.7` (i.e. `1.4.0`) in its next Release PR. If a Release PR was already open when the local script ran, `release-please` will update the Release PR on the next push to `main` (rebasing onto the local-script commit). `manifest.json` and `package.json` are last-write-wins on overlap — no race condition, just whichever path finalises last.
 
 Recommendation: pick one path per release and stick with it.
 
