@@ -45,7 +45,15 @@ New commits to `main` cause `release-please` to **amend the same PR** — it doe
 | `chore:`, `docs:`, `test:`, `refactor:`, `style:`, `ci:`, `build:`, `perf:` | no release |
 | Anything not starting with a recognized prefix | no release (silent) |
 
-Scoped variants (`fix(release):`, `feat(side-panel):`) work identically to their unscoped form. Note that scope does **not** exempt a commit from triggering a release: `fix(test):` is still a `fix` and will open a Release PR. Use `test:` or `chore(test):` for test-only work.
+Scoped variants (`fix(release):`, `feat(side-panel):`) work identically to their unscoped form. Note that scope does **not** exempt a commit from triggering a release: `fix(test):` is still a `fix` and will open a Release PR.
+
+#### The rule: `fix:` means users got something fixed
+
+`feat:` and `fix:` are reserved for changes that reach the shipped extension. Everything that only touches how the repo is built, tested or documented uses `ci:`, `test:`, `docs:`, `build:` or `chore:` — those still show up in git history, but they do not push a build to the Chrome Web Store.
+
+This is not theoretical. Versions **1.4.0 and 1.5.0 contain no user-facing change whatsoever**: they exist because a CI fix and a changelog-encoding fix were committed as `fix(test):`, `fix(changelog):` and `fix(ci):`. Every one of them opened a Release PR, and merging those PRs published a store build identical in behaviour to 1.3.5.
+
+The scope does not save you — `fix(ci):` is still a `fix`. Ask what the commit changes for someone who has the extension installed. If the answer is "nothing", it is not a `fix`.
 
 **Why always-minor:** patch numbers are reserved for local dev builds (`npm run build:devRelease` bumps the patch on your machine so you can tell loaded unpacked builds apart — never commit that bump). The store version is the only version that matters, and it moves in minors. Individual fixes are still listed by name in the changelog under the minor's heading. To go back to standard semver, remove the `versioning` line — the change is not retroactive.
 

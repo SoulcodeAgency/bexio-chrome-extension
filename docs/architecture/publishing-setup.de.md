@@ -140,6 +140,18 @@ Der Lauf prüft deshalb nicht den ganzen Weg, aber die Zugangsdaten:
 
 ---
 
+## Die wichtigste Regel im Alltag
+
+**`fix:` heisst: für Nutzer der Extension wurde etwas repariert.**
+
+Nur `feat:` und `fix:` lösen einen Release aus. Alles, was bloss den Bau, die Tests oder die Doku betrifft, gehört unter `ci:`, `test:`, `docs:`, `build:` oder `chore:` — das steht weiterhin in der Git-Historie, schiebt aber keinen Build in den Chrome Web Store.
+
+Das ist keine Theorie: Die Versionen **1.4.0 und 1.5.0 enthalten für Nutzer keinerlei Änderung.** Sie existieren nur, weil ein CI-Fix und ein Encoding-Fix als `fix(test):`, `fix(changelog):` und `fix(ci):` eingecheckt wurden. Jeder davon hat eine Release-PR geöffnet, und deren Merge hat einen Store-Build veröffentlicht, der sich von 1.3.5 in nichts unterscheidet.
+
+Der Scope hilft dabei nicht — `fix(ci):` ist trotzdem ein `fix`. Die Prüffrage lautet: *Was ändert sich für jemanden, der die Extension installiert hat?* Lautet die Antwort "nichts", ist es kein `fix`.
+
+---
+
 ## Wenn der Token nicht mehr geht
 
 Wird der Zugriff später widerrufen (Passwortwechsel, Sicherheitsrichtlinie, manueller Widerruf), schlägt der Workflow mit einem 401 von Google fehl.
