@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.4.0...1.5.0) (2026-07-27)
+
+
+### Bug Fixes
+
+* **ci:** call the publish workflow from release-please instead of relying on the release event ([b7ac68d](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/b7ac68df3f7a87c7380c69043f405cb94ee6b84f))
+
 ## [1.4.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.3.5...1.4.0) (2026-07-27)
 
 
