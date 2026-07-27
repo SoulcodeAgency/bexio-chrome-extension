@@ -117,8 +117,10 @@ Procedure (run once, by the listing owner):
 
    Note what this can and cannot prove. The CWS API rejects any upload whose manifest version is not **higher** than the published one ("If you have not increased the version field in your extension's manifest file, this will fail"), and the latest tag by definition carries the published version. So a full dry run is not possible — but the failure mode is still informative:
 
-   - **401 / 403 from Google** → one of the four secrets is wrong, or the API was enabled in a different project.
-   - **An error about the version number** → the credentials work. That is the result you want here.
+   - **401 / 403 from Google**, or `invalid_grant` → one of the four secrets is wrong, the API was enabled in a different project, or a stray newline was copied into `CWS_REFRESH_TOKEN`.
+   - **`PKG_INVALID_VERSION_NUMBER`** → the credentials work. That is the result you want here: Google resolved the item, accepted the OAuth exchange, and compared against the published version.
+
+   Pass a ref that exists **on the remote** — `main` is the safe choice. The input is named `tag` but is used as a checkout ref, and tags created by the local `createRelease.ps1` are often never pushed (a *draft* GitHub release does not create the tag either, it only records the name), in which case the run dies in checkout.
 
    The first genuine end-to-end upload therefore happens on the first real release.
 

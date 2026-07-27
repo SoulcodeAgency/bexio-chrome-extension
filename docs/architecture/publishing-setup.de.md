@@ -41,9 +41,9 @@ Die Kette:
 
 ## Vorher wissen
 
-`Build.ps1 -CreatePackage` macht am Ende zwei Dinge, die nur auf Windows Sinn ergeben: es öffnet die Dev-Console im Browser (`Start-Process`) und den Explorer mit dem `dist`-Ordner (`Invoke-Item`). Auf dem Linux-Runner schlagen beide fehl.
+`Build.ps1 -CreatePackage` macht am Ende zwei Dinge, die nur auf Windows Sinn ergeben: es öffnet die Dev-Console im Browser (`Start-Process`) und den Explorer mit dem `dist`-Ordner (`Invoke-Item`).
 
-Das ZIP wird aber **vorher** erstellt, und der `catch`-Block bricht nicht ab. Im Log erscheint darum wahrscheinlich ein rotes `FAILED` — das ist harmlos, der Upload funktioniert trotzdem.
+In der Praxis stört das nicht — im Testlauf vom 27.07.2026 lief der Build-Schritt auf dem Linux-Runner ohne jede Fehlermeldung durch. Sollte dort doch einmal ein rotes `FAILED` auftauchen: Das ZIP wird **vorher** erstellt und der `catch`-Block bricht nicht ab, der Upload funktioniert also trotzdem.
 
 ---
 
@@ -122,12 +122,14 @@ Ein echter Trockenlauf ist nicht möglich, weil der Store **jede hochgeladene Ve
 
 Der Lauf prüft deshalb nicht den ganzen Weg, aber die Zugangsdaten:
 
-- [ ] **11.** Actions → `publish-chrome-web-store` → "Run workflow" → `tag`: der aktuelle Tag, `publish`: **false**.
+- [ ] **11.** Actions → `publish-chrome-web-store` → "Run workflow" → `tag`: **`main`**, `publish`: **false**.
+
+  Das Feld heisst `tag`, wird aber als Git-Referenz zum Auschecken benutzt — `main` ist deshalb erlaubt und hier die sichere Wahl. Ein Tag funktioniert nur, wenn es **auf GitHub** existiert. Lokal angelegte Tags aus `CreateRelease.ps1` sind oft nie gepusht worden; ein Entwurfs-Release auf GitHub legt das Tag ebenfalls noch nicht an, es merkt sich nur den Namen. Dann scheitert der Lauf schon beim Checkout.
+
 - [ ] **12.** Fehler einordnen:
   - **401 / 403 von Google** → eines der vier Secrets stimmt nicht, oder die API ist im falschen Projekt aktiviert.
   - **`invalid_grant`** → meist ein Leerzeichen oder Zeilenumbruch, der beim Kopieren ins Secret gerutscht ist.
-  - **Fehler über die Versionsnummer** → **die Zugangsdaten funktionieren.** Genau das ist das gewünschte Ergebnis.
-  - Rotes `FAILED` beim Packen → harmlos, siehe oben.
+  - **`PKG_INVALID_VERSION_NUMBER`** → **alles in Ordnung.** Das ist das gewünschte Ergebnis. Der Wortlaut: *"Invalid version number in manifest: 1.3.5. Please make sure the newly uploaded package has a larger version … than the published package: 1.3.5."* Google hat den Eintrag gefunden, die Anmeldung akzeptiert und die veröffentlichte Version verglichen — damit sind Konto, Rechte, API und alle vier Secrets bestätigt.
 
 ---
 
