@@ -113,6 +113,8 @@ Procedure (run once, by the listing owner):
 5. **Add all four values to repo secrets.** GitHub repo → Settings → Secrets and variables → Actions → "New repository secret", four times, names matching exactly: `CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`.
 6. **Smoke test — credentials only.** Actions tab → `publish-chrome-web-store` → "Run workflow" → current latest tag, `publish: false`.
 
+   Note the ordering: GitHub only registers workflows that exist on the **default branch**, so neither workflow is dispatchable until the branch carrying them has merged to `main`. This step therefore comes *after* the merge, not before.
+
    Note what this can and cannot prove. The CWS API rejects any upload whose manifest version is not **higher** than the published one ("If you have not increased the version field in your extension's manifest file, this will fail"), and the latest tag by definition carries the published version. So a full dry run is not possible — but the failure mode is still informative:
 
    - **401 / 403 from Google** → one of the four secrets is wrong, or the API was enabled in a different project.

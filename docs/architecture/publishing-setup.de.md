@@ -104,25 +104,37 @@ GitHub zeigt Secrets nach dem Speichern nicht mehr an — auch dir nicht. Das is
 
 ---
 
-## Teil 3 — Zugangsdaten testen
+## Teil 3 — Workflows aktivieren
 
-Ein echter Trockenlauf ist nur eingeschränkt möglich, weil der Store **jede hochgeladene Version ablehnt, die nicht höher ist als die veröffentlichte**. Google dazu: *"If you have not increased the version field in your extension's manifest file, this will fail."*
+**Der Zugangsdaten-Test muss nach diesem Teil kommen, nicht davor.** GitHub registriert nur Workflows, die auf dem Standard-Branch (`main`) liegen. Solange die beiden Workflow-Dateien nur auf einem Feature-Branch liegen, tauchen sie im Actions-Tab gar nicht auf und lassen sich nicht manuell starten.
 
-Ein Lauf auf dem aktuellen Tag prüft deshalb nicht den ganzen Weg, aber die Zugangsdaten:
+- [ ] **9.** PR [#33](https://github.com/SoulcodeAgency/bexio-chrome-extension/pull/33) mergen. Dadurch werden `release-please` und `publish-chrome-web-store` aktiv.
 
-- [ ] **9.** Actions → `publish-chrome-web-store` → "Run workflow" → `tag`: der aktuelle Tag, `publish`: **false**.
-- [ ] **10.** Fehler einordnen:
+  Das veröffentlicht noch nichts. `release-please` öffnet innerhalb einer Minute eine Release-PR — die ist nur ein Vorschlag und liegt so lange herum, bis jemand sie merged.
+
+- [ ] **10.** Den alten **Draft-Release 1.3.5 auf GitHub löschen.** Der Publish-Workflow startet beim Ereignis "Release published". Wenn dieser alte Entwurf später veröffentlicht wird, versucht er einen 1.3.5-Build in den Store zu laden.
+
+---
+
+## Teil 4 — Zugangsdaten testen
+
+Ein echter Trockenlauf ist nicht möglich, weil der Store **jede hochgeladene Version ablehnt, die nicht höher ist als die veröffentlichte**. Google dazu: *"If you have not increased the version field in your extension's manifest file, this will fail."* Der aktuelle Tag trägt per Definition die veröffentlichte Version.
+
+Der Lauf prüft deshalb nicht den ganzen Weg, aber die Zugangsdaten:
+
+- [ ] **11.** Actions → `publish-chrome-web-store` → "Run workflow" → `tag`: der aktuelle Tag, `publish`: **false**.
+- [ ] **12.** Fehler einordnen:
   - **401 / 403 von Google** → eines der vier Secrets stimmt nicht, oder die API ist im falschen Projekt aktiviert.
+  - **`invalid_grant`** → meist ein Leerzeichen oder Zeilenumbruch, der beim Kopieren ins Secret gerutscht ist.
   - **Fehler über die Versionsnummer** → **die Zugangsdaten funktionieren.** Genau das ist das gewünschte Ergebnis.
   - Rotes `FAILED` beim Packen → harmlos, siehe oben.
 
 ---
 
-## Teil 4 — Scharf schalten
+## Teil 5 — Erster echter Release
 
-- [ ] **11.** PR [#33](https://github.com/SoulcodeAgency/bexio-chrome-extension/pull/33) mergen.
-- [ ] **12.** Den alten **Draft-Release 1.3.5 auf GitHub löschen.** Achtung, das ist eine Falle: der Workflow startet beim Ereignis "Release published". Wenn dieser alte Entwurf später veröffentlicht wird, landet ein 1.3.5-Build im Store.
-- [ ] **13.** Ab jetzt gilt: `feat:` oder `fix:` nach `main` mergen → release-please öffnet eine Release-PR → diese mergen → der Store-Upload läuft automatisch. Jede Veröffentlichung ist ein Minor-Sprung (1.4.0, 1.5.0, …).
+- [ ] **13.** Die von `release-please` geöffnete Release-PR prüfen und mergen. Das erzeugt Tag und GitHub-Release, und das wiederum startet den Store-Upload. **Dieser erste Lauf ist der eigentliche Test des ganzen Wegs.**
+- [ ] **14.** Ab jetzt gilt: `feat:` oder `fix:` nach `main` mergen → release-please öffnet eine Release-PR → diese mergen → der Store-Upload läuft automatisch. Jede Veröffentlichung ist ein Minor-Sprung (1.4.0, 1.5.0, …).
 
 ---
 
