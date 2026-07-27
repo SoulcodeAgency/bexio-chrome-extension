@@ -29,7 +29,9 @@ New commits to `main` cause `release-please` to **amend the same PR** — it doe
 2. Within a minute or two, `release-please` opens a PR titled something like `chore(main): release 1.4.0`. Its diff is the version bump + changelog + manifest sync.
 3. More PRs merged to `main` over the following days — `release-please` edits the same Release PR to include the new changes. The PR is your continuously-updated "what's about to ship".
 4. When you're ready: review the Release PR, click Merge.
-5. The merge commit triggers `release-please` to push the tag (e.g. `1.4.0`) and create a GitHub Release. The Release-published event fires `publish-chrome-web-store.yml`, which builds the extension, uploads it to the CWS API, publishes it, and attaches the zip to the GitHub Release as an artifact.
+5. The merge commit triggers `release-please` to push the tag (e.g. `1.4.0`) and create a GitHub Release. The same workflow run then **calls** `publish-chrome-web-store.yml` as a reusable workflow, which builds the extension, uploads it to the CWS API, publishes it, and attaches the zip to the GitHub Release as an artifact.
+
+   **Why it is called rather than triggered.** The obvious wiring — let the Release-published event start the publish workflow — silently does nothing. `release-please` creates the release with the default `GITHUB_TOKEN`, and GitHub suppresses workflow runs for events raised by that token, to stop workflows triggering each other in a loop: *"Events triggered by the `GITHUB_TOKEN` will not create a new workflow run, with the following exceptions: `workflow_dispatch` and `repository_dispatch`."* This cost us a release that reached GitHub but never the store. The alternative fix is to give `release-please` a personal access token; chaining was chosen instead, because a PAT is one more long-lived credential that expires and has to be rotated. The `release` trigger is kept on the publish workflow, since a release published by a *human* in the GitHub UI does emit a usable event.
 
 ### Conventional commits: what triggers a release
 

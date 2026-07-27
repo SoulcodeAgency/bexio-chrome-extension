@@ -10,9 +10,27 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  # release-please creates the GitHub Release with GITHUB_TOKEN, and GitHub
+  # suppresses workflow runs for events raised by that token ("Events triggered
+  # by the GITHUB_TOKEN will not create a new workflow run"). The `release`
+  # trigger in publish-chrome-web-store.yml therefore never fires for it, so
+  # the publish is invoked here instead.
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    uses: ./.github/workflows/publish-chrome-web-store.yml
+    with:
+      tag: ${{ needs.release-please.outputs.tag_name }}
+      publish: true
+    secrets: inherit

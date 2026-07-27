@@ -1,12 +1,30 @@
 name: publish-chrome-web-store
 on:
+  # Called by release-please.yml right after it creates a release. This is the
+  # normal path: a release created with GITHUB_TOKEN does NOT emit a usable
+  # `release` event ("Events triggered by the GITHUB_TOKEN will not create a
+  # new workflow run"), so the release workflow has to invoke this one itself.
+  workflow_call:
+    inputs:
+      tag:
+        description: Tag to publish.
+        required: true
+        type: string
+      publish:
+        description: Publish to the public CWS, or upload as a draft only.
+        required: false
+        type: boolean
+        default: true
+  # Still useful for releases published by a human in the GitHub UI, which do
+  # emit the event.
   release:
     types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: Tag to (re)publish (e.g. 1.4.0). Required for workflow_dispatch.
+        description: Tag or ref to (re)publish (e.g. 1.4.0, or main). Must exist on the remote.
         required: true
+        type: string
       publish:
         description: Actually publish to the public CWS (vs upload-only smoke test)?
         type: boolean
@@ -25,7 +43,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          # `inputs` covers both workflow_call and workflow_dispatch; on a
+          # `release` event it is empty and github.ref is the release tag.
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -47,10 +67,13 @@ jobs:
           client-id: ${{ secrets.CWS_CLIENT_ID }}
           client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
-          publish: ${{ github.event.inputs.publish != 'false' }}
+          # A `release` event carries no inputs and always means "publish".
+          publish: ${{ github.event_name == 'release' || inputs.publish }}
 
       - name: Attach zip to the GitHub Release
-        if: github.event_name == 'release'
-        run: gh release upload "${{ github.event.release.tag_name }}" dist/bexio-chrome-extension.zip --clobber
+        # Runs for a release event and for the release-please chain; skipped on
+        # a manual smoke test, where there is no release to attach to.
+        if: github.event_name == 'release' || github.event_name == 'push'
+        run: gh release upload "${{ github.event.release.tag_name || inputs.tag }}" dist/bexio-chrome-extension.zip --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
