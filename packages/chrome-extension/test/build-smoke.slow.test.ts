@@ -6,9 +6,13 @@ import { resolve } from "node:path";
 const REPO = resolve(__dirname, "../../../");
 const UNPACKED = resolve(REPO, "unpacked");
 
+// Windows PowerShell on Windows, PowerShell Core elsewhere. The npm scripts hardcode
+// `powershell`, which does not exist on Linux/macOS, so the build is invoked directly.
+const PS_EXE = process.platform === "win32" ? "powershell" : "pwsh";
+
 function hasPowerShell(): boolean {
   try {
-    execFileSync(process.platform === "win32" ? "powershell" : "pwsh", ["-Command", "$PSVersionTable.PSVersion.Major"], { stdio: "ignore" });
+    execFileSync(PS_EXE, ["-Command", "$PSVersionTable.PSVersion.Major"], { stdio: "ignore" });
     return true;
   } catch {
     return false;
@@ -19,10 +23,9 @@ describe.skipIf(!hasPowerShell())("build smoke test", () => {
   it("produces a valid unpacked/ extension", () => {
     rmSync(UNPACKED, { recursive: true, force: true });
     // Runs Build.ps1 → vite build (dev mode) for both packages.
-    execFileSync("npm", ["run", "build:project", "--", "-Development"], {
+    execFileSync(PS_EXE, ["-File", resolve(REPO, "Build.ps1"), "-Development"], {
       cwd: REPO,
       stdio: "inherit",
-      shell: process.platform === "win32", // npm.cmd on Windows
     });
 
     // 1) manifest exists and parses

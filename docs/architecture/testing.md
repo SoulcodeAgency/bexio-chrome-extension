@@ -146,7 +146,7 @@ The procedure is documented in full in
 ## 6. Build smoke test caveat
 
 `packages/chrome-extension/test/build-smoke.slow.test.ts` shells out to
-`Build.ps1` (via `npm run build:project -- -Development`) and asserts that:
+`Build.ps1` and asserts that:
 - `unpacked/manifest.json` exists and parses correctly
 - the manifest's `version` field matches the root `package.json` version
 - every file referenced in the manifest's `content_scripts` and `background`
@@ -156,6 +156,12 @@ The test is guarded by `describe.skipIf(!hasPowerShell())`, so it is silently
 skipped on machines without PowerShell (`pwsh` on Linux/macOS, `powershell`
 on Windows). The test is excluded from `npm run test:fast` (`.slow.test.ts`
 suffix) but is included in `npm test`.
+
+It invokes that same interpreter directly (`<pwsh|powershell> -File Build.ps1
+-Development`) rather than going through `npm run build:project`, because the
+npm scripts hardcode `powershell` — which exists only on Windows. Going through
+the npm script made the test fail on the Linux CI runner with
+`sh: 1: powershell: not found`, even though `pwsh` was installed.
 
 ---
 
