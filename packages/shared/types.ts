@@ -1,3 +1,21 @@
+/**
+ * A single time-tracking template stored in `chrome.storage.local` under the `"entries"` key.
+ *
+ * **Status values** are the German bexio work-status labels:
+ * - `"Offen"` — open / not started
+ * - `"In Arbeit"` — in progress
+ * - `"Erledigt"` — done
+ * - `"Fakturiert"` — invoiced
+ * - `"Geschlossen"` — closed
+ *
+ * **`[key: string]: any` escape hatch** — allows extra fields introduced in later versions to
+ * survive storage round-trips without TypeScript errors, and lets legacy entries (which may
+ * lack newer fields) be read without type-narrowing gymnastics.
+ *
+ * **Historical note:** before v0.4.x there was no `templateName` field; the `id` field served
+ * as the human-readable name. Always use `getTemplateName(entry)` to display a template's name
+ * rather than reading `entry.templateName` directly.
+ */
 export type TemplateEntry = {
   templateName: string;
   keywords: string;

@@ -3,12 +3,34 @@ import convertPopover from "../../utils/convertPopover";
 
 const observerOptions = { attributes: false, childList: true, subtree: false };
 
+/**
+ * Bootstraps the extension on the current page: injects the "Text mode" toggle
+ * button via `renderHtml()` and performs the initial popover conversion via
+ * `convertPopover()`.
+ *
+ * Both calls are fire-and-forget (not awaited) because this function is invoked at
+ * module-evaluation time, where top-level `await` is not available. Any errors in
+ * `renderHtml()` (e.g. missing `.globalsearch` nav element) will surface as
+ * unhandled promise rejections.
+ */
 export async function initializeExtension() {
   renderHtml();
   convertPopover(); // convert already for the initial load
 }
 
-// Create an observer instance, executing a callback when changes are detected
+/**
+ * Factory that wraps a callback in a `MutationObserver` configured for `childList`
+ * mutations (shallow, no subtree). The observer fires the callback **at most once
+ * per mutation batch**: it iterates `mutationsList`, sets a `changeDetected` flag
+ * on the first matching record, and calls the callback only if the flag was set.
+ *
+ * This "once per batch" design prevents redundant `convertPopover()` invocations
+ * when bexio replaces many children in a single DOM operation.
+ *
+ * @param callback - Function to invoke when a `childList` change is detected.
+ * @param mutationType - The mutation type to watch for (defaults to `"childList"`).
+ * @returns A `MutationObserver` instance (not yet connected — call `.observe()`).
+ */
 function createObserverWithCallback(callback: () => void, mutationType: MutationRecordType = "childList") {
   return new MutationObserver((mutationsList, observer) => {
     // Only execute the callback ONCE if we detect changes in the jqDialog
