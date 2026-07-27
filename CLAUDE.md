@@ -39,7 +39,7 @@ Loading locally: build, then in Chrome → Extensions → Load unpacked → sele
 
 ## Releases
 
-Run `npm run createRelease` (`CreateRelease.ps1`); see `RELEASE.md`. It bumps the version (`version:patch|minor|major`, which only edits `package.json` — `--no-git-tag-version`), runs `build:newExtensionRelease`, regenerates `CHANGELOG.md` via `git-cliff` (config in `cliff.toml`), runs `version:updateManifest` (`updateManifest.js` copies `package.json` version into `packages/chrome-extension/public/manifest.json` and stamps the build date into `package.json`), then commits as `Release: <version>`, tags, and fast-forward-merges the tag into `main`. The dev branch is `develop`.
+Run `npm run createRelease` (`CreateRelease.ps1`); see `RELEASE.md`. It bumps the version (`version:patch|minor|major`, which only edits `package.json` — `--no-git-tag-version`), runs `build:newExtensionRelease`, regenerates `CHANGELOG.md` via `git-cliff` (config in `cliff.toml`), runs `version:updateManifest` (`updateManifest.js` copies `package.json` version into `packages/chrome-extension/public/manifest.json` and stamps the build date into `package.json`), then commits as `Release: <version>`, tags, and fast-forward-merges the tag into `main`. The dev branch is `develop`. For the automated CI release path (`release-please` → Chrome Web Store via GitHub Actions, recommended), see `docs/architecture/publishing.md`.
 
 ## Architecture notes
 
@@ -61,6 +61,7 @@ Detailed, behaviour-pinned docs for the topics that have a test suite — **read
 - `docs/architecture/tooltip-replacement.md` — which bexio pages get the tooltip→text treatment, the per-page `MutationObserver` setup, the convert/revert cycle, the "Text mode" toggle, known issues (incl. the unverified `kb_invoice/show` branch).
 - `docs/architecture/build-and-release.md` — the workspace layout, `Build.ps1` flag matrix, the Vite + `@crxjs/vite-plugin` quirks, the `createRelease.ps1` sequence, the gotchas (`Build.ps1` swallows sub-build errors; `@swc/core` likely vestigial).
 - `docs/architecture/testing.md` — the three test layers, the commands, the chrome fake, the module-load quirk, the fixture-capture procedure, and the manual real-bexio walkthrough checklist.
+- `docs/architecture/publishing.md` — the two release paths, the `release-please` Release-PR concept, conventional-commit rules, the Chrome Web Store workflow + its secrets, and the recovery procedures.
 
 The design spec and implementation plan that produced this suite are in `docs/superpowers/specs/` and `docs/superpowers/plans/`.
 

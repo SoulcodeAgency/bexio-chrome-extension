@@ -2,6 +2,8 @@
 
 This document covers the workspace layout, build pipeline, release sequence, and known gotchas for the `bexio-chrome-extension` monorepo.
 
+> **Looking for the automated CI release path?** This doc focuses on the build pipeline and the manual `CreateRelease.ps1` flow. The automated path (`release-please` → GitHub Actions → Chrome Web Store) has its own dedicated doc at `docs/architecture/publishing.md`. The two release paths are designed to coexist; pick one per release.
+
 ---
 
 ## Workspace Layout
