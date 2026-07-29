@@ -12,11 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@swc/core": "1.15.47",
-    "immutable": "5.1.9",
     "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "undici": "7.18.0"
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
