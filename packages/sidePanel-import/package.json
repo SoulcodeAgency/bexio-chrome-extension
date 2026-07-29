@@ -16,7 +16,7 @@
     "immutable": "5.1.9",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "undici": "7.18.0"
+    "undici": "8.9.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
