@@ -20,6 +20,33 @@ The repository uses **npm workspaces** with three packages:
 
 ---
 
+## TypeScript
+
+`tsc` never emits anything in this repo — Vite/Rolldown does all the transpiling, and every `tsconfig.json` sets `noEmit`. Type checking is a separate gate: `npm run typecheck` (root) fans out to a per-package `typecheck` script, and CI runs it between install and build.
+
+| Project | Config | Strict? |
+|---|---|---|
+| `packages/shared` | `tsconfig.json` | yes |
+| `packages/chrome-extension` | `tsconfig.json` | **no** — see below |
+| `packages/sidePanel-import` | `tsconfig.json` (app) + `tsconfig.node.json` (`vite.config.ts`) | yes |
+
+### Two TypeScript versions, on purpose
+
+All three packages pin **typescript 7.x**, which is the Go-native compiler. The npm package for TS 7 no longer exports the compiler's JavaScript API (`require("typescript")` yields only `{ version, versionMajorMinor }`), and `typescript-eslint` still needs that API to parse — its peer range is `>=4.8.4 <6.1.0`.
+
+npm resolves this on its own: TS 7 installs **nested** under each package (`packages/*/node_modules/typescript`), and a TS 5.x is auto-installed at the **root** to satisfy `typescript-eslint`'s peer requirement. So `npm run typecheck` runs on 7 while `npm run lint` parses on 5. The root copy is not declared in any `package.json` — it tracks whatever `typescript-eslint` peers on, and is pinned by the lockfile. Do not add an explicit root `typescript` dependency; that would need its own Dependabot hold to stop it being bumped to 7 and breaking the linter.
+
+Collapse this back to a single version once `typescript-eslint` supports TS 7.
+
+### Things TypeScript 7 changed that bit this repo
+
+- **`strict` defaults to `true`.** `packages/chrome-extension` was written against the old non-strict default and turning it on surfaces ~35 pre-existing nullability and implicit-`any` errors, concentrated in the fragile DOM/form layer. Its `tsconfig.json` sets `"strict": false` explicitly to preserve the previous behaviour; tightening it is a worthwhile separate change (see `docs/architecture/form-layer.md` for the blast radius).
+- **`@types/*` packages are no longer auto-included.** TS 7 stopped pulling in every `node_modules/@types/*` package it could find, so each `tsconfig.json` now lists what it needs via `"types"` (`chrome`, plus `node` for the side panel's `process.env` usage). Symptom when this is missing: `Cannot find name 'chrome'`.
+- **`target: "es5"` and `baseUrl` were removed.** `chrome-extension` moved to `target: "ES2022"` (no effect on output — Vite's `build.target` governs that, and the codebase has no classes, so the `useDefineForClassFields` default flip is inert). `sidePanel-import` dropped `baseUrl` and lets its `paths` resolve relative to the tsconfig, which is what it wanted anyway.
+- **`sidePanel-import` no longer uses project references.** `tsconfig.node.json` was `composite: true` and referenced from the app config. Nothing in the repo ever ran `tsc -b`, and a composite project without `noEmit` writes a `vite.config.js` next to `vite.config.ts` — which Vite would then load in preference to the source. The reference and `composite` are gone; `tsconfig.node.json` is now checked standalone as the second half of the package's `typecheck` script.
+
+---
+
 ## `Build.ps1` Flag Matrix
 
 `Build.ps1` (repo root) orchestrates both package builds. Invoke it via the root npm script `npm run build:project`.

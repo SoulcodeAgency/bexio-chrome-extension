@@ -1,4 +1,6 @@
-import { load, remove, save, update } from "./chromeStorage";
+// `update` is intentionally not imported — the only caller is the commented-out
+// `updateTemplate` below, and an unused import trips `noUnusedLocals`.
+import { load, remove, save } from "./chromeStorage";
 import { ImportData } from "./types";
 const importDataKey = "importData";
 

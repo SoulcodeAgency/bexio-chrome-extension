@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "build:watch": "vite build --watch --mode development",
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
   },
   "dependencies": {
     "react": "19.2.8",
@@ -30,7 +31,7 @@
     "eslint-plugin-react-refresh": "0.5.3",
     "globals": "17.8.0",
     "sass": "1.102.0",
-    "typescript": "5.9.3",
+    "typescript": "7.0.2",
     "vite": "^8.1.5"
   },
   "description": "Application which holds bexio-chrome-exntension features separate in a chrome side panel",

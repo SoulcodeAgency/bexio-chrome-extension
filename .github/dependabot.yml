@@ -21,12 +21,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
-    ignore:
-      # TypeScript 7 ships the Go-native compiler; typescript-eslint does not
-      # support it yet. Revisit once typescript-eslint declares TS 7 support.
-      - dependency-name: typescript
-        versions:
-          - ">=7"
+    # The TypeScript 7 hold is lifted: each package now pins typescript 7.x for
+    # type checking. typescript-eslint still cannot run on 7 (the Go-native
+    # package no longer exports the compiler's JS API), so npm additionally
+    # installs a TypeScript 5.x at the root to satisfy its peer range — that
+    # copy is not declared anywhere and tracks typescript-eslint automatically.
+    # See docs/architecture/build-and-release.md.
     groups:
       npm-minor-patch:
         update-types:

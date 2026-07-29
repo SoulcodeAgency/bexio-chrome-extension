@@ -1,17 +1,37 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "outDir": "../../unpacked/",
-        "lib": [
-            "ES2017",
-            "DOM"
-        ],
-        "resolveJsonModule": true
-    },
-    "include": [
-        "src/**/*.ts"
+  "compilerOptions": {
+    /* Vite/Rolldown does the emit; tsc is only ever run as a type checker
+       (`npm run typecheck`), so it must not write anything into `unpacked/`. */
+    "noEmit": true,
+    /* TypeScript 7 defaults `strict` to true. This package was written against
+       the old non-strict default; turning it on surfaces ~35 pre-existing
+       nullability/implicit-any errors in the fragile DOM layer, so keep the
+       previous posture here and tighten it as a separate change. */
+    "strict": false,
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
     ],
-    "exclude": [
-        "node_modules"
+    /* Bundler mode — matches how Vite resolves and emits these sources. */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    /* TypeScript 7 no longer pulls in every `node_modules/@types/*` package
+       automatically, so the ambient globals this code relies on (the `chrome`
+       namespace) have to be listed here. */
+    "types": [
+      "chrome"
     ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

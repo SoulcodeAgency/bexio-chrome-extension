@@ -16,12 +16,20 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    /* TypeScript 7 no longer pulls in every `node_modules/@types/*` package
+       automatically, so the ambient globals this code relies on (the `chrome`
+       namespace, `process.env` in utils/development.ts) are listed here. */
+    "types": [
+      "chrome",
+      "node"
+    ],
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": "./",
+    /* No `baseUrl` — removed in TypeScript 7. Without it these `paths` entries
+       resolve relative to this tsconfig.json, which is what we want anyway. */
     "paths": {
       "~/*": [
         "./src/*"
@@ -31,10 +39,5 @@
   "include": [
     "src",
     "../shared/chromeStorageTemplateEntries.ts"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
   ]
 }

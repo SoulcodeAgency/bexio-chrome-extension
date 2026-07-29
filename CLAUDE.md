@@ -33,6 +33,8 @@ Per-package builds (run from repo root):
 
 Lint (side panel only): `npm run lint -w @bexio-chrome-extension/side-panel-import`.
 
+Typecheck: `npm run typecheck` (root; fans out to all three packages, also run in CI). `tsc` never emits here — Vite does the transpiling and every tsconfig sets `noEmit`. The packages are on TypeScript 7 (the Go-native compiler) while ESLint still parses with a root-level TypeScript 5.x that npm auto-installs for `typescript-eslint`'s peer range; `chrome-extension` opts out of TS 7's new `strict`-by-default. Read the "TypeScript" section of `docs/architecture/build-and-release.md` before touching a `tsconfig.json`.
+
 Tests: there is now a Vitest suite — `npm test` (all projects, including a slow build smoke test that shells out to `Build.ps1`), `npm run test:fast` (Vitest minus `*.slow.test.ts`), `npm run test:watch`, plus `npm run test:e2e` (a thin Playwright "extension-smoke" layer — opt-in; needs `npx playwright install chromium` once and a built `unpacked/`). See `docs/architecture/testing.md`. Tests pin **current** behaviour (bugs included, flagged `// KNOWN ISSUE:`). DOM-dependent tests load anonymised captured bexio HTML from `packages/chrome-extension/test/fixtures/bexio/`. "Test" in the release docs (`RELEASE.md`) still refers to the manual in-browser walkthrough — that checklist is in `docs/architecture/testing.md`.
 
 Loading locally: build, then in Chrome → Extensions → Load unpacked → select the `unpacked/` folder.
