@@ -5,10 +5,28 @@ All notable changes to this project will be documented in this file.
 ## [1.6.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.5.0...1.6.0) (2026-07-29)
 
 
+Build-system release. No functional change for users — the extension behaves
+exactly as 1.5.0 did. It is released on its own so that, should anything turn
+out to be broken, the cause is unambiguous.
+
+### Build System
+
+* upgrade Vite 5 → 8 in both packages, moving the bundler to Rolldown ([20cc475](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/20cc475))
+* delete the `overrides` block that force-pinned `esbuild` and `rollup` past what Vite 5 supported; Vite 8 depends on neither ([20cc475](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/20cc475))
+* drop `@swc/core`, `undici`, `boolbase`, `iconv-lite` and `immutable` from the packages' runtime dependencies — nothing imported them ([4e42410](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/4e42410))
+
+Side effect worth noting: the side-panel bundle shrank from 2504 kB to 713 kB
+(gzip 460 → 231 kB), and the content scripts are now emitted as
+`bexioTimetrackingTemplates.js` / `bexioProjectList.js` instead of
+`index.ts.js` / `index.ts2.js`.
+
+Verified before release: 124 unit and integration tests, a production build via
+`Build.ps1`, all three Playwright extension tests in a real Chromium, and a
+manual walkthrough against live bexio.
+
 ### Miscellaneous Chores
 
 * release 1.6.0 ([b10b6d1](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/b10b6d1e3ab300f1a1b9fa5b94d303f8071e16a0))
-* release 1.6.0 ([0a36e9c](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/0a36e9ca1932c403205a0378357b5a9b73e81269))
 
 ## [1.5.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.4.0...1.5.0) (2026-07-27)
 
