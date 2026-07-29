@@ -20,6 +20,7 @@ const TableCellBillable = (props: ImportEntriesTableCellProps) => {
       (entry) => entry.id === props.templateId
     );
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- established pattern; refactoring to derive during render is out of scope for the dependency upgrade
     setTemplateIsBillable(template?.billable);
   }, [props.templateId, templateEntries]);
 
