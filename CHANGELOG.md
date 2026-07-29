@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.5.0...1.6.0) (2026-07-29)
+
+
+### Miscellaneous Chores
+
+* release 1.6.0 ([b10b6d1](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/b10b6d1e3ab300f1a1b9fa5b94d303f8071e16a0))
+* release 1.6.0 ([0a36e9c](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/0a36e9ca1932c403205a0378357b5a9b73e81269))
+
 ## [1.5.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.4.0...1.5.0) (2026-07-27)
 
 
