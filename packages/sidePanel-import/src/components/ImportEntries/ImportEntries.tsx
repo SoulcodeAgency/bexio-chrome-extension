@@ -3,6 +3,7 @@ import "./ImportEntries.css";
 import ImportEntriesTableCell from "./ImportEntriesTableCell";
 import TemplateSelect from "~/components/TemplateSelect/TemplateSelect";
 import applyTemplate from "~/utils/applyTemplate";
+import { sendToBexioTab } from "~/utils/sendToBexioTab";
 import { Button, Alert, Collapse, CollapseProps, Switch, Tooltip } from "antd";
 import { TemplateContext, TemplateContextType } from "~/TemplateContext";
 import { chromeStorage } from "@bexio-chrome-extension/shared";
@@ -119,7 +120,7 @@ function ImportEntries() {
     }
   }
 
-  function applyImportEntry(columnIndex: number, timeAmount: string, entryIndex: number) {
+  async function applyImportEntry(columnIndex: number, timeAmount: string, entryIndex: number) {
     // Take the first 2 number blocks of the time, we only need hh:mm from the hh:mm:ss signature
     timeAmount = timeAmount.split(":").slice(0, 2).join(":");
     const date = importHeader[columnIndex];
@@ -143,37 +144,27 @@ function ImportEntries() {
       data.notes = notes;
     }
 
-    (async () => {
-      // Sending data to the website context, can only be handled by chrome extension
-      if (chrome.tabs) {
-        const [tab] = await chrome.tabs.query({
-          active: true,
-          lastFocusedWindow: true,
-        });
-        if (tab.id) {
-          console.log("Sending data", data);
-          // const response =
-          await chrome.tabs.sendMessage(tab.id, data);
+    // Sending data to the website context, can only be handled by chrome extension.
+    // A failure here (no tab, no content script) is reported to the user by sendToBexioTab, and
+    // the entry is left unmarked so it can be retried.
+    console.log("Sending data", data);
+    const result = await sendToBexioTab(data);
+    if (!result.ok) {
+      return;
+    }
 
-          // Check if this entry has a template
-          const templateId = importTemplates[entryIndex];
-          if (templateId?.length) {
-            applyTemplate(templateId, billable);
-          }
-          // do something with response here, not outside the function
-          // console.log(response);
+    // Check if this entry has a template — applyTemplate reports its own failures.
+    const templateId = importTemplates[entryIndex];
+    if (templateId?.length) {
+      await applyTemplate(templateId, billable);
+    }
 
-          // Update the entry status
-          const entryStatusCopy = { ...entryStatus };
-          entryStatusCopy[`${columnIndex}-${entryIndex}`] = true;
-          setEntryStatus(entryStatusCopy);
-          chromeStorage.save(entryStatusCopy, "entryStatus");
-          console.log("Updated entry status", entryStatusCopy);
-        } else {
-          throw new Error("No tab found");
-        }
-      }
-    })();
+    // Update the entry status
+    const entryStatusCopy = { ...entryStatus };
+    entryStatusCopy[`${columnIndex}-${entryIndex}`] = true;
+    setEntryStatus(entryStatusCopy);
+    chromeStorage.save(entryStatusCopy, "entryStatus");
+    console.log("Updated entry status", entryStatusCopy);
   }
 
   function resetEntryStatus(id: string) {

@@ -150,7 +150,8 @@ whole viewport, so a failure used to look like an endless "Loading…" to the us
 (A `waitFor*` that never settles is a different case — see Known issues.)
 The `finally` does not catch: the error keeps propagating to the caller
 (which is `renderHtml`'s click handler or `onMessage`, neither of which awaits, so
-it surfaces as an unhandled rejection in the console — loud, as intended).
+it surfaces as an unhandled rejection in the console — loud, as intended; see
+"Messaging contract" below for why `onMessage` still does not await it).
 
 **The unknown-`id` guard (#73):** `id` comes from outside — the side panel's
 template list or the injected buttons on the page — and can be stale when the
@@ -170,6 +171,75 @@ top-level `initializeExtension()` call runs on import.
 The side panel's own list is *not* refreshed by this — there is no
 content-script → side-panel message channel; it re-reads storage on its own
 `reloadData`. Both behaviours are pinned in `test/utils/fillForm.test.ts`.
+
+---
+
+## Messaging contract (side panel ↔ content script)
+
+Source: `packages/chrome-extension/src/eventListeners/onMessage.ts`,
+`packages/sidePanel-import/src/utils/sendToBexioTab.ts`,
+`packages/shared/types.ts` (`ExchangeRequestData`, `ExchangeResponse`).
+
+### Receiving half — `onMessage`
+
+```
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+  handleExchangeRequest(request).then(
+    () => sendResponse({ ok: true }),
+    (error) => sendResponse({ ok: false, error: error.message })
+  );
+  return true;            // keep the message channel open for the async sendResponse
+});
+```
+
+The listener is **synchronous** and returns `true`; `handleExchangeRequest` is the exported async
+dispatcher that does the work. It used to be an `async` listener that never called `sendResponse`,
+which left the response semantics up to the Chrome version — the side panel's `await
+chrome.tabs.sendMessage(...)` had nothing reliable to resolve with.
+
+`{ ok: true }` is a **dispatch acknowledgement**, not "the form is filled":
+
+- `mode: "time+duration"` — `triggerDuration` / `triggerDate` / `triggerCheckbox` run synchronously,
+  then the `applyNotesSetting` read is awaited before `triggerDescription`. The response follows.
+- `mode: "template"` — `fillForm` is called but deliberately **not** awaited. Its `waitFor*` helpers
+  have no timeout (see Known issues), so awaiting it could hold the message channel open forever and
+  hang the side panel. A `fillForm` failure therefore still surfaces as an unhandled rejection in the
+  page console, exactly as before.
+- `mode: "reload"` — `initializeExtension()` re-renders the injected template list.
+
+Anything that throws (or rejects) inside `handleExchangeRequest` is turned into
+`{ ok: false, error }` instead of an unhandled rejection.
+
+### Sending half — `sendToBexioTab`
+
+Every side-panel message goes through `sendToBexioTab(data, options)`
+(`applyTemplate`, `reloadExtension` and `ImportEntries.applyImportEntry` are thin wrappers around
+it). It returns `{ ok: true, tabId }` or `{ ok: false, error }` and reports each failure to the user
+with an antd `message` toast — the three paths used to be detached
+`(async () => { ... })()` IIFEs with no `catch`, so a failed apply looked like a dead button (#86).
+
+| Situation | User-visible feedback |
+|---|---|
+| `chrome.tabs` missing (standalone Vite dev server) | error: "Chrome extension APIs are unavailable here…" |
+| `chrome.tabs.query` returns `[]` or a tab without an `id` (e.g. a detached DevTools window is focused) | error: "No active browser tab found…" |
+| `chrome.tabs.sendMessage` rejects with "Receiving end does not exist" | error: "Open the bexio time-tracking page (monitoring/edit) first…" |
+| The content script answers `{ ok: false, error }` | error: "The bexio page could not apply the data: …" |
+
+The "receiving end does not exist" case is **normal**, not exotic: the service worker enables the
+side panel on every `office.bexio.com/index.php/monitoring*` tab, but the `onMessage` listener is
+only injected on `monitoring/edit*`. Pressing Apply from `monitoring/list` therefore always lands
+in that row. Callers can override the text and severity for it — `reloadExtension` does, because
+the storage write it follows up has already succeeded, so it warns ("The template list on the bexio
+page was not refreshed — reload that tab…") instead of erroring.
+
+`applyTemplate` does **not** call `openBexioTimeTrackingPage` first (the way
+`TableCellTrackingDay` does before applying an import entry): that helper never rejects when the
+navigation does not complete, so reusing it would trade a clear error message for a possible
+silent hang. See issue #88.
+
+Pinned in `packages/sidePanel-import/test/sendToBexioTab.test.ts`,
+`packages/sidePanel-import/test/importEntries.test.tsx` and
+`packages/chrome-extension/test/eventListeners/onMessage.test.ts`.
 
 ---
 
