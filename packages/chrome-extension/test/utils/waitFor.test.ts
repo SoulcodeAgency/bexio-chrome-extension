@@ -231,6 +231,126 @@ describe("waitFor* helpers", () => {
   });
 
   // ---------------------------------------------------------------------------
+  // waitForSelectOptions — expectedValue (#84)
+  // ---------------------------------------------------------------------------
+
+  it("waitForSelectOptions resolves immediately when the expected value is already among the options", async () => {
+    loadFixture("monitoring-edit");
+    const { default: waitForSelectOptions } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
+    );
+
+    const p = waitForSelectOptions("#s2id_monitoring_monitoring_status_id", undefined, "In Arbeit");
+    await vi.advanceTimersByTimeAsync(0);
+    await expect(p).resolves.toBeUndefined();
+  });
+
+  it("waitForSelectOptions matches the expected value case-insensitively and ignores surrounding whitespace", async () => {
+    // fillForm always searches the literal "work" while bexio labels the option "Work".
+    loadFixture("monitoring-edit");
+    const { default: waitForSelectOptions } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
+    );
+
+    const p = waitForSelectOptions("#s2id_monitoring_client_service_id", undefined, "  work ");
+    await vi.advanceTimersByTimeAsync(0);
+    await expect(p).resolves.toBeUndefined();
+  });
+
+  it("waitForSelectOptions keeps polling while the select only holds stale options, resolves when the expected value arrives", async () => {
+    loadFixture("monitoring-edit");
+    const { default: waitForSelectOptions } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
+    );
+
+    // Stale list from a previous selection: length > 1, but not the value we want.
+    const pkgSelect = document.querySelector("#monitoring_pr_package_id") as HTMLSelectElement;
+    const stale = document.createElement("option");
+    stale.value = "1";
+    stale.text = "Package Alpha";
+    pkgSelect.appendChild(stale);
+
+    let settled = false;
+    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id", undefined, "Package Beta").then(() => {
+      settled = true;
+    });
+
+    await vi.advanceTimersByTimeAsync(2000); // several polls — still the stale list
+    expect(settled).toBe(false);
+
+    // The AJAX response lands: the option list is replaced with the fresh one.
+    stale.remove();
+    const fresh = document.createElement("option");
+    fresh.value = "2";
+    fresh.text = "Package Beta";
+    pkgSelect.appendChild(fresh);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    await p;
+    expect(settled).toBe(true);
+  });
+
+  it("waitForSelectOptions gives up waiting for a value that never appears once the value budget elapses", async () => {
+    // Termination path: the searched value is genuinely not in the list (deleted
+    // project, template that no longer matches the contact). The helper must not fail
+    // the whole fill for that — it degrades to the plain "options are loaded" resolve.
+    loadFixture("monitoring-edit");
+    const { default: waitForSelectOptions } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
+    );
+
+    const pkgSelect = document.querySelector("#monitoring_pr_package_id") as HTMLSelectElement;
+    const other = document.createElement("option");
+    other.value = "1";
+    other.text = "Package Alpha";
+    pkgSelect.appendChild(other);
+
+    let settled = false;
+    // Budget of 2000ms, counted from the first poll (where the options are already
+    // loaded): the polls at 0ms and 1000ms still wait, the 2000ms poll resolves anyway.
+    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id", 1000, "Nothing Like This", 2000).then(() => {
+      settled = true;
+    });
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(settled).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    await p;
+    expect(settled).toBe(true);
+  });
+
+  it("waitForSelectOptions still waits for the options to load at all before the value budget starts", async () => {
+    // The value budget only counts once the base condition holds: an empty select
+    // must not burn the budget and resolve early. (The base wait itself rejects
+    // after the 20s deadline, #83 — well beyond this test's horizon.)
+    loadFixture("monitoring-edit");
+    const { default: waitForSelectOptions } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
+    );
+
+    let settled = false;
+    // project select has 0 options in the fixture
+    const p = waitForSelectOptions("#s2id_monitoring_pr_project_id", 1000, "Project Falcon", 2000).then(() => {
+      settled = true;
+    });
+
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(settled).toBe(false);
+
+    // Cleanup: let the options arrive so the promise settles
+    const projectSelect = document.querySelector("#monitoring_pr_project_id") as HTMLSelectElement;
+    for (const [value, text] of [["", ""], ["1", "Project Falcon"]]) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.text = text;
+      projectSelect.appendChild(option);
+    }
+    await vi.advanceTimersByTimeAsync(1000);
+    await p;
+  });
+
+  // ---------------------------------------------------------------------------
   // waitForContacts
   // ---------------------------------------------------------------------------
 

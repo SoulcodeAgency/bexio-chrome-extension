@@ -90,4 +90,87 @@ describe("triggerField", () => {
     expect(searchKeydown).toHaveBeenCalledTimes(1);
     expect(searchInput.value).toBe("In Arbeit");
   });
+
+  /** Injects the shared select2 drop and returns it plus its search input and a keydown spy. */
+  function injectSearchBoxDrop() {
+    const drop = document.createElement("div");
+    drop.id = "select2-drop";
+    const searchInput = document.createElement("input");
+    drop.appendChild(searchInput);
+    const searchKeydown = vi.fn();
+    searchInput.addEventListener("keydown", searchKeydown);
+    document.body.appendChild(drop);
+    return { drop, searchInput, searchKeydown };
+  }
+
+  /** Replaces the Arbeitspaket select's options with `texts` (plus the empty placeholder). */
+  function setPackageOptions(...texts: string[]) {
+    const select = document.querySelector("#monitoring_pr_package_id") as HTMLSelectElement;
+    select.innerHTML = "";
+    for (const [index, text] of ["", ...texts].entries()) {
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.text = text;
+      select.appendChild(option);
+    }
+  }
+
+  it("waits for the AJAX repopulation instead of searching the previous template's options (#84)", async () => {
+    // Template A was applied first, so the dependent Arbeitspaket select still holds
+    // its options. Searching that stale list would either find nothing (hanging in
+    // waitForSearchBoxFieldToBeRemoved) or pick a wrong package.
+    loadFixture("monitoring-edit");
+    const { packageFieldID } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/selectors");
+    const { default: triggerField } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerField");
+
+    setPackageOptions("Package Alpha"); // template A's list
+    const inputEl = document.querySelector(`${packageFieldID} input`) as HTMLInputElement;
+    const onKeydown = vi.fn();
+    inputEl.addEventListener("keydown", onKeydown);
+    const { drop, searchInput, searchKeydown } = injectSearchBoxDrop();
+
+    // Now template B is applied
+    const p = triggerField(packageFieldID, "Package Beta");
+    await vi.advanceTimersByTimeAsync(2000);
+
+    // Nothing has been searched yet — the stale list does not contain the value.
+    expect(inputEl.value).toBe("");
+    expect(onKeydown).not.toHaveBeenCalled();
+    expect(searchKeydown).not.toHaveBeenCalled();
+
+    // The AJAX response for template B's project lands
+    setPackageOptions("Package Beta", "Package Gamma");
+    await vi.advanceTimersByTimeAsync(1000); // poll sees the fresh list → the search runs
+    drop.remove();
+    await vi.advanceTimersByTimeAsync(2000); // waitForSearchBoxFieldToBeRemoved
+
+    await p;
+
+    expect(inputEl.value).toBe("Package Beta");
+    expect(searchInput.value).toBe("Package Beta");
+    expect(searchKeydown).toHaveBeenCalledTimes(1);
+  });
+
+  it("still runs the search when the value never appears among the options (bounded wait, no hang)", async () => {
+    // The value is genuinely gone (deleted package): after the bounded wait the
+    // helper degrades to the old behaviour rather than polling forever.
+    loadFixture("monitoring-edit");
+    const { packageFieldID } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/selectors");
+    const { default: triggerField } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerField");
+
+    setPackageOptions("Package Alpha");
+    const inputEl = document.querySelector(`${packageFieldID} input`) as HTMLInputElement;
+    const { drop, searchInput } = injectSearchBoxDrop();
+
+    const p = triggerField(packageFieldID, "Deleted Package");
+    // The 5000ms value budget elapses → the wait resolves anyway
+    await vi.advanceTimersByTimeAsync(5000);
+    drop.remove();
+    await vi.advanceTimersByTimeAsync(2000);
+
+    await p;
+
+    expect(inputEl.value).toBe("Deleted Package");
+    expect(searchInput.value).toBe("Deleted Package");
+  });
 });
