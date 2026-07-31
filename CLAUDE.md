@@ -20,6 +20,8 @@ Both Vite builds emit into the repo-root `unpacked/` directory (`unpacked/` = th
 
 Install: `npm run npm:installProject` (= `npm i --workspaces --include-workspace-root`). CI: `npm run npm:ciProject`.
 
+**In a git worktree** (`.claude/worktrees/<name>/`, e.g. every session in the Claude Code desktop app), run `npm run npm:ciProject` inside the worktree before anything else. A worktree is a fresh checkout without `node_modules`, and Node then resolves upward into the *main checkout's* `node_modules` — which belongs to whatever branch that checkout last installed. Nothing warns you: `vitest` and the chrome-extension build keep working on the borrowed packages, while `npm run typecheck` and the build smoke test fail for `sidePanel-import` as if the code were broken. Use `npm ci`, not `npm i`, so `package-lock.json` stays untouched.
+
 Build (orchestrated by `Build.ps1`, PowerShell — this is a Windows-first repo):
 - `npm run build:project` — production build of both packages into `unpacked/`.
 - `npm run build:project -- -Development` — development-mode build (non-minified).
