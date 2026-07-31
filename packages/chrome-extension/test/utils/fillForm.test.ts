@@ -148,6 +148,27 @@ describe("fillForm", () => {
     expect(String(alertSpy.mock.calls[0][0])).toMatch(/template/i);
   });
 
+  it("hides the loader and rethrows when a form trigger fails", async () => {
+    await chrome.storage.local.set({ entries: [template()] });
+    loadFixture("monitoring-edit");
+    // Stands in for anything that can throw mid-fill: changed bexio markup, a
+    // select2 widget that is gone, a missing save button.
+    const { default: triggerField } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/triggerField"
+    );
+    vi.mocked(triggerField).mockRejectedValueOnce(
+      new Error("bexio markup changed")
+    );
+    const { default: fillForm } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
+    );
+
+    await expect(fillForm("tmpl1")).rejects.toThrow("bexio markup changed");
+
+    // The loader must not survive the failure, and the error still surfaces.
+    expect(calls).toEqual(["loader:on", "loader:off"]);
+  });
+
   it("passes null to triggerField for absent project/package/status/contactPerson", async () => {
     await chrome.storage.local.set({
       entries: [

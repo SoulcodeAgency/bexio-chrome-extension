@@ -47,7 +47,7 @@ Strict also surfaced two latent bugs that were **left in place** and marked `// 
 | Where | What | Issue |
 |---|---|---|
 | `readFormData.ts` | `trimAll(workField)` passes the work *element*, not the `work` string read from it, so `.length` is `undefined`, that link in the `templateName` chain is dead, and the suggested name always falls through to `"New Template"`. | #72 |
-| `fillForm.ts` | `templateEntries.find(...)` returned `undefined` for an unknown `id` and the destructuring then threw, leaving the loader spinning. **Fixed:** the `!` was replaced by a guard that hides the loader, re-renders the template list and `alert()`s the user. | #73 (closed) |
+| `fillForm.ts` | `templateEntries.find(...)` returned `undefined` for an unknown `id` and the destructuring then threw, leaving the loader spinning. **Fixed:** the `!` was replaced by a guard that re-renders the template list and `alert()`s the user, and the loader is now hidden in a `finally` so no failure in `fillForm` can leave it on screen. | #73 (closed) |
 
 A third finding turned out **not** to be a bug: `keywords` is intentionally never set by `readFormData`. It is a side-panel-only override with no counterpart in the bexio form, so there is nothing there to read it from — templates start without it and gain it when edited in the side panel. `TemplateEntry` still declares it required, which is part of why the object literal in `readFormData` needs its `as TemplateEntry` cast.
 
