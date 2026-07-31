@@ -76,11 +76,24 @@ describe("chromeStorage", () => {
     expect((loaded as any)[-1]).toEqual({ id: "zzz", x: 1 });
   });
 
-  it("update: custom idKey", async () => {
+  it("update: custom idKey — writes back to the given key and leaves 'entries' alone", async () => {
+    await cs.save([{ id: "template" }], "entries");
     await cs.save([{ slug: "x", v: 1 }], "k");
     await cs.update({ slug: "x", v: 2 } as any, "k", "slug");
-    const loaded = await cs.load("k");
-    expect(loaded).toEqual([{ slug: "x", v: 2 }]);
+    // Assert against raw storage: the in-memory fake hands out arrays by reference, so
+    // reading via load() alone could mask a write that landed under the wrong key.
+    const raw = await chrome.storage.local.get(["k", "entries"]);
+    expect(raw.k).toEqual([{ slug: "x", v: 2 }]);
+    expect(raw.entries).toEqual([{ id: "template" }]);
+  });
+
+  it("remove: custom key — writes back to the given key and leaves 'entries' alone", async () => {
+    await cs.save([{ id: "template" }], "entries");
+    await cs.save([{ id: "a" }, { id: "b" }], "k");
+    await cs.remove("a", "k");
+    const raw = await chrome.storage.local.get(["k", "entries"]);
+    expect(raw.k).toEqual([{ id: "b" }]);
+    expect(raw.entries).toEqual([{ id: "template" }]);
   });
 
   it("clear: removes the key", async () => {

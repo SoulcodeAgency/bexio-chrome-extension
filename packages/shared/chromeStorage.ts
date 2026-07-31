@@ -30,7 +30,7 @@ export async function remove<T>(id: string, key = defaultKey): Promise<any> {
         }
         return [];
     });
-    return save(filteredEntries);
+    return save(filteredEntries, key);
 }
 
 // Save chrome local storage
@@ -66,7 +66,7 @@ export async function update<T>(updatedEntry: T & { [index: string]: string }, k
         entries[key][entryIndex] = { ...entries[key][entryIndex], ...updatedEntry }
         console.log(entries[key][entryIndex]);
     };
-    return save(entries[key] as T[]);
+    return save(entries[key] as T[], key);
 }
 
 export async function clear(key = defaultKey): Promise<any> {
