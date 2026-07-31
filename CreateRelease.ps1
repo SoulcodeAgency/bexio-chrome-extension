@@ -10,6 +10,17 @@ function RunScript($script) {
     }
 }
 
+# Helper function to run a git command and handle errors.
+# Takes the arguments as an array, e.g. RunGit @("commit", "-m", "Release: $version").
+function RunGit($arguments) {
+    Write-Output "Running git: $($arguments -join ' ')"
+    & git @arguments
+    if ($LASTEXITCODE -ne 0) {
+        Write-Output "Error running git: $($arguments -join ' ')"
+        exit $LASTEXITCODE
+    }
+}
+
 function GetPackageVersion() {
     # Get the version using npm
     $versionLine = npm run env | Select-String -Pattern 'npm_package_version' -SimpleMatch
@@ -55,26 +66,37 @@ RunScript "build:newExtensionRelease"
 # Get new version number
 $version = GetPackageVersion
 
-# Run the changelog script
-npx --no-install git-cliff --tag $version > CHANGELOG.md # we give the hint to the new version
+# Run the changelog script.
+# Use git-cliff's -o flag instead of a `>` redirect: under Windows PowerShell 5.1 `>` writes
+# UTF-16LE with a BOM, which corrupts CHANGELOG.md and breaks release-please's append.
+npx --no-install git-cliff --tag $version -o CHANGELOG.md # we give the hint to the new version
+if ($LASTEXITCODE -ne 0) {
+    Write-Output "Error generating CHANGELOG.md with git-cliff"
+    exit $LASTEXITCODE
+}
 
-# Update version in manifest.json
+# Update version in manifest.json and .release-please-manifest.json
 RunScript "version:updateManifest"
 
 # Commit and tag the version
-git add .
+RunGit @("add", ".")
 
 Read-Host -Prompt "Press Enter to commit changes and create tag version $version"
-git commit -m "Release: $version"
-git tag $version
+RunGit @("commit", "-m", "Release: $version")
+RunGit @("tag", $version)
 
-# Merge the tagged commit into main
+# Merge the tagged commit into main.
+# --ff-only: main also receives squash merges (release-please, Dependabot), so a merge that
+# isn't a fast-forward means the branches have diverged and needs to be resolved by hand.
 Read-Host -Prompt "Press Enter to merge to main and push"
-git checkout main
-git merge $version
+RunGit @("checkout", "main")
+RunGit @("merge", "--ff-only", $version)
 
-# Push all branches
-git push --all
+# Push all branches, plus the release tag.
+# The tag is pushed explicitly because `git tag` above creates a lightweight tag and
+# `--follow-tags` only pushes annotated ones.
+RunGit @("push", "--all")
+RunGit @("push", "origin", "refs/tags/$version")
 
 # Checkout the develop branch
-git checkout develop
+RunGit @("checkout", "develop")
