@@ -42,8 +42,8 @@ const sharedSubpathAliases = [
   },
 ];
 
-// Root config with all three workspace projects inline (vitest.workspace.ts is
-// deprecated since Vitest 3.2; projects live here now).
+// Root config with all workspace projects inline (the standalone workspace file
+// is deprecated since Vitest 3.2; projects live here now).
 export default defineConfig({
   test: {
     reporters: ["default"],
