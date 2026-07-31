@@ -11,9 +11,9 @@ button injected into the page nav.
 
 ## Which bexio pages the content script matches
 
-The `bexioProjectList` content script runs on every bexio page (`matches` is broadly scoped in
-the manifest), but its observers and UI injection only activate when the page URL matches one of
-these patterns:
+The `bexioProjectList` content script is injected on the four `office.bexio.com` paths listed in
+the manifest's second `content_scripts` block, and its observers and UI injection then branch on
+the page URL:
 
 | Path prefix | Element observed | Source function |
 |---|---|---|

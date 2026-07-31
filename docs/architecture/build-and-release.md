@@ -133,6 +133,69 @@ The root `package.json` used to force `esbuild` and `rollup` versions via an `ov
 
 ---
 
+## Manifest Permissions & Scoping
+
+The source manifest is `packages/chrome-extension/public/manifest.json`. Everything it asks for is
+deliberately narrow — widening any of it changes the install-time warning users see in the Chrome
+Web Store and re-triggers a store review, so treat each entry as load-bearing. The current set is
+pinned by `packages/chrome-extension/test/manifest.test.ts`, which fails if a pattern broader than
+`https://office.bexio.com/*` shows up anywhere.
+
+| Field | Value | Why |
+|---|---|---|
+| `permissions` | `storage`, `sidePanel` | `chrome.storage.local` for templates/settings/import buffer; `chrome.sidePanel` for enabling and pointing the panel. |
+| `host_permissions` | `https://office.bexio.com/*` | Populates `tab.url` for bexio tabs only (see below). Adds no new install warning — the content-script `matches` already warn for that host. |
+| `web_accessible_resources` | `assets/logo_orig.png` → `https://office.bexio.com/*` | The only consumer is the loader overlay the content script injects into bexio (`renderHtml.ts`, via `chrome.runtime.getURL`). |
+
+### Why there is no `tabs` permission
+
+`tabs` grants read access to the URL and title of **every** tab on **every** navigation, and it is
+what produces the "Read your browsing history" warning. The extension never needed that breadth.
+Of the `chrome.tabs.*` calls in the codebase, none require the permission:
+
+| Call site | Call | Needs `tabs`? |
+|---|---|---|
+| `public/service_worker.js` | `chrome.tabs.create({ url })` | No — creating a tab is unprivileged. |
+| `public/service_worker.js` | `chrome.tabs.onUpdated` + `tab.url` | No permission needed to *receive* the event; `tab.url` needs host access for that tab, which the host permission supplies for bexio. |
+| `sidePanel-import/src/utils/openBexioTimeTrackingPage.ts` | `chrome.tabs.query`, `chrome.tabs.onUpdated`, `chrome.tabs.update({ url })` | No — `query` returns tabs regardless; `tab.url` is compared against the bexio time-tracking URL, and host access covers it. Navigating a tab via `update` is unprivileged. |
+| `sidePanel-import/src/utils/applyTemplate.ts` | `chrome.tabs.query`, `chrome.tabs.sendMessage`, `chrome.tabs.update({ active: true })` | No — only `tab.id` is read, and messaging an already-injected content script needs no permission. |
+| `sidePanel-import/src/utils/reloadExtension.ts` | `chrome.tabs.query`, `chrome.tabs.sendMessage` | No — `tab.id` only. |
+| `sidePanel-import/src/components/ImportEntries/ImportEntries.tsx` | `chrome.tabs.query`, `chrome.tabs.sendMessage` | No — `tab.id` only. |
+
+`chrome.tabs.query` keeps working without `tabs`, but Chrome **strips** `url`, `pendingUrl`,
+`title` and `favIconUrl` from every returned tab the extension has no host access to. The one
+consequence that mattered lives in the service worker:
+
+```js
+// before — a missing url meant "skip", so the disable branch never ran
+if (!tab.url) return;
+if (tab.url.startsWith(BEXIO_MONITORING_SIDEBAR)) { /* enable */ } else { /* disable */ }
+
+// after — a missing url means "not a bexio tab" and must disable the panel
+if (tab.url && tab.url.startsWith(BEXIO_MONITORING_SIDEBAR)) { /* enable */ } else { /* disable */ }
+```
+
+Without that flip, the side panel would stay enabled from whatever bexio tab was visited last.
+`packages/chrome-extension/test/service-worker.test.ts` pins both branches.
+
+### Why `web_accessible_resources` is host-scoped
+
+The logo was declared with `"matches": ["https://*/*"]`, which made
+`chrome-extension://<id>/assets/logo_orig.png` loadable by **any** https page. Because the store
+extension ID is fixed and public, any site could probe that URL with an `<img>` `onload`/`onerror`
+pair and learn that the visitor runs this extension — i.e. that they are a bexio user. Restricting
+`matches` to `https://office.bexio.com/*` removes the probe.
+
+`use_dynamic_url: true` was considered and **not** enabled. It would rotate the resource URL per
+session so even the matched origin cannot learn the extension ID — but this extension already
+injects visible DOM (`#SoulcodeExtensionTemplates`) into office.bexio.com, so that origin can
+detect it trivially anyway; the flag would buy nothing while adding a behaviour that cannot be
+verified outside a real browser. `renderHtml.ts` calls `chrome.runtime.getURL` fresh on every
+render and caches nothing, so the flag can be turned on later without code changes if the
+threat model ever changes.
+
+---
+
 ## Release Sequence (`createRelease.ps1`)
 
 The script is interactive and must be run manually from the `develop` branch (or a feature branch). Steps in order:
@@ -198,4 +261,6 @@ ignore-scripts=true
 ## What the Tests Guard
 
 - **Task 2.1** (`test/updateManifest.test.ts`) — pins that `updateManifest.js` correctly copies the `version` from `package.json` into `manifest.json` and into `.release-please-manifest.json` (and doesn't fail if the latter is missing), and stamps today's date into `package.json`, without touching other manifest fields. Runs in a temp directory so it cannot corrupt the real files.
+- **`test/manifest.test.ts`** — pins the source manifest's scoping: `permissions` is exactly `["storage", "sidePanel"]` (no `tabs`), `host_permissions` is exactly `["https://office.bexio.com/*"]`, and no host pattern anywhere in the manifest (host permissions, content-script `matches`, `web_accessible_resources` `matches`) is broader than `https://office.bexio.com/*`. Fast test — no build required.
+- **`test/service-worker.test.ts`** — imports `public/service_worker.js` with a minimal `chrome` stub and drives the captured `chrome.tabs.onUpdated` listener: enables the side panel on `office.bexio.com/index.php/monitoring*`, disables it on other bexio pages, and — the case that depends on dropping the `tabs` permission — disables it when `tab.url` is `undefined`.
 - **Task 2.2** (`test/build-smoke.slow.test.ts`) — runs an actual `Build.ps1 -Development` end-to-end and asserts: `unpacked/manifest.json` exists and parses; its `version` matches root `package.json`; every JS/CSS file referenced in `content_scripts` and `background.service_worker` exists in `unpacked/`; `unpacked/sidePanel-import/index.html` exists. This test is tagged `.slow` and excluded from `npm run test:fast`; it runs as part of the full `npm test` suite.
