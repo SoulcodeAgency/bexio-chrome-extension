@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.6.0...1.7.0) (2026-07-31)
+
+
+### Build System
+
+* **deps:** migrate packages to TypeScript 7 ([33c2fd7](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/33c2fd7adb01f12cd80965631a4c6356c2e2ebb8))
+* **deps:** migrate packages to TypeScript 7 ([91f1780](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/91f1780b666d83629d938d433575cfaba284bf7e))
+
 ## [1.6.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.5.0...1.6.0) (2026-07-29)
 
 

@@ -1,6 +1,6 @@
 {
     "name": "@bexio-chrome-extension/main",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "date": "Jan 5, 2026",
     "description": "This extension allows saving and loading of form data as templates within the bexio time tracking page.",
     "type": "module",
