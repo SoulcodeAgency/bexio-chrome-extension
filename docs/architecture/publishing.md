@@ -78,9 +78,9 @@ If the auto-triggered `publish-chrome-web-store` workflow fails (CWS API hiccup,
 
 1. GitHub repo → Actions → `publish-chrome-web-store` → "Run workflow".
 2. Enter the tag (e.g. `1.4.0`) and leave `publish: true`.
-3. Run. The workflow checks out the tag, rebuilds, re-uploads, re-publishes.
+3. Run. The workflow checks out the tag, rebuilds, re-uploads, re-publishes, and re-attaches the zip to the existing GitHub Release (`--clobber`, so re-running is safe). If the ref you entered has no GitHub Release — a branch such as `main`, or a tag whose release was never created — the attach step reports that and skips instead of failing the run.
 
-For a dry run (e.g. validating credentials, smoke testing changes to the workflow): same procedure with `publish: false`. The zip uploads to CWS as a draft visible only in the dev console; nothing goes live.
+For a dry run (e.g. validating credentials, smoke testing changes to the workflow): same procedure with `publish: false`. The zip uploads to CWS as a draft visible only in the dev console; nothing goes live, and the attach step is skipped entirely.
 
 ### Why the upload action is pinned to a SHA
 

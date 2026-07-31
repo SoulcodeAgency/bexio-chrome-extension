@@ -77,9 +77,23 @@ jobs:
           publish: ${{ github.event_name == 'release' || inputs.publish }}
 
       - name: Attach zip to the GitHub Release
-        # Runs for a release event and for the release-please chain; skipped on
-        # a manual smoke test, where there is no release to attach to.
-        if: github.event_name == 'release' || github.event_name == 'push'
-        run: gh release upload "${{ github.event.release.tag_name || inputs.tag }}" dist/bexio-chrome-extension.zip --clobber
+        # Runs for a release event, for the release-please chain (workflow_call
+        # inherits the caller's `push` event name), and for a manual re-publish
+        # — that is the recovery documented in RELEASE.md, where the release
+        # already exists but its publish run failed, so the zip still has to be
+        # attached. Skipped outright on a smoke test (`publish: false`).
+        if: github.event_name == 'release' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish)
+        # A dispatch may name a ref that has no GitHub Release (e.g. `main`, or a
+        # tag whose release was never created), so check first and skip cleanly
+        # instead of failing the run. The automatic paths keep failing loudly:
+        # there the release is guaranteed to exist, and a missing one is a bug.
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && ! gh release view "$TAG" >/dev/null 2>&1; then
+            echo "No GitHub Release for '$TAG'; nothing to attach."
+            exit 0
+          fi
+          gh release upload "$TAG" dist/bexio-chrome-extension.zip --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
