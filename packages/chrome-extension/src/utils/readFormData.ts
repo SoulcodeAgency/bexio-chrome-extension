@@ -35,8 +35,8 @@ async function readFormData() {
     trimAll(packageValue) ||
     trimAll(project) ||
     trimAll(contact) ||
-    // KNOWN ISSUE: this passes the work *element*, not the `work` string read from it
-    // above. `element.length` is undefined, so trimAll always returns "" and this link
+    // KNOWN ISSUE (#72): this passes the work *element*, not the `work` string read from
+    // it above. `element.length` is undefined, so trimAll always returns "" and this link
     // in the chain is dead — the fallback is always "New Template". Preserved as-is
     // because fixing it changes the name suggested to the user in the prompt.
     trimAll(workField as unknown as string) ||
@@ -52,10 +52,11 @@ async function readFormData() {
     // The cast is deliberate and must stay a cast rather than becoming real fields:
     //   - `id` must NOT exist yet, because the hash below is computed over this object
     //     (see the note above); adding it would change every generated template id.
-    //   - KNOWN ISSUE: `keywords` is never set here, so templates created from this
-    //     form have no keywords field at all despite TemplateEntry requiring one.
-    //     AutoMapTemplatesV3 reads it defensively, so this degrades keyword
-    //     auto-matching rather than crashing; users can add keywords via the side panel.
+    //   - `keywords` is intentionally absent: it is a side-panel-only override with no
+    //     counterpart in the bexio form, so there is nothing here to read it from.
+    //     Templates start without it and gain it when edited in the side panel.
+    //     TemplateEntry declares it required, which is part of why this cast is needed;
+    //     AutoMapTemplatesV3 reads it defensively (`entry.keywords ? … : …`).
     formEntry = {
       work,
       status,

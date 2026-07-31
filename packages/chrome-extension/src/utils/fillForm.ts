@@ -34,9 +34,9 @@ import { toggleDisplayLoader } from "./loader";
 async function fillForm(id: string, timeEntryBillable?: boolean) {
   toggleDisplayLoader();
   const templateEntries = await chromeStorageTemplateEntries.loadTemplates();
-  // KNOWN ISSUE: `find` returns undefined when no template matches `id`, and the
-  // destructuring below then throws. The `!` pins that existing behaviour rather than
-  // adding a guard, which would silently do nothing and leave the loader spinning.
+  // KNOWN ISSUE (#73): `find` returns undefined when no template matches `id`, and the
+  // destructuring below then throws, leaving the loader spinning. The `!` pins that
+  // existing behaviour rather than picking a recovery strategy here.
   const entry = templateEntries.find((entry) => entry.id === id)!;
   const { contact, contactPerson = null, project = null, status = null, billable = true } = entry;
   // Workaround because "package" is actually a reserved word

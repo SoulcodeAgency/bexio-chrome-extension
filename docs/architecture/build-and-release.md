@@ -42,13 +42,14 @@ That looks lazy but is the deliberate choice. Adding `if (!x) return` would conv
 
 The single intentional runtime change is in `convertPopover.ts`: `DOMPurify.sanitize(popoverText ?? "")`. `getPopoverNodeText` genuinely returns `null` when the icon has no `data-content`. This is safe because `sanitize(null)` and `sanitize("")` both return `""` — verified against the pinned DOMPurify version, and the unminified bundle diff for the whole change is exactly this one line.
 
-Strict also surfaced three latent bugs that were **left in place** and marked `// KNOWN ISSUE:` rather than fixed, because fixing them changes user-visible behaviour and belongs in its own change:
+Strict also surfaced two latent bugs that were **left in place** and marked `// KNOWN ISSUE:` rather than fixed, because fixing them changes user-visible behaviour and belongs in its own change. Both are tracked as issues:
 
-| Where | What |
-|---|---|
-| `readFormData.ts` | `trimAll(workField)` passes the work *element*, not the `work` string read from it, so `.length` is `undefined`, that link in the `templateName` chain is dead, and the suggested name always falls through to `"New Template"`. |
-| `readFormData.ts` | `keywords` is never set on templates created from the form, despite `TemplateEntry` requiring it. `AutoMapTemplatesV3` reads it defensively, so this degrades keyword auto-matching rather than crashing. |
-| `fillForm.ts` | `templateEntries.find(...)` returns `undefined` for an unknown `id` and the destructuring then throws. |
+| Where | What | Issue |
+|---|---|---|
+| `readFormData.ts` | `trimAll(workField)` passes the work *element*, not the `work` string read from it, so `.length` is `undefined`, that link in the `templateName` chain is dead, and the suggested name always falls through to `"New Template"`. | #72 |
+| `fillForm.ts` | `templateEntries.find(...)` returns `undefined` for an unknown `id` and the destructuring then throws, leaving the loader spinning. | #73 |
+
+A third finding turned out **not** to be a bug: `keywords` is intentionally never set by `readFormData`. It is a side-panel-only override with no counterpart in the bexio form, so there is nothing there to read it from — templates start without it and gain it when edited in the side panel. `TemplateEntry` still declares it required, which is part of why the object literal in `readFormData` needs its `as TemplateEntry` cast.
 
 ### Two TypeScript versions, on purpose
 
