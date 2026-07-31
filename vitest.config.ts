@@ -67,12 +67,26 @@ export default defineConfig({
         },
       },
       {
+        resolve: {
+          alias: [
+            ...sharedSubpathAliases,
+            // The package's Vite alias `~` → its src/ (see packages/sidePanel-import/vite.config.ts)
+            {
+              find: /^~\//,
+              replacement: path.resolve(__dirname, "packages/sidePanel-import/src") + "/",
+            },
+          ],
+        },
         test: {
           name: "sidePanel-import",
           root: "./packages/sidePanel-import",
-          environment: "node",
-          // Nothing tested here this round; left configured for the future.
-          include: ["test/**/*.test.ts"],
+          environment: "jsdom",
+          include: ["test/**/*.test.ts", "test/**/*.test.tsx"],
+          setupFiles: [
+            path.resolve(__dirname, "test/support/setup-chrome.ts"),
+            // antd needs browser APIs jsdom doesn't ship (matchMedia, ResizeObserver)
+            path.resolve(__dirname, "packages/sidePanel-import/test/support/setup-dom.ts"),
+          ],
         },
       },
       {
