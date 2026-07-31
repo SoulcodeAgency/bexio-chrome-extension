@@ -3,8 +3,13 @@ name: Dependabot auto-merge
 # Auto-merge low-risk Dependabot PRs once CI is green. Adapted from the same
 # mechanism in SoulcodeAgency/Diurna.
 #
-# The semver ceiling plus green CI is the accepted safety boundary: patch,
-# minor and grouped updates merge themselves, majors always wait for a human.
+# The semver ceiling plus green CI is the accepted safety boundary: patch and
+# minor updates merge themselves, majors always wait for a human. Grouped PRs
+# merge only when the group name is one configured in .github/dependabot.yml,
+# where the groups are capped at minor+patch. Dependabot *security* updates
+# build their own groups (npm_and_yarn, github_actions) that ignore that file
+# and can carry majors, so those are classified `unknown` and wait too — see
+# the allowlist in scripts/classify-dependabot-update.ts.
 # Two things make that bounded here:
 #   - Dependabot commits are `chore(deps):`, which does not trigger a release
 #     (see docs/architecture/publishing.md). An auto-merged update therefore
@@ -143,7 +148,7 @@ jobs:
               ;;
             *)
               gh pr comment "$PR_NUMBER" --repo "$REPO" --body \
-                "🤖 Auto-merge skipped — this update is classified as \`$bucket\` (major or unclassifiable). Majors always need a human; please review and merge manually."
+                "🤖 Auto-merge skipped — this update is classified as \`$bucket\`. Majors, unrecognised title shapes and grouped security updates (\`npm_and_yarn\`, \`github_actions\`, which are not capped at minor+patch) all need a human; please review and merge manually."
               echo "Left PR #$PR_NUMBER open for manual review ($bucket)."
               ;;
           esac
