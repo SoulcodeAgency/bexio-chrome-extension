@@ -47,6 +47,7 @@ export interface ChromeFake {
   runtime: {
     onMessage: { addListener: (fn: unknown) => void; __listeners: unknown[] };
     sendMessage: (...args: unknown[]) => void;
+    getURL: (path: string) => string;
     lastError?: unknown;
   };
 }
@@ -66,6 +67,9 @@ export function installChromeFake(): ChromeFake {
       sendMessage: () => {
         /* no-op in tests; assert on the fake separately if needed */
       },
+      // Mirrors chrome.runtime.getURL: turns a packaged asset path into an
+      // absolute extension URL. Deterministic so tests can assert on it.
+      getURL: (path: string) => `chrome-extension://fake-extension-id/${path}`,
     },
   };
   // anything else → throw

@@ -25,6 +25,14 @@ const sharedSubpathAliases = [
     replacement: path.resolve(__dirname, "packages/shared/types.ts"),
   },
   {
+    find: "@bexio-chrome-extension/shared/getTemplateName",
+    replacement: path.resolve(__dirname, "packages/shared/getTemplateName.ts"),
+  },
+  {
+    find: "@bexio-chrome-extension/shared/sortTemplates",
+    replacement: path.resolve(__dirname, "packages/shared/sortTemplates.ts"),
+  },
+  {
     find: "@bexio-chrome-extension/shared",
     replacement: path.resolve(__dirname, "packages/shared/index.ts"),
   },

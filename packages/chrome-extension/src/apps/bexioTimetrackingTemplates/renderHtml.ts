@@ -6,21 +6,30 @@ import readFormData from "../../utils/readFormData";
 import { toggleDisplayLoader } from "../../utils/loader";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
+/**
+ * Builds one template button as a DOM node.
+ *
+ * The id and the display name are **never** interpolated into an HTML string: both come
+ * from untrusted storage — the name is suggested from bexio field values (project /
+ * package / contact names any co-worker in the org can author), typed into the `prompt()`
+ * in `readFormData`, or typed into the side panel's template modal, and for pre-v0.5.x
+ * entries the free-form name *is* the `id`. Parsing that as HTML would let stored markup
+ * inject elements into the live bexio page (and break out of the `id` attribute via `"`).
+ * `textContent` + the `id` property setter cannot be escaped out of, which is the same
+ * "sanitise before HTML" rule the tooltip feature follows (see `convertPopover.ts`).
+ */
+function createTemplateButton(entry: TemplateEntry): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = entry.id;
+  button.className = "entry btn btn-info template-button";
+  button.setAttribute("style", "width: 100%; margin-bottom: 2px; text-align: left;");
+  button.textContent = getTemplateName(entry);
+  return button;
+}
+
 // Renders all the html code for placing buttons to interact with
 async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
-  // Add some buttons into the page
-  let buttons = "";
-  if (templateEntries) {
-    templateEntries.map(
-      (entry) =>
-        (buttons += `<button type="button" id="${
-          entry.id
-        }" class="entry btn btn-info template-button" style="width: 100%; margin-bottom: 2px; text-align: left;">${getTemplateName(
-          entry
-        )}</button>`)
-    );
-  }
-
   // Remove the templates HTML, if it already exists
   const templates = document.getElementById("SoulcodeExtensionTemplates");
   if (templates) {
@@ -28,9 +37,9 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
   }
 
   const templatePlacement = document.getElementById("pr_package")?.parentNode?.parentNode?.parentNode as HTMLElement;
-  const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="column-count: 2; column-fill: balance;">
-        ${buttons}
-    </div>`;
+  // The container is static markup; the entry buttons themselves are appended as DOM
+  // nodes further down, so nothing template-derived is ever parsed as HTML.
+  const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="column-count: 2; column-fill: balance;"></div>`;
   const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
             <div class="template-search-filter">
               <input type="search" id="templateFilter" class="search-input" placeholder="Filter templates">
@@ -76,6 +85,13 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
         </div>
     </div>`
   );
+
+  // Add the template buttons into the (now existing) container. Done after the
+  // insertAdjacentHTML above so the buttons are real nodes rather than parsed markup.
+  const entriesContainer = document.getElementById("bexioTimetrackingTemplates-entries");
+  if (entriesContainer && templateEntries) {
+    templateEntries.forEach((entry) => entriesContainer.appendChild(createTemplateButton(entry)));
+  }
 
   // Track delete mode
   // `!` because this element is part of the markup rendered a few lines above, so it

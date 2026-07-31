@@ -278,6 +278,60 @@ verified by the tests against `monitoring-edit-filled.html`.
 
 ---
 
+## Rendering the injected template UI (`renderHtml`)
+
+Source: `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/renderHtml.ts`
+
+`renderHtml(templateEntries)` removes any previous `#SoulcodeExtensionTemplates`
+block and injects a fresh one at the end of `#pr_package`'s
+great-grandparent: the header (`Templates (vX.Y.Z)`), the actions row
+(`#templateFilter`, `#templateFilterReset`, `#AddNewTemplate`, `#DeleteTemplate`),
+the empty entries container `#bexioTimetrackingTemplates-entries`, and the
+full-viewport loader overlay `#SoulcodeExtensionLoader`. All of that is **static**
+markup and is still inserted with `insertAdjacentHTML`.
+
+**The per-template buttons are built as DOM nodes, never as HTML strings.**
+`createTemplateButton(entry)` does `document.createElement("button")`, sets
+`type`, `id` (from `entry.id`), `className`
+(`entry btn btn-info template-button`) and the inline style, and puts the display
+name in via `textContent` (`getTemplateName(entry)`). The buttons are appended to
+`#bexioTimetrackingTemplates-entries` *after* the static block has been inserted.
+
+This is deliberate and must stay that way (#85). Template names and ids are
+untrusted:
+
+- the name is *suggested* from bexio field values — project, package and contact
+  names that any co-worker in the same bexio org can author (`readFormData`),
+- it can be typed freely into `prompt()` in `readFormData` or into the side
+  panel's template modal, and is stored verbatim in `chrome.storage.local`,
+- for entries created before v0.5.x the free-form name **is** the `id`
+  (see `getTemplateName` and `docs/architecture/storage.md`).
+
+Interpolating either into an HTML string lets stored markup be parsed into the
+live `office.bexio.com` DOM on every `monitoring/edit` load — injected elements,
+overlays, and attribute breakout via a `"` in the id. `textContent` and the `id`
+property setter cannot be escaped out of. This is the same "sanitise before
+HTML" rule the tooltip feature follows (`convertPopover.ts`, see
+`docs/architecture/tooltip-replacement.md`), and the reason
+`selectors/projectTable_TextCell.ts` documents it on the reader side.
+
+Consumers of the rendered buttons that must keep working when this changes:
+
+| Consumer | How it finds the buttons |
+|---|---|
+| click handler wiring in `renderHtml` | `#bexioTimetrackingTemplates-entries` → `querySelectorAll("button.entry")` |
+| active-template highlight | `.template-button` / `.template-button--active` |
+| `confirmTemplateDeletion.ts` | `document.getElementById(buttonId)` and `.template-button--active` |
+| filter / reset inputs | the same `domButtons` NodeList, matching on `button.textContent` |
+| CSS (`public/bexioTimetrackingTemplates.css`) | `.template-button`, `#bexioTimetrackingTemplates-entries` |
+| e2e specs | `button#<id>`, `button.template-button` |
+
+Pinned in `test/apps/bexioTimetrackingTemplates.test.ts` (rendering, the legacy
+`id`-as-name fallback, the click → `fillForm` path, and the two injection cases:
+a name containing `<img src=x onerror=…>` and an id containing `"`).
+
+---
+
 ## Module-load quirk
 
 `packages/chrome-extension/src/selectors/selectors.ts` (and
