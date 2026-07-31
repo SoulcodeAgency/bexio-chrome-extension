@@ -80,9 +80,30 @@ All tests run with an in-memory fake for `chrome.storage.local` and `chrome.runt
 `globalThis.chrome` before each test file runs, and reset (`chrome.storage.local` cleared,
 `chrome.runtime.onMessage` listeners cleared) in a `beforeEach` hook so tests are isolated.
 
-**The fake throws loudly** if any code path reaches for an unimplemented `chrome.*` member
-(e.g. `chrome.tabs`, `chrome.sidePanel`). This is intentional — it surfaces new Chrome API
-usage immediately rather than silently returning `undefined`.
+**The fake serializes at both boundaries.** `set()` stores a JSON round-trip of each value and
+`get()` returns a fresh JSON round-trip, so a caller never shares a reference with the store —
+exactly like the real API, which serializes everything it persists. This matters: `chromeStorage.update()`
+mutates the array it got from `get()` in place and then calls `save()`. With a reference-sharing
+fake the mutation alone would already be "stored", and the tests would stay green even if the
+`save()` write-back were deleted (a regression that silently loses data in production).
+
+A JSON round-trip is used rather than `structuredClone` on purpose: it also drops what Chrome
+drops — `undefined`, functions, and non-index array properties such as the `arr[-1]` that
+`chromeStorage.update()` writes for an unknown id (`docs/architecture/storage.md`, known issue 2).
+`structuredClone` would preserve those and keep re-introducing fake-only artifacts.
+
+**The fake throws loudly** if any code path reaches for an unimplemented `chrome.*` member.
+The guard covers the top level (`chrome.sidePanel`, `chrome.action`) *and* the namespaces we
+stub, so `chrome.storage.sync` and `chrome.runtime.connect` throw the same clear error instead of
+returning `undefined`. Symbol properties are reported via `String(prop)` rather than crashing on
+string conversion. This is intentional — it surfaces new Chrome API usage immediately.
+`chrome.runtime.lastError` is deliberately present-but-`undefined`, because production code reads
+it to *check* for an error. `chrome.tabs` is a real member of the fake (a `FakeTabsApi` with
+`query`/`update`/`sendMessage`/`onUpdated` and a test-only `__emitUpdated`); tests may replace or
+delete it, and `resetChromeFake()` puts a fresh instance back.
+
+Both contracts are pinned by `packages/shared/test/chromeFake.test.ts`; extending the fake means
+extending that file.
 
 The one test that needs those members —
 `packages/chrome-extension/test/service-worker.test.ts`, which imports

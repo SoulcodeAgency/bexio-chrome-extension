@@ -62,26 +62,23 @@ describe("chromeStorage", () => {
     await expect(cs.update({} as any)).rejects.toThrow("No id found in updatedEntry");
   });
 
-  it("update: id not found → no throw, but arr[-1] property is set (data corruption in fake)", async () => {
+  it("update: id not found → silently does nothing (the arr[-1] write is dropped on serialization)", async () => {
     // KNOWN ISSUE: update() with an unknown id uses arr[-1] = {...} (findIndex returns -1),
-    // which sets a non-index property on the array. In the in-memory fake this property survives
-    // the round-trip (real chrome.storage would drop it). The stored array is structurally corrupt.
+    // which sets a non-index property on the array instead of throwing or appending. Storage
+    // serializes to JSON, so that property is dropped and the update is silently lost.
     await cs.save([{ id: "a" }]);
     await cs.update({ id: "zzz", x: 1 });
     const loaded = await cs.load<{ id: string }[]>();
-    // The array has length 1 (index-based items unchanged) but carries the stray [-1] property
-    expect(loaded).toHaveLength(1);
-    expect((loaded as any)[0]).toEqual({ id: "a" });
-    // The stray property is set on the array object
-    expect((loaded as any)[-1]).toEqual({ id: "zzz", x: 1 });
+    expect(loaded).toEqual([{ id: "a" }]);
+    expect((loaded as any)[-1]).toBeUndefined();
   });
 
   it("update: custom idKey — writes back to the given key and leaves 'entries' alone", async () => {
     await cs.save([{ id: "template" }], "entries");
     await cs.save([{ slug: "x", v: 1 }], "k");
     await cs.update({ slug: "x", v: 2 } as any, "k", "slug");
-    // Assert against raw storage: the in-memory fake hands out arrays by reference, so
-    // reading via load() alone could mask a write that landed under the wrong key.
+    // Assert against raw storage keys (both "k" and "entries"), so a write that
+    // landed under the wrong key cannot be masked by reading through load().
     const raw = await chrome.storage.local.get(["k", "entries"]);
     expect(raw.k).toEqual([{ slug: "x", v: 2 }]);
     expect(raw.entries).toEqual([{ id: "template" }]);
