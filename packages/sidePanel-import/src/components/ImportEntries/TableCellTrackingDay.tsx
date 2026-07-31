@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button, message } from "antd";
 import { productionEnv } from "~/utils/development";
 import openBexioTimeTrackingPage from "~/utils/openBexioTimeTrackingPage";
 
@@ -16,7 +16,17 @@ const TableCellTrackingDay = (props: ImportEntriesTableCellProps) => {
   const entryIsEmpty = noTimeToBookRegex.test(simplifiedZeroes);
 
   async function clickHandler() {
-    productionEnv && (await openBexioTimeTrackingPage());
+    if (productionEnv) {
+      try {
+        await openBexioTimeTrackingPage();
+      } catch (error) {
+        // Without a tab to navigate there is nothing to apply the entry to — say so instead of
+        // dying in an unhandled rejection.
+        console.warn("Could not open the bexio time-tracking page:", error);
+        message.error("Could not open the bexio time-tracking page. Open it manually and try again.");
+        return;
+      }
+    }
     props.onButtonClick();
   }
 

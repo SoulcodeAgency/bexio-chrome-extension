@@ -11,10 +11,12 @@
  * jsdom is enough (no browser, no built extension), so this runs on every PR.
  * The chrome.* APIs are the in-memory fake from test/support/chrome-fake.ts.
  */
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { message } from "antd";
 import ImportEntries from "~/components/ImportEntries/ImportEntries";
 import { TemplateContext } from "~/TemplateContext";
+import { NO_CONTENT_SCRIPT_MESSAGE } from "~/utils/sendToBexioTab";
 import type { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 const template: TemplateEntry = {
@@ -119,5 +121,63 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
 
     expect(screen.getByText(/Make sure you have atleast a column called 'Tag 1'/)).toBeDefined();
     expect(container.querySelector("table.importDataTable")).toBeNull();
+  });
+});
+
+/**
+ * Applying an entry (issue #86): the ▶️ button must never look like it did nothing. The chrome
+ * fake has no `chrome.tabs`, so each test installs its own stub.
+ */
+describe("ImportEntries — applying an entry", () => {
+  let errorSpy: ReturnType<typeof vi.spyOn>;
+
+  function installTabsStub(sendMessage: () => Promise<unknown>) {
+    (globalThis as unknown as { chrome: Record<string, unknown> }).chrome.tabs = {
+      query: async () => [{ id: 7, url: "https://office.bexio.com/index.php/monitoring/edit" }],
+      sendMessage,
+      update: async () => ({}),
+    };
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    errorSpy = vi.spyOn(message, "error").mockImplementation((() => {}) as never);
+    errorSpy.mockClear();
+  });
+
+  afterEach(() => {
+    delete (globalThis as unknown as { chrome: Record<string, unknown> }).chrome.tabs;
+  });
+
+  it("marks the entry as applied when the content script acknowledges", async () => {
+    installTabsStub(async () => ({ ok: true }));
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+
+    const applyButton = within(container).getAllByRole("button", { name: "▶️" })[0];
+    await act(async () => {
+      fireEvent.click(applyButton);
+    });
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(within(container).getAllByRole("button", { name: "✅" })).toHaveLength(1);
+  });
+
+  it("shows an actionable error and leaves the entry unmarked when no content script answers", async () => {
+    installTabsStub(async () => {
+      throw new Error("Could not establish connection. Receiving end does not exist.");
+    });
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+
+    const applyButton = within(container).getAllByRole("button", { name: "▶️" })[0];
+    await act(async () => {
+      fireEvent.click(applyButton);
+    });
+
+    expect(errorSpy).toHaveBeenCalledWith(NO_CONTENT_SCRIPT_MESSAGE);
+    // Still applicable — no ✅ checkmark was set.
+    expect(within(container).queryAllByRole("button", { name: "✅" })).toHaveLength(0);
+    expect(within(container).getAllByRole("button", { name: "▶️" })).toHaveLength(3);
   });
 });
