@@ -62,10 +62,13 @@ jobs:
           # give it a little time to show up before concluding there is none.
           run_id=""
           for _ in $(seq 1 10); do
+            # `action_required` shows up as the *conclusion* of a completed run,
+            # not as its status — a parked run reads `completed/action_required`.
+            # Match both, since an in-flight one can carry it as the status.
             run_id=$(gh run list --repo "$REPO" --workflow=node.js.yml \
               --branch "$branch" --limit 20 \
-              --json databaseId,status,event \
-              --jq '[.[] | select(.event == "pull_request" and .status == "action_required")][0].databaseId // empty')
+              --json databaseId,status,conclusion,event \
+              --jq '[.[] | select(.event == "pull_request" and (.status == "action_required" or .conclusion == "action_required"))][0].databaseId // empty')
             [ -n "$run_id" ] && break
             sleep 6
           done
