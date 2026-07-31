@@ -219,8 +219,11 @@ describe("waitFor* helpers", () => {
     );
 
     let error: unknown;
-    // interval 100 ms, deadline 500 ms
-    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id", 100, 500).catch((e: unknown) => { error = e; });
+    // interval 100 ms, deadline 500 ms (the deadline moved to the 5th parameter
+    // when #84 added expectedValue/valueWaitBudgetMs in between)
+    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id", 100, null, undefined, 500).catch(
+      (e: unknown) => { error = e; },
+    );
 
     await vi.advanceTimersByTimeAsync(400);
     expect(error).toBeUndefined();
