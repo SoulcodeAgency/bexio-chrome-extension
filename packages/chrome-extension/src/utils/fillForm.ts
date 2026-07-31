@@ -15,7 +15,8 @@ import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
  * Orchestration order (see `docs/architecture/form-layer.md` for details):
  * 1. `toggleDisplayLoader()` — show the loader overlay.
  * 2. Load templates from `chrome.storage.local`; find the entry by `id`.
- * 3. `triggerField(workFieldID, "work")` — always the literal string `"work"`.
+ * 3. `triggerField(workFieldID, work)` — `null` if absent (legacy templates saved
+ *    before the field existed); `triggerField` then leaves the field untouched.
  * 4. `triggerField(statusFieldID, status)` — `null` if absent from template.
  * 5. `triggerContactField(contactField, contact)`.
  * 6. `triggerField(contactPersonID, contactPerson)` — `null` if absent.
@@ -50,11 +51,11 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
     // A missing entry is handled after the loader is gone (see below), so that the
     // alert() does not pop up over a still-visible overlay.
     if (entry) {
-      const { contact, contactPerson = null, project = null, status = null, billable = true } = entry;
+      const { contact, work = null, contactPerson = null, project = null, status = null, billable = true } = entry;
       // Workaround because "package" is actually a reserved word
       const packageValue = entry.package ?? null;
 
-      await triggerField(workFieldID, "work");
+      await triggerField(workFieldID, work);
       await triggerField(statusFieldID, status);
 
       // Project connections

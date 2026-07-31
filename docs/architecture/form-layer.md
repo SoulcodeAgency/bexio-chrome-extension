@@ -17,7 +17,7 @@ field.
 
 | Bexio label | DOM id / selector | Widget type | Template field |
 |---|---|---|---|
-| Tätigkeit | `#monitoring_client_service_id` / `#s2id_monitoring_client_service_id` | select2 | `work` (always filled with the literal string `"work"`) |
+| Tätigkeit | `#monitoring_client_service_id` / `#s2id_monitoring_client_service_id` | select2 | `work` |
 | Status | `#monitoring_monitoring_status_id` / `#s2id_monitoring_monitoring_status_id` | select2 | `status` |
 | Kontakt | `#monitoring_contact_id` (hidden) + `#autocomplete_monitoring_contact_id` (text) | jQuery-UI autocomplete | `contact` |
 | Kontaktperson | `#monitoring_sub_contact_id` / `#s2id_monitoring_sub_contact_id` | select2 | `contactPerson` |
@@ -116,9 +116,9 @@ fillForm(id, timeEntryBillable?)
   │     ├── find entry by id
   │     └── if (entry) {                            // no match → skip the whole block
   │           ├── destructure:
-  │           │     contact, contactPerson = null, project = null,
+  │           │     contact, work = null, contactPerson = null, project = null,
   │           │     status = null, billable = true, package (as packageValue ?? null)
-  │           ├── triggerField(workFieldID, "work") // always the literal "work"
+  │           ├── triggerField(workFieldID, work)   // the template's own Tätigkeit
   │           ├── triggerField(statusFieldID, status)
   │           ├── triggerContactField(contactField, contact)
   │           ├── triggerField(contactPersonID, contactPerson)
@@ -137,6 +137,15 @@ fillForm(id, timeEntryBillable?)
         ├── initializeExtension()                   // re-render template list
         └── alert("This template does not exist anymore. …")
 ```
+
+**The `work` (Tätigkeit) value (#81):** `fillForm` used to pass the literal string
+`"work"` to the select2, ignoring the template's stored `work` value entirely. On
+accounts whose activity names do not contain "work" (e.g. "Beratung",
+"Entwicklung") the search matched nothing, so `waitForSearchBoxFieldToBeRemoved()`
+— which has no timeout — polled forever and the loader overlay never came down.
+It now passes the template's own `work`, defaulting to `null` for legacy templates
+saved before the field existed; `triggerField`'s empty-value early-return then
+leaves the Tätigkeit untouched instead of hanging.
 
 The `timeEntryBillable ?? billable` rule: when the caller passes a boolean
 `timeEntryBillable` (e.g. from a ManicTime import entry), that overrides the
@@ -242,6 +251,12 @@ The selectors and assumptions most likely to break when bexio changes its markup
   `fillForm`'s `finally` does **not** save the user here: a promise that never
   settles never reaches the `finally`, so the loader still stays up. The `finally`
   covers failures that *throw*; a hanging `waitFor*` needs a timeout of its own.
+
+- **A template without a `work` value leaves the Tätigkeit untouched.** `fillForm`
+  applies the template's stored `work` (#81), but templates saved before that field
+  existed — or with an empty Tätigkeit — fall back to `null`, and `triggerField`
+  returns early. The field then keeps whatever bexio pre-selected. Pinned in:
+  `test/utils/fillForm.test.ts` (absent-field test).
 
 - **`triggerContactField` uses a hard-coded `delay(1000)`** instead of polling
   for a stable DOM condition after the autocomplete accepts an entry. This can
