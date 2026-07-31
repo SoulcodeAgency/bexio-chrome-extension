@@ -25,10 +25,10 @@ It will handle the version update, tagging, committing and pushing automatically
 
 - Test current version
 - Run npm script `version:minor` (or what you need) to increase version number
-- Run npm script `version:updateManifest` to update all version references
+- Run npm script `version:updateManifest` to update all version references (`manifest.json` **and** `.release-please-manifest.json` — the latter keeps `release-please` from proposing the version you just released)
 - Run npm script `build:newExtensionRelease`
 - Tag the version this is needed to have the changelog created correctly
-- Run npm script `changelog` to create the changelog
+- Run npm script `changelog` to create the changelog — it writes with `git-cliff -o`; never use a `>` redirect in PowerShell, that produces a UTF-16 `CHANGELOG.md`
 - Commit Everything as new release
-- Merge `tagged commit` into `main`, fast forward to keep the tag on the commit
-- Push all branches and make sure all is on same level
+- Merge `tagged commit` into `main`, fast forward only (`git merge --ff-only <version>`) to keep the tag on the commit
+- Push all branches and make sure all is on same level, then push the tag as well: `git push origin refs/tags/<version>` (`git push --all` does not include tags)

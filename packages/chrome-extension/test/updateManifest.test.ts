@@ -21,6 +21,7 @@ describe("updateManifest.js", () => {
       join(dir, "packages", "chrome-extension", "public", "manifest.json"),
       JSON.stringify({ name: "m", version: "0.0.0", manifest_version: 3 }, null, 4),
     );
+    writeFileSync(join(dir, ".release-please-manifest.json"), '{\n  ".": "0.0.0"\n}\n');
     // The script uses `fs-extra`, which lives in the repo's node_modules; run with cwd=dir but
     // NODE_PATH pointing at the repo node_modules so the require resolves.
   });
@@ -40,6 +41,29 @@ describe("updateManifest.js", () => {
     // date format: en-US "MMM D, YYYY" — just assert it changed away from the sentinel and parses.
     expect(pkg.date).not.toBe("Jan 1, 2000");
     expect(Number.isNaN(Date.parse(pkg.date))).toBe(false);
+  });
+
+  it("copies package.json version into .release-please-manifest.json", () => {
+    execFileSync(process.execPath, [SCRIPT], {
+      cwd: dir,
+      env: { ...process.env, NODE_PATH: resolve(__dirname, "../../../node_modules") },
+    });
+    const releasePleaseManifest = JSON.parse(readFileSync(join(dir, ".release-please-manifest.json"), "utf8"));
+    expect(releasePleaseManifest["."]).toBe("9.9.9");
+  });
+
+  it("does not fail when .release-please-manifest.json is absent", () => {
+    rmSync(join(dir, ".release-please-manifest.json"));
+    expect(() =>
+      execFileSync(process.execPath, [SCRIPT], {
+        cwd: dir,
+        env: { ...process.env, NODE_PATH: resolve(__dirname, "../../../node_modules") },
+      }),
+    ).not.toThrow();
+    const manifest = JSON.parse(
+      readFileSync(join(dir, "packages", "chrome-extension", "public", "manifest.json"), "utf8"),
+    );
+    expect(manifest.version).toBe("9.9.9");
   });
 
   it("only rewrites the version field, leaving other manifest fields intact", () => {

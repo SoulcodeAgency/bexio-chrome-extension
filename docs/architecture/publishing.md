@@ -10,6 +10,7 @@ This file is the canonical documentation for how releases reach the Chrome Web S
 | Who bumps the version | `release-please` — always a minor bump (see below) | The human running the script (picks patch/minor/major interactively) |
 | Who regenerates `CHANGELOG.md` | `release-please` (from conventional commits) | `git-cliff` invoked by the script |
 | Who syncs `manifest.json` version | `release-please` `extra-files` JSONPath | `updateManifest.js` invoked by the script |
+| Who updates `.release-please-manifest.json` | `release-please` itself | `updateManifest.js` invoked by the script |
 | Who builds & zips | The publish workflow on `ubuntu-latest` | The human's local machine |
 | CWS upload | Automatic via the Chrome Web Store API | Manual: drag-and-drop into the dev console |
 | GitHub Release with `.zip` attached | Yes, automatically | No |
@@ -89,7 +90,13 @@ Use this when you need to bypass the automated flow: emergency releases, debuggi
 
 ## Coexistence
 
-The two paths don't conflict. `release-please` tracks the latest git tag on `main` and computes the next version on top of it, whatever produced that tag. If `createRelease.ps1` tagged `1.3.7` and pushed, `release-please` will batch the next minor on top of `1.3.7` (i.e. `1.4.0`) in its next Release PR. If a Release PR was already open when the local script ran, `release-please` will update the Release PR on the next push to `main` (rebasing onto the local-script commit). `manifest.json` and `package.json` are last-write-wins on overlap — no race condition, just whichever path finalises last.
+The two paths coexist, but only because the manual one keeps `release-please`'s bookkeeping honest.
+
+`release-please` runs in **manifest mode** (`manifest-file: .release-please-manifest.json` in `release-please.yml`). It computes the next version from the version recorded in `.release-please-manifest.json`, **not** from the latest git tag. So a manual release that bumps `package.json` without touching that file leaves `release-please` believing the previous version is still current: the next `feat:`/`fix:` push opens a Release PR proposing the version the manual path already shipped, and merging it fails at the CWS upload with `PKG_INVALID_VERSION_NUMBER` (the store refuses a package whose manifest version is not higher than the published one).
+
+That is why `updateManifest.js` — run by `createRelease.ps1` as `version:updateManifest` — writes the new version into `.release-please-manifest.json` as part of the release commit, alongside `packages/chrome-extension/public/manifest.json`. If you ever release by hand without the script, update that file too, or fix it up afterwards on `main`.
+
+With the manifest in sync: if `createRelease.ps1` tagged and pushed `1.3.7`, `release-please` batches the next minor on top of it (`1.4.0`) in its next Release PR. If a Release PR was already open when the local script ran, `release-please` updates that PR on the next push to `main` (rebasing onto the local-script commit) and recomputes the version from the refreshed manifest. `manifest.json` and `package.json` are last-write-wins on overlap.
 
 Recommendation: pick one path per release and stick with it.
 
@@ -132,7 +139,7 @@ Procedure (run once, by the listing owner):
    - **401 / 403 from Google**, or `invalid_grant` → one of the four secrets is wrong, the API was enabled in a different project, or a stray newline was copied into `CWS_REFRESH_TOKEN`.
    - **`PKG_INVALID_VERSION_NUMBER`** → the credentials work. That is the result you want here: Google resolved the item, accepted the OAuth exchange, and compared against the published version.
 
-   Pass a ref that exists **on the remote** — `main` is the safe choice. The input is named `tag` but is used as a checkout ref, and tags created by the local `createRelease.ps1` are often never pushed (a *draft* GitHub release does not create the tag either, it only records the name), in which case the run dies in checkout.
+   Pass a ref that exists **on the remote** — `main` is the safe choice. The input is named `tag` but is used as a checkout ref, so a ref that only exists locally makes the run die in checkout. `createRelease.ps1` now pushes its tag explicitly (`git push origin refs/tags/<version>`; `git push --all` pushes branches only, and `--follow-tags` would skip it because the tag is lightweight), so release tags from the local path are on the remote — but tags from releases made before that fix, and tags merely named in a *draft* GitHub release, are not.
 
    The first genuine end-to-end upload therefore happens on the first real release.
 
