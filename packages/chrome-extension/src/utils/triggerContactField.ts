@@ -3,7 +3,7 @@ import pressEnter from "./pressEnter";
 import waitForContacts from "./waitForContacts";
 
 // Trigger Contact field
-async function triggerContactField(contactField, value) {
+async function triggerContactField(contactField: HTMLInputElement, value: string) {
     contactField.value = value;
     contactField.click();
     contactField.click();

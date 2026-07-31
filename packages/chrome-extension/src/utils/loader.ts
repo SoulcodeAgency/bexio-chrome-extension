@@ -6,7 +6,9 @@ interface CustomDocument extends Document {
 }
 
 export function swapDisplayStyle(show = true) {
-  const loader = getLoader();
+  // `!` rather than a guard: the loader is injected by renderHtml before this ever
+  // runs, and a missing loader should keep throwing here rather than silently no-op.
+  const loader = getLoader()!;
   loader.style.display = show ? "flex" : "none";
 }
 

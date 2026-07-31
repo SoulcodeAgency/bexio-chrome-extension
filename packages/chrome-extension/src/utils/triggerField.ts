@@ -4,7 +4,7 @@ import waitForSearchBoxFieldToBeRemoved from "./waitForSearchBoxFieldToBeRemoved
 import waitForSelectOptions from "./waitForSelectOptions";
 
 // Trigger general fields with search box
-async function triggerField(selector, value) {
+async function triggerField(selector: string, value: string | null) {
     if (value === null || value.trim() === "") return;
     const inputSelector = document.querySelector(`${selector} input`) as HTMLInputElement;
     await waitForSelectOptions(selector);

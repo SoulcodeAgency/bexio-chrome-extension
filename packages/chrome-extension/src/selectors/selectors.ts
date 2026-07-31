@@ -16,19 +16,19 @@
 
 // Selectors
 export const workFieldID = "#s2id_monitoring_client_service_id";
-export const workField = document.querySelector(`${workFieldID} input`);
+export const workField = document.querySelector(`${workFieldID} input`) as HTMLInputElement;
 
 export const statusFieldID = "#s2id_monitoring_monitoring_status_id";
-export const statusField = document.querySelector(`${statusFieldID} input`);
+export const statusField = document.querySelector(`${statusFieldID} input`) as HTMLInputElement;
 
 export const projectFieldID = "#s2id_monitoring_pr_project_id";
-export const projectField = document.querySelector(`${projectFieldID} input`);
+export const projectField = document.querySelector(`${projectFieldID} input`) as HTMLInputElement;
 
 export const packageFieldID = "#s2id_monitoring_pr_package_id";
-export const packageField = document.querySelector(`${packageFieldID} input`);
+export const packageField = document.querySelector(`${packageFieldID} input`) as HTMLInputElement;
 
 export const contactPersonID = "#s2id_monitoring_sub_contact_id";
-export const contactPersonField = document.querySelector(`${contactPersonID} input`);
+export const contactPersonField = document.querySelector(`${contactPersonID} input`) as HTMLInputElement;
 
 export const loaderId = "SoulcodeExtensionLoader";
 export const getLoader = () => document.getElementById(loaderId);

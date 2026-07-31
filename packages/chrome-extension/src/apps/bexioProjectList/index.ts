@@ -88,7 +88,11 @@ function observeBillingPage() {
 
 function observeBillingModalTable() {
   console.log("[bexio extension] observing billing modal table");
-  const jqDialog = document.getElementById("jqDialog");
+  // Unguarded on purpose — unchanged from before. This callback only fires from the
+  // observer that `observeBillingPage` attached to #jqDialog, so the element existed
+  // at least once. (The kb_invoice/show branch is flagged as unverified in
+  // docs/architecture/tooltip-replacement.md.)
+  const jqDialog = document.getElementById("jqDialog")!;
   const modalTable = jqDialog.getElementsByClassName("list block")[0];
   createObserverWithCallback(convertPopover).observe(modalTable, observerOptions);
   convertPopover(); // Convert the initial modal

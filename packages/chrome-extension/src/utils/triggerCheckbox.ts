@@ -1,5 +1,5 @@
 // Trigger checkbox
-async function triggerCheckbox(selector, checked?: boolean) {
+async function triggerCheckbox(selector: HTMLInputElement, checked?: boolean) {
     if (typeof checked === "boolean") {
         selector.checked = checked;
     }

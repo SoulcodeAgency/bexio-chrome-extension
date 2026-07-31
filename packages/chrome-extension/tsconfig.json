@@ -3,11 +3,7 @@
     /* Vite/Rolldown does the emit; tsc is only ever run as a type checker
        (`npm run typecheck`), so it must not write anything into `unpacked/`. */
     "noEmit": true,
-    /* TypeScript 7 defaults `strict` to true. This package was written against
-       the old non-strict default; turning it on surfaces ~35 pre-existing
-       nullability/implicit-any errors in the fragile DOM layer, so keep the
-       previous posture here and tighten it as a separate change. */
-    "strict": false,
+    "strict": true,
     "target": "ES2022",
     "lib": [
       "ES2022",

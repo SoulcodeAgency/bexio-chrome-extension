@@ -34,7 +34,10 @@ import { toggleDisplayLoader } from "./loader";
 async function fillForm(id: string, timeEntryBillable?: boolean) {
   toggleDisplayLoader();
   const templateEntries = await chromeStorageTemplateEntries.loadTemplates();
-  const entry = templateEntries.find((entry) => entry.id === id);
+  // KNOWN ISSUE: `find` returns undefined when no template matches `id`, and the
+  // destructuring below then throws. The `!` pins that existing behaviour rather than
+  // adding a guard, which would silently do nothing and leave the loader spinning.
+  const entry = templateEntries.find((entry) => entry.id === id)!;
   const { contact, contactPerson = null, project = null, status = null, billable = true } = entry;
   // Workaround because "package" is actually a reserved word
   const packageValue = entry.package ?? null;
@@ -54,7 +57,7 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
   toggleDisplayLoader(false);
 
   // Focus the submit button, so the user can submit the form with the enter key directly if wanted
-  const form = document.getElementById("MonitoringForm");
+  const form = document.getElementById("MonitoringForm")!;
   const submitButton = form.getElementsByClassName("save")[0] as HTMLButtonElement;
   submitButton.focus();
 }

@@ -12,7 +12,7 @@
  * @param timeToWait  Milliseconds between poll attempts (default 1000).
  */
 // Check that the select has any values
-async function waitForSelectOptions(selector, timeToWait = 1000) {
+async function waitForSelectOptions(selector: string, timeToWait = 1000) {
     return new Promise<void>((resolve) => {
         const waitForSelectBox = () => {
             const selectSelector = document.querySelector(`${selector}+select`) as HTMLSelectElement;
