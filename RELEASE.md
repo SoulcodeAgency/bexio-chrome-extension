@@ -10,7 +10,7 @@
 3. When you're ready to ship, review and **merge that Release PR**.
 4. Merging triggers the tag + GitHub Release + `publish-chrome-web-store` workflow, which builds the extension and publishes it to the Chrome Web Store. Hands-off.
 
-If the publish workflow fails after a Release PR merge, re-run it from the Actions tab — `publish-chrome-web-store` → "Run workflow" → enter the tag.
+If the publish workflow fails after a Release PR merge, re-run it from the Actions tab — `publish-chrome-web-store` → "Run workflow" → enter the tag, leaving `publish: true`. The re-run rebuilds, re-publishes, and re-attaches the zip to the existing GitHub Release.
 
 **First-time setup required:** the four `CWS_*` GitHub Actions secrets must be configured before the first release; see `docs/architecture/publishing.md` → "One-time setup", or `docs/architecture/publishing-setup.de.md` for the same steps as a German checklist.
 

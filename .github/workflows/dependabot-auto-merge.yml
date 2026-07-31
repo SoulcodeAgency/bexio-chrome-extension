@@ -144,7 +144,14 @@ jobs:
                 || echo "::warning::Approval failed (org policy?); merging anyway."
               # Squash keeps the conventional-commit PR title as the commit
               # message, so these stay chore(deps): and trigger no release.
-              gh pr merge "$PR_NUMBER" --repo "$REPO" --squash --delete-branch
+              # --match-head-commit pins the merge to the SHA whose checks were
+              # aggregated above: if Dependabot force-pushed in the meantime the
+              # merge is refused rather than landing an unvalidated head. That
+              # newer head starts its own CI run, which re-triggers this
+              # workflow, so nothing is lost — the merge just happens one round
+              # later.
+              gh pr merge "$PR_NUMBER" --repo "$REPO" --squash --delete-branch \
+                --match-head-commit "$HEAD_SHA"
               echo "Merged PR #$PR_NUMBER ($bucket)."
               ;;
             *)
