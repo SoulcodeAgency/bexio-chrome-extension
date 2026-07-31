@@ -24,9 +24,13 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-  # Lets release-please.yml start this run for its Release PR. Bot-created PRs
-  # do not fire `pull_request` (events raised by GITHUB_TOKEN never start a
-  # workflow), but workflow_dispatch always runs.
+  # Fallback for release-please.yml. The Release PR does fire `pull_request`,
+  # but GitHub parks that run at `action_required` — the repo's fork-PR approval
+  # policy is `first_time_contributors` and the PR's author,
+  # github-actions[bot], trips it. release-please.yml approves the parked run,
+  # which is the normal path and puts the check on the PR where it belongs. If
+  # that approval is ever refused it dispatches this workflow instead, since
+  # workflow_dispatch is never gated.
   workflow_dispatch:
 
 jobs:
