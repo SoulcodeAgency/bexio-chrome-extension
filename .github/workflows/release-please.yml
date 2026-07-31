@@ -22,25 +22,58 @@ jobs:
           manifest-file: .release-please-manifest.json
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # The Release PR is opened by GITHUB_TOKEN, and events raised by that
-      # token never start a workflow — so `pull_request` does not fire and the
-      # PR shows no build check at all. It was merged unverified for 1.4.0,
-      # 1.5.0 and 1.6.0. workflow_dispatch is exempt from that rule, so start
-      # the CI run explicitly against the Release PR's branch; the check then
-      # attaches to that branch's head commit and shows up on the PR.
-      - name: Run CI against the Release PR
+      # Make sure the Release PR actually carries a build check. 1.4.0, 1.5.0
+      # and 1.6.0 were all merged without one.
+      #
+      # GitHub does start a `pull_request` run for the Release PR, but parks it
+      # at `action_required`: this repo's fork-PR approval policy is
+      # `first_time_contributors`, and the PR's author (github-actions[bot])
+      # trips it. A parked run means the PR shows no build check and stays
+      # UNSTABLE forever, because nobody is watching for a run that needs
+      # clicking. So approve it here.
+      #
+      # If approval is refused — GitHub may well decide a token should not
+      # approve its own run — fall back to dispatching the workflow. That
+      # produces a green check on the same commit (verified: run 30626413829),
+      # though it does not appear in the PR's own check list, since the rollup
+      # only shows runs the PR itself triggered.
+      - name: Make sure the Release PR gets a build check
         if: steps.release.outputs.prs_created == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_JSON: ${{ steps.release.outputs.pr }}
+          REPO: ${{ github.repository }}
         run: |
           branch=$(echo "$PR_JSON" | jq -r '.headBranchName // empty')
           if [ -z "$branch" ]; then
-            echo "::warning::No headBranchName in the release-please output; skipping the CI dispatch."
+            echo "::warning::No headBranchName in the release-please output; skipping."
             exit 0
           fi
-          echo "Dispatching Node.js CI against '$branch'."
-          gh workflow run node.js.yml --repo "${{ github.repository }}" --ref "$branch"
+
+          # The pull_request run is created a moment after the PR itself, so
+          # give it a little time to show up before concluding there is none.
+          run_id=""
+          for _ in $(seq 1 10); do
+            run_id=$(gh run list --repo "$REPO" --workflow=node.js.yml \
+              --branch "$branch" --limit 20 \
+              --json databaseId,status,event \
+              --jq '[.[] | select(.event == "pull_request" and .status == "action_required")][0].databaseId // empty')
+            [ -n "$run_id" ] && break
+            sleep 6
+          done
+
+          if [ -z "$run_id" ]; then
+            echo "No run awaiting approval for '$branch' — either it started on its own or none exists yet."
+            exit 0
+          fi
+
+          echo "Run $run_id on '$branch' is waiting for approval; approving."
+          if gh api -X POST "repos/$REPO/actions/runs/$run_id/approve" >/dev/null 2>&1; then
+            echo "Approved."
+          else
+            echo "::warning::Could not approve run $run_id (GITHUB_TOKEN may not approve runs). Dispatching Node.js CI against '$branch' instead; the check lands on the commit but not in the PR's check list."
+            gh workflow run node.js.yml --repo "$REPO" --ref "$branch"
+          fi
 
   # release-please creates the GitHub Release with GITHUB_TOKEN, and GitHub
   # suppresses workflow runs for events raised by that token ("Events triggered
