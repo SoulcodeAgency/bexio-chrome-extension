@@ -188,8 +188,8 @@ test("clicking a template button fills the form via the synthetic-event path", a
   await expect(templateButton).toBeAttached({ timeout: 10_000 });
 
   await installBexioFormStub(page, {
-    // fillForm always passes the literal string "work" for the work field
-    monitoring_client_service_id: ["work"],
+    // fillForm passes the template's own work (Tätigkeit) value (#81)
+    monitoring_client_service_id: [TEMPLATE.work],
     monitoring_monitoring_status_id: [TEMPLATE.status],
     monitoring_sub_contact_id: [TEMPLATE.contactPerson],
     monitoring_pr_project_id: [TEMPLATE.project],
@@ -203,6 +203,7 @@ test("clicking a template button fills the form via the synthetic-event path", a
   // The waitFor* helpers poll at 1 s intervals and triggerContactField ends in
   // a fixed 1 s delay, so give the full fill a generous window.
   const applied = { timeout: 30_000 };
+  await expect(page.locator("#s2id_monitoring_client_service_id .select2-chosen")).toHaveText(TEMPLATE.work, applied);
   await expect(page.locator("#s2id_monitoring_monitoring_status_id .select2-chosen")).toHaveText(
     TEMPLATE.status,
     applied,

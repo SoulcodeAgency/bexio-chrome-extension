@@ -63,7 +63,7 @@ const template = (over: Partial<TemplateEntry> = {}): TemplateEntry => ({
   package: "Package Alpha",
   project: "Project Falcon",
   status: "In Arbeit",
-  work: "",
+  work: "Beratung",
   ...over,
 });
 
@@ -83,13 +83,14 @@ describe("fillForm", () => {
     await fillForm("tmpl1");
 
     // The exact call order from fillForm.ts:
-    // toggleDisplayLoader() → triggerField(workFieldID, "work") → triggerField(statusFieldID, status)
+    // toggleDisplayLoader() → triggerField(workFieldID, work) → triggerField(statusFieldID, status)
     // → triggerContactField(contactField, contact) → triggerField(contactPersonID, contactPerson)
     // → triggerField(projectFieldID, project) → triggerField(packageFieldID, packageValue)
     // → triggerCheckbox(billableCheckbox, billable) → toggleDisplayLoader(false) → .save.focus()
     const expected = [
       "loader:on",
-      "field:#s2id_monitoring_client_service_id:work",
+      // The template's own Tätigkeit value is applied (#81), not a hardcoded string
+      "field:#s2id_monitoring_client_service_id:Beratung",
       "field:#s2id_monitoring_monitoring_status_id:In Arbeit",
       "contact:Acme AG",
       "field:#s2id_monitoring_sub_contact_id:Doe Jane",
@@ -169,10 +170,11 @@ describe("fillForm", () => {
     expect(calls).toEqual(["loader:on", "loader:off"]);
   });
 
-  it("passes null to triggerField for absent project/package/status/contactPerson", async () => {
+  it("passes null to triggerField for absent work/project/package/status/contactPerson", async () => {
     await chrome.storage.local.set({
       entries: [
         template({
+          work: undefined as unknown as string,
           project: undefined as unknown as string,
           package: undefined as unknown as string,
           status: undefined as unknown as string,
@@ -185,7 +187,9 @@ describe("fillForm", () => {
       "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
     );
     await fillForm("tmpl1");
-    // project and package fall through to `?? null`; status and contactPerson default to null
+    // project and package fall through to `?? null`; work, status and contactPerson default to null
+    // (a legacy template without a `work` field leaves the Tätigkeit untouched)
+    expect(calls).toContain("field:#s2id_monitoring_client_service_id:null");
     expect(calls).toContain("field:#s2id_monitoring_pr_project_id:null");
     expect(calls).toContain("field:#s2id_monitoring_pr_package_id:null");
     expect(calls).toContain("field:#s2id_monitoring_monitoring_status_id:null");
