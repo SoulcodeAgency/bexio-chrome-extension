@@ -3,8 +3,10 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default ({ mode }) => {
-  return defineConfig({
+// The callback form of defineConfig types `mode` from Vite's own ConfigEnv —
+// needed now that TypeScript 7 turns on `strict` (and so `noImplicitAny`) by default.
+export default defineConfig(({ mode }) => {
+  return {
     plugins: [react()],
     base: "/sidePanel-import/",
     resolve: {
@@ -31,5 +33,5 @@ export default ({ mode }) => {
         allow: [path.resolve(__dirname, "../shared")],
       },
     },
-  });
-};
+  };
+});

@@ -13,7 +13,7 @@ async function openBexioTimeTrackingPage() {
             } else if (tab.id) {
                 console.log("not on timetracking page, trying to open it...")
                 // Attach an event listener first, so we can wait for the page to load
-                const onUpdate = async (tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
+                const onUpdate = async (tabId: number, changeInfo: chrome.tabs.OnUpdatedInfo, tab: chrome.tabs.Tab) => {
                     if (tabId === tab.id) {
                         if (tab.url === BEXIO_MONITORING_TIMETRACKING && changeInfo.status === "complete") {
                             console.log("Tab has loaded completely");

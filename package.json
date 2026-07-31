@@ -26,7 +26,8 @@
         "test": "vitest run",
         "test:fast": "vitest run --exclude \"**/*.slow.test.ts\"",
         "test:watch": "vitest",
-        "test:e2e": "playwright test --config e2e/playwright.config.ts"
+        "test:e2e": "playwright test --config e2e/playwright.config.ts",
+        "typecheck": "npm run typecheck --workspaces --if-present"
     },
     "repository": {
         "type": "git",

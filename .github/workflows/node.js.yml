@@ -38,6 +38,8 @@ jobs:
           sudo apt-get install -y powershell
       - name: Install dependencies
         run: npm ci --include=optional
+      - name: Typecheck
+        run: npm run typecheck
       - name: Build
         shell: pwsh
         run: |

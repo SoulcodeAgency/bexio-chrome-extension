@@ -1,10 +1,17 @@
 {
   "compilerOptions": {
-    "composite": true,
+    /* Checked standalone via `npm run typecheck`, not as a project reference:
+       `tsc -b` refuses a referenced project with `noEmit`, and without `noEmit`
+       a composite build drops a vite.config.js next to vite.config.ts that Vite
+       would then load in preference to the source. */
+    "noEmit": true,
     "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": [
+      "node"
+    ]
   },
   "include": ["vite.config.ts"]
 }
