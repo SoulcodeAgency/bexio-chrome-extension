@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.7.0...1.8.0) (2026-07-31)
+
+
+### Bug Fixes
+
+* **chrome-extension:** handle unknown template id in fillForm ([c5907b4](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/c5907b44b16cc7ddfa2aebcf8df82a8f99da50b4)), closes [#73](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/73)
+* **chrome-extension:** hide fillForm's loader in a finally ([7079e27](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/7079e275f794bd879f2be6688fac6ac8cc43aca9)), closes [#73](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/73)
+* **chrome-extension:** stop fillForm from leaving the loader on screen ([711306e](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/711306e9e68f3a95a638f1d6a0ccff68430aab20))
+* **chrome-extension:** suggest the work type as a template name ([7a3dfd0](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/7a3dfd0d9809d4d3ef97955610739401ac3122fa))
+* **chrome-extension:** suggest the work type as a template name ([b5498a0](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/b5498a06e8e0f592a2393e08efae320d2ce4080c)), closes [#72](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/72)
+
+
+### Code Refactoring
+
+* **chrome-extension:** enable TypeScript strict mode ([#71](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/71)) ([44a8151](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/44a815103a4ceccf3a3be2f06dfd64036efe36ed))
+
+
+### Miscellaneous Chores
+
+* **deps:** consolidate open dependency updates ([35781ce](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/35781ce519a9ffbce5b8d736bf33adfe27d32ecd))
+* **deps:** consolidate open dependency updates ([d71d40d](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/d71d40d8e3c183c2ecfde2c6d83cc335414f80e4))
+* pin Claude Code attribution settings in the repo ([79300f6](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/79300f65da63cc05ec6a59fd01b62441dbfb15da))
+* pin Claude Code attribution settings in the repo ([af5966c](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/af5966c017df416ff82d772b469713c71fde9a04))
+
 ## [1.7.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.6.0...1.7.0) (2026-07-31)
 
 
