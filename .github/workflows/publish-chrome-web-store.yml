@@ -61,9 +61,12 @@ jobs:
         run: pwsh -File ./Build.ps1 -CreatePackage
 
       - name: Upload + publish to Chrome Web Store
-        # This action publishes exact tags only — there is no moving `v5`/`v6`
-        # major tag, so the version must be spelled out in full.
-        uses: mnao305/chrome-extension-upload@v6.0.0
+        # Pinned to a commit SHA, not a tag: this is the repo's only third-party
+        # action and it receives all four Chrome Web Store credentials. A tag can
+        # be force-moved, and the refresh token alone is enough to publish
+        # arbitrary code to every installed user. Dependabot understands SHA pins
+        # and keeps proposing updates, so the trailing comment names the version.
+        uses: mnao305/chrome-extension-upload@fdfe79400af990f5145a319e834aee64907ccff4 # v6.0.0
         with:
           file-path: dist/bexio-chrome-extension.zip
           extension-id: ${{ secrets.CWS_EXTENSION_ID }}

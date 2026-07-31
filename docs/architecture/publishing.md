@@ -82,6 +82,18 @@ If the auto-triggered `publish-chrome-web-store` workflow fails (CWS API hiccup,
 
 For a dry run (e.g. validating credentials, smoke testing changes to the workflow): same procedure with `publish: false`. The zip uploads to CWS as a draft visible only in the dev console; nothing goes live.
 
+### Why the upload action is pinned to a SHA
+
+`mnao305/chrome-extension-upload` is the **only third-party action in the repo** — everything else is `actions/*` or `googleapis/*` — and it is the one that receives all four CWS secrets (`CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`). A tag, even a fully-qualified one like `v6.0.0`, can be force-moved by whoever controls the action's repository. If that account or repo is compromised, the moved tag runs attacker code inside a job holding the refresh token — which is on its own enough to publish arbitrary code to every installed user's browser. That is the 2025 `tj-actions/changed-files` pattern.
+
+So the workflow pins the commit SHA with the version in a trailing comment:
+
+```yaml
+uses: mnao305/chrome-extension-upload@fdfe79400af990f5145a319e834aee64907ccff4 # v6.0.0
+```
+
+Dependabot's `github-actions` ecosystem (already enabled in `.github/dependabot.yml`) understands SHA pins: it keeps proposing upgrades and rewrites both the SHA and the comment, so this costs nothing in maintenance. When bumping by hand, resolve the SHA from the tag rather than trusting a copied value — `git ls-remote https://github.com/mnao305/chrome-extension-upload refs/tags/<tag>` — and keep the comment in sync.
+
 ## The manual path — `createRelease.ps1`
 
 Unchanged from the long-standing release flow. See `RELEASE.md` for the step-by-step. **Important:** this path still requires manually uploading the produced `dist/bexio-chrome-extension.zip` via the Chrome Web Store dev console — it does **not** trigger the `publish-chrome-web-store` workflow (because it doesn't create a GitHub Release).
