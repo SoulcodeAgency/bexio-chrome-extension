@@ -37,16 +37,24 @@ jobs:
       # produces a green check on the same commit (verified: run 30626413829),
       # though it does not appear in the PR's own check list, since the rollup
       # only shows runs the PR itself triggered.
+      # Deliberately not gated on `prs_created`. That output is documented as
+      # "created or updated" but is only true on creation: merging PR #78 (a
+      # fix:) updated the open Release PR from f749ad9 to 66b7b25 and left a run
+      # parked, while `prs_created` stayed false and this step was skipped. The
+      # step is a cheap no-op when there is nothing to do, so it just runs.
       - name: Make sure the Release PR gets a build check
-        if: steps.release.outputs.prs_created == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_JSON: ${{ steps.release.outputs.pr }}
           REPO: ${{ github.repository }}
         run: |
-          branch=$(echo "$PR_JSON" | jq -r '.headBranchName // empty')
+          # Find the open Release PR by its branch rather than trusting the
+          # action's outputs — it exists whether this run created it or an
+          # earlier one did.
+          branch=$(gh pr list --repo "$REPO" --state open --limit 50 \
+            --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("release-please"))][0].headRefName // empty')
           if [ -z "$branch" ]; then
-            echo "::warning::No headBranchName in the release-please output; skipping."
+            echo "No open Release PR; nothing to do."
             exit 0
           fi
 
