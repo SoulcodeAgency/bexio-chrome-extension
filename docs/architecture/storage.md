@@ -17,6 +17,10 @@ All storage access goes through the primitives in `packages/shared/chromeStorage
 | `"removePopoversSetting"` | `boolean` | `false` | `chromeStorageSettings.ts` |
 | `"activeTabId"` | `string \| undefined` | `undefined` | `chromeStorageSettings.ts` |
 | `"importData"` | `ImportData[]` (i.e. `string[][]`) | `[]` | `chromeStorageImportData.ts` |
+| `"importHeader"` | `string[]` | `[]` | `ImportEntries.tsx` |
+| `"importFooter"` | `string[]` | `[]` | `ImportEntries.tsx` |
+| `"importTemplates"` | `string[]` (template id per row) | `[]` | `ImportEntries.tsx` |
+| `"entryStatus"` | `{ [\`${columnIndex}-${entryIndex}\`]: boolean }` | `{}` | `ImportEntries.tsx` |
 
 ---
 
@@ -33,11 +37,24 @@ Template entries are stored as a flat array under the single key `"entries"`. Ev
 
 ---
 
-## The `"importData"` key
+## The import buffer — `"importHeader"`, `"importData"`, `"importFooter"`, `"importTemplates"`, `"entryStatus"`
 
 `ImportData` is defined in `types.ts` as `string[]` (a single row of column values). The module stores an array of these rows: `string[][]` under the key `"importData"`.
 
-`chromeStorageImportData.ts` exports `loadImportData`, `saveImportData`, and `deleteImportData`. The module is marked TODO in source — the delete and update paths are not fully implemented (the commented-out `updateImportData` is disabled).
+`chromeStorageImportData.ts` exports `loadImportData`, `saveImportData`, and `deleteImportData`. The module is marked TODO in source — the delete and update paths are not fully implemented (the commented-out `updateImportData` is disabled). The side panel does **not** use it: `ImportEntries.tsx` writes all five import keys directly through `chromeStorage.save`.
+
+The five keys are **one logical record**, not five independent ones:
+
+- `"importTemplates"` is indexed by row (`importTemplates[entryIndex]` = the template id applied with that row),
+- `"entryStatus"` is keyed by `` `${columnIndex}-${entryIndex}` `` (which tracking-day cells were already booked into bexio).
+
+Both are therefore only meaningful together with the exact `"importData"` / `"importHeader"` they were produced for. `ImportEntries.tsx` keeps them consistent by writing all five keys together in `persistImport()`:
+
+- **Parsing new clipboard data** (`convertImportData`, i.e. every successful paste) writes the new header/data/footer and resets `"entryStatus"` to `{}` and `"importTemplates"` to `[]`. The reset lives here, not in `saveImport`, because auto-map, the per-row template `<select>` and the ▶️ apply button all persist their key immediately — even for data the user never saved. Writing the parsed data through on paste is what keeps those later single-key writes attached to the right rows.
+- **"Save this import"** (`saveImport`) re-writes the same five keys with the *current* status/templates. It must not reset them; that already happened when the data was parsed.
+- **"Delete saved data"** (`removeImportData`) clears all five.
+
+A failed parse writes nothing: storage keeps the last successfully parsed dataset with its own status/templates, so the record stays coherent even though the (empty) React state no longer matches it.
 
 ---
 
@@ -97,13 +114,17 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
    `Array.prototype.sort` sorts in place; `sortTemplates` returns the same reference it was given. Callers that need the original order must copy the array first.
    Flagged in: `test/sortTemplates.test.ts` — `// KNOWN ISSUE: sortTemplates mutates its argument`.
 
+5. **The import buffer is spread over five keys and written non-atomically.**
+   `persistImport()` issues five separate `chrome.storage.local.set` calls. They are not a transaction: a side panel closed mid-write could in principle leave a new `"importData"` next to an old `"entryStatus"`. Storing the whole import (data + templates + status) under a single key would remove the class of bug entirely, but needs a migration for buffers already in users' browsers — see issue #87.
+   Covered in: `packages/sidePanel-import/test/importEntries.test.tsx` — "import state does not survive a new import (issue #87)".
+
 ---
 
 ## Who reads / writes what
 
 | Actor | Reads | Writes |
 |-------|-------|--------|
-| **Side panel app** (`packages/sidePanel-import`) | `loadTemplates`, `loadApplyNotesSetting`, `loadRemovePopoversSetting`, `loadActiveTabId`, `loadImportData` | `saveTemplates`, `saveApplyNotesSetting`, `saveRemovePopoversSetting`, `saveActiveTabId`, `saveImportData`, `deleteTemplate`, `updateTemplate` |
+| **Side panel app** (`packages/sidePanel-import`) | `loadTemplates`, `loadApplyNotesSetting`, `loadRemovePopoversSetting`, `loadActiveTabId`, the five import-buffer keys via `chromeStorage.load` | `saveTemplates`, `saveApplyNotesSetting`, `saveRemovePopoversSetting`, `saveActiveTabId`, `deleteTemplate`, `updateTemplate`, the five import-buffer keys via `chromeStorage.save` |
 | **Content script** (`packages/chrome-extension`) | `loadTemplates`, `loadApplyNotesSetting`, `loadRemovePopoversSetting`, `loadActiveTabId` | Sends `chrome.runtime.sendMessage` to request side panel actions; does **not** write storage directly |
 | **Service worker** (`service_worker.js`) | — | Routes messages between content script and side panel; does not access storage directly |
 
