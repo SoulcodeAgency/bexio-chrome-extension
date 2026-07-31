@@ -200,8 +200,10 @@ test("clicking a template button fills the form via the synthetic-event path", a
 
   await templateButton.click();
 
-  // The waitFor* helpers poll at 1 s intervals and triggerContactField ends in
-  // a fixed 1 s delay, so give the full fill a generous window.
+  // The waitFor* helpers poll at 250 ms intervals and triggerContactField ends in
+  // a fixed 1 s delay, so give the full fill a generous window. The stub satisfies
+  // every awaited condition within a poll or two, well inside the helpers' own
+  // 20 s deadline (see src/utils/pollUntil.ts), so that cannot fire here.
   const applied = { timeout: 30_000 };
   await expect(page.locator("#s2id_monitoring_client_service_id .select2-chosen")).toHaveText(TEMPLATE.work, applied);
   await expect(page.locator("#s2id_monitoring_monitoring_status_id .select2-chosen")).toHaveText(

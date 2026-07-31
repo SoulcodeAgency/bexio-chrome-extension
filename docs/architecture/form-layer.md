@@ -38,19 +38,21 @@ search-box `<input class="select2-input">` inside `.select2-drop`.
 
 ### select2 fields (`triggerField`)
 
-1. Call `waitForSelectOptions(selectorId)` — polls every 1000 ms until the
+1. Call `waitForSelectOptions(selectorId)` — polls every 250 ms until the
    sibling `<select>` has more than one option (the AJAX load has completed).
-   **No timeout — polls indefinitely.** (See Known Issues.)
+   Rejects after 20 s.
 2. Set the focusser input's `.value` to the target string.
 3. Dispatch the shared `pressEnter` `KeyboardEvent` (`keyCode: 13`, **not**
    `key: "Enter"`) on the focusser — triggers select2 to open the drop and run
    a search.
-4. Call `waitForSearchBoxField()` — polls every 1000 ms until
-   `#select2-drop input` appears. **No timeout.**
+4. Call `waitForSearchBoxField()` — polls every 250 ms until
+   `#select2-drop input` appears. Rejects after 20 s.
 5. Set the drop input's `.value` to the target string.
 6. Dispatch `pressEnter` on the drop input — selects the first result.
-7. Call `waitForSearchBoxFieldToBeRemoved()` — polls every 1000 ms until
-   `#select2-drop input` disappears (drop closes). **No timeout.**
+7. Call `waitForSearchBoxFieldToBeRemoved()` — polls every 250 ms until
+   `#select2-drop input` disappears (drop closes). Rejects after 20 s — this is
+   the one that fires when the search matched nothing, because select2 then
+   keeps the drop open.
 
 Early-return: if `value === null || value.trim() === ""` the function returns
 immediately (the field is left unchanged).
@@ -59,8 +61,8 @@ immediately (the field is left unchanged).
 
 1. Set `contactField.value` to the target string.
 2. Call `.click()` three times (jQuery-UI autocomplete trigger idiom).
-3. Call `waitForContacts()` — polls every 1000 ms until `.ac_results` is
-   visible. **No timeout.**
+3. Call `waitForContacts()` — polls every 250 ms until `.ac_results` is
+   visible. Rejects after 20 s.
 4. Dispatch `pressEnter` on `contactField` — accepts the first suggestion.
 5. `await delay(1000)` — hard-coded wait for the UI to settle.
    **Known issue:** this is a fixed delay, not a condition check.
@@ -106,9 +108,26 @@ Similarly, opening the select2 drop is asynchronous from jsdom's perspective —
 drop to appear / disappear. The jQuery-UI autocomplete results likewise appear
 asynchronously, hence `waitForContacts`.
 
-**None of the `waitFor*` helpers have a timeout.** They poll on
-`setTimeout` with a default interval of 1000 ms and will loop forever if the
-condition never becomes true. This is a known issue.
+All four are thin wrappers around one primitive, `pollUntil(label, check,
+intervalMs, timeoutMs)` in `src/utils/pollUntil.ts`. It runs `check` immediately,
+then every `intervalMs` (`POLL_INTERVAL_MS`, **250 ms**), and rejects with a
+`WaitForTimeoutError` naming `label` once `timeoutMs` (`POLL_TIMEOUT_MS`,
+**20 000 ms**) has elapsed (#83). Each `waitFor*` keeps its original signature and
+takes the interval and the deadline as optional trailing arguments, so callers
+did not change.
+
+Why those numbers:
+
+- **250 ms interval** — the checks are plain DOM reads, so polling four times a
+  second costs nothing, and the first check is synchronous either way. At the
+  old 1000 ms a full `fillForm` (≈15 waits) could spend ~15 s purely waiting for
+  the next poll tick.
+- **20 s deadline, per wait** — must survive bexio's slowest select2 AJAX load on
+  a large account over a bad connection, since a false timeout aborts a fill that
+  would have succeeded. It is a budget per wait, not for the whole fill.
+
+`triggerContactField`'s trailing `await delay(1000)` is *not* a poll and has no
+deadline — it is a fixed wait (see Known issues).
 
 ---
 
@@ -138,12 +157,18 @@ fillForm(id, timeEntryBillable?)
   │           └── document.getElementById("MonitoringForm")
   │                 .getElementsByClassName("save")[0].focus() // focus submit button
   │         }
+  │   } catch (error) {
+  │     ├── if (!(error instanceof WaitForTimeoutError)) throw error
+  │     └── remember it                             // a waitFor* gave up (#83)
   │   } finally {
   │     └── toggleDisplayLoader(false)              // hide loader (off) — always
   │   }
-  └── if (!entry)                                   // stale id, form untouched
-        ├── initializeExtension()                   // re-render template list
-        └── alert("This template does not exist anymore. …")
+  ├── if (!entry)                                   // stale id, form untouched
+  │     ├── initializeExtension()                   // re-render template list
+  │     └── alert("This template does not exist anymore. …")
+  └── if (timeout)                                  // form left half-filled
+        ├── console.error(…)
+        └── alert("The template could not be applied completely: …")
 ```
 
 **The `work` (Tätigkeit) value (#81):** `fillForm` used to pass the literal string
@@ -164,10 +189,20 @@ template. When it is `undefined` (the common interactive case), the template's
 switched off. Everything between the two toggles can throw — changed bexio markup,
 a missing save button, a select2 widget that is gone — and the overlay covers the
 whole viewport, so a failure used to look like an endless "Loading…" to the user.
-(A `waitFor*` that never settles is a different case — see Known issues.)
 The `finally` does not catch: the error keeps propagating to the caller
 (which is `renderHtml`'s click handler or `onMessage`, neither of which awaits, so
 it surfaces as an unhandled rejection in the console — loud, as intended).
+
+**`WaitForTimeoutError` is the one exception (#83).** Since the `waitFor*` helpers
+got deadlines, a bexio AJAX failure, an offline browser or a select2 search with no
+result ends the fill with a `WaitForTimeoutError` instead of hanging forever. That
+error *is* caught: neither caller awaits `fillForm`, so rethrowing would produce an
+unhandled rejection the user never sees, and the form is left half-filled — which
+needs saying out loud. It is reported the same way as the stale-id case, after the
+`finally` so the `alert()` does not pop up over a still-visible overlay:
+`console.error` plus an `alert()` naming the condition that timed out. Every other
+error still propagates untouched. Both paths are pinned in
+`test/utils/fillForm.test.ts`.
 
 **The unknown-`id` guard (#73):** `id` comes from outside — the side panel's
 template list or the injected buttons on the page — and can be stale when the
@@ -253,15 +288,15 @@ The selectors and assumptions most likely to break when bexio changes its markup
   sets `.checked`; any listener registered for the `change` event will not fire.
   Pinned in: `test/utils/triggerCheckbox.test.ts`.
 
-- **None of the `waitFor*` helpers have a timeout.** They poll forever if the
-  awaited DOM condition never becomes true (e.g. if bexio's AJAX call fails or
-  the markup changes). Pinned in: `test/utils/waitFor.test.ts`. Note that
-  `fillForm`'s `finally` does **not** save the user here: a promise that never
-  settles never reaches the `finally`, so the loader still stays up. The `finally`
-  covers failures that *throw*; a hanging `waitFor*` needs a timeout of its own.
-  The one *routine* way to hit this — a template with an empty contact — is now
-  ruled out by the `triggerContactField` guard (#82), but a bexio-side failure
-  still hangs the same way.
+- ~~**None of the `waitFor*` helpers have a timeout.**~~ Resolved in #83: they
+  now reject with a `WaitForTimeoutError` after `POLL_TIMEOUT_MS` (20 s), so
+  `fillForm`'s `finally` hides the loader and the user gets an `alert()`. Pinned
+  in: `test/utils/waitFor.test.ts` and `test/utils/fillForm.test.ts`. Residual
+  caveat: the deadline is *per wait*, so a fill that is merely very slow can
+  still take minutes in total before any single wait gives up, and a timeout
+  leaves the form partially filled — the alert says so, but nothing rolls the
+  already-applied fields back. (The one *routine* trigger — a template with an
+  empty contact — was separately closed by the `triggerContactField` guard, #82.)
 
 - **A template without a `work` value leaves the Tätigkeit untouched.** `fillForm`
   applies the template's stored `work` (#81), but templates saved before that field
@@ -271,7 +306,9 @@ The selectors and assumptions most likely to break when bexio changes its markup
 
 - **`triggerContactField` uses a hard-coded `delay(1000)`** instead of polling
   for a stable DOM condition after the autocomplete accepts an entry. This can
-  be both too slow and not slow enough depending on network conditions.
+  be both too slow and not slow enough depending on network conditions. Unlike
+  the `waitFor*` helpers it has no deadline to blow, because it is a fixed wait
+  rather than a poll.
 
 - **`trimAll` throws `TypeError` on `null`** (no null-guard before accessing
   `.length`). It is safe for `undefined` and `string`, but will crash if called

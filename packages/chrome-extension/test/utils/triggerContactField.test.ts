@@ -146,29 +146,28 @@ describe("triggerContactField", () => {
     expect(done).toBe(true);
   });
 
-  it("hangs on waitForContacts when .ac_results never appears — no timeout mechanism", async () => {
-    // This pins the known behavior: triggerContactField has no timeout, so if bexio's
-    // autocomplete never produces .ac_results, the extension will stall indefinitely.
-    // KNOWN ISSUE: triggerContactField (and waitForContacts) have no timeout — they wait forever
-    // if the autocomplete results never appear.
+  it("rejects with a WaitForTimeoutError when .ac_results never appears (#83)", async () => {
+    // If bexio's autocomplete never produces .ac_results (AJAX failure, offline, no
+    // matching contact), waitForContacts gives up instead of stalling forever, so
+    // fillForm's finally can hide the loader overlay.
     loadFixture("monitoring-edit");
     const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");
     const { default: triggerContactField } = await import(
       "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField"
     );
+    const { WaitForTimeoutError, POLL_TIMEOUT_MS } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
+    );
 
-    let done = false;
-    // Do NOT inject .ac_results — waitForContacts will poll forever
-    triggerContactField(contactField, "Acme AG").then(() => { done = true; });
+    let error: unknown;
+    // Do NOT inject .ac_results
+    const p = triggerContactField(contactField, "Acme AG").catch((e: unknown) => { error = e; });
 
-    await vi.advanceTimersByTimeAsync(10_000);
-    expect(done).toBe(false); // still waiting — no timeout
+    await vi.advanceTimersByTimeAsync(POLL_TIMEOUT_MS - 1000);
+    expect(error).toBeUndefined(); // still polling
 
-    // Cleanup: inject .ac_results so the polling loop terminates
-    const acResults = document.createElement("ul");
-    acResults.className = "ac_results";
-    acResults.style.display = "block";
-    document.body.appendChild(acResults);
     await vi.advanceTimersByTimeAsync(2000);
+    await p;
+    expect(error).toBeInstanceOf(WaitForTimeoutError);
   });
 });

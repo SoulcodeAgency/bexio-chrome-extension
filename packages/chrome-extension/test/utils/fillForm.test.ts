@@ -170,6 +170,37 @@ describe("fillForm", () => {
     expect(calls).toEqual(["loader:on", "loader:off"]);
   });
 
+  it("hides the loader and tells the user when a waitFor* times out, without rethrowing (#83)", async () => {
+    await chrome.storage.local.set({ entries: [template()] });
+    loadFixture("monitoring-edit");
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    // window.alert survives the global restoreMocks, so drop any earlier test's calls
+    alertSpy.mockClear();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { WaitForTimeoutError } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
+    );
+    const { default: triggerField } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/triggerField"
+    );
+    vi.mocked(triggerField).mockRejectedValueOnce(
+      new WaitForTimeoutError('the select2 options of "#s2id_monitoring_client_service_id" to load', 20_000)
+    );
+    const { default: fillForm } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
+    );
+
+    // Neither caller awaits fillForm, so this must not reject: it would only become an
+    // unhandled rejection the user never sees.
+    await expect(fillForm("tmpl1")).resolves.toBeUndefined();
+
+    expect(calls).toEqual(["loader:on", "loader:off"]);
+    expect(errorSpy).toHaveBeenCalled();
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(String(alertSpy.mock.calls[0][0])).toMatch(/timed out/i);
+  });
+
   it("passes null to triggerField for absent work/project/package/status/contactPerson/contact", async () => {
     await chrome.storage.local.set({
       entries: [
