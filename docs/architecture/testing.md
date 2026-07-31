@@ -66,7 +66,7 @@ The root `vitest.config.ts` (via its `test.projects` array) defines three projec
 | --- | --- | --- | --- |
 | `shared` | `packages/shared` | `node` | Storage helpers, template utilities |
 | `chrome-extension` | `packages/chrome-extension` | `jsdom` | Selectors, content scripts, form utils |
-| `sidePanel-import` | `packages/sidePanel-import` | `jsdom` | ManicTime TSV parse → import table rendering (`ImportEntries`, via `@testing-library/react`) |
+| `sidePanel-import` | `packages/sidePanel-import` | `jsdom` | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`) |
 
 The `sidePanel-import` project has two extra setup details: the `~` alias (that package's Vite
 alias for its `src/`) is mirrored in `vitest.config.ts`, and

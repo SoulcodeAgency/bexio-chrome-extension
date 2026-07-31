@@ -17,7 +17,9 @@ export function autoMapTemplatesV3(
 
   importData.forEach((row, rowIndex) => {
     console.groupCollapsed(`Entry ${rowIndex + 1}`);
-    const tagColumnsContent = tagColumnIndexes.map((index) => row[index]);
+    // Fall back to "" for columns the row does not have — a short row must not
+    // blow up the whole auto-mapping run with a TypeError on `.match()`.
+    const tagColumnsContent = tagColumnIndexes.map((index) => row[index] ?? "");
     const pointsByTemplateName: {
       [key: string]: {
         id: string;

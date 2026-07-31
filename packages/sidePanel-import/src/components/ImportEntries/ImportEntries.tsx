@@ -51,7 +51,9 @@ function ImportEntries() {
     let notes = "";
     const notesColumnIndex = importHeader.findIndex((column) => column === "Notes");
     if (notesColumnIndex >= 0) {
-      notes = importData[entryIndex][notesColumnIndex];
+      // Fall back to "" for a row that is missing that column, so callers can
+      // always rely on getting a string back.
+      notes = importData[entryIndex][notesColumnIndex] ?? "";
       console.log("added notes from notes column");
     }
     if (notes === "") {
@@ -68,7 +70,7 @@ function ImportEntries() {
       // Go through the tag columns, and check if they have content within importData and apply it to notes
       tagColumnIndexes.forEach((tagColumnIndex) => {
         if (notes === "") {
-          notes = importData[entryIndex][tagColumnIndex];
+          notes = importData[entryIndex][tagColumnIndex] ?? "";
           console.log("applying notes from tag column " + importHeader[tagColumnIndex]);
         }
       });
