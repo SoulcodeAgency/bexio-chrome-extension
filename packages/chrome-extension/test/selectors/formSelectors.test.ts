@@ -37,7 +37,8 @@ describe("form selectors (against monitoring-edit fixture)", () => {
     loadFixture("monitoring-edit"); // iframe element present, but jsdom won't have its inner #tinymce
     const { getDescriptionField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/descriptionField");
     expect(() => getDescriptionField()).toThrow("Description field not found");
-    // KNOWN LIMITATION: testing the success path requires manually injecting #tinymce into the iframe's
-    // contentDocument — see Task 4.5 for how triggerDescription tests handle it.
+    // The success path needs #tinymce injected into the iframe's contentDocument by hand
+    // (`loadIframeFixture` in ../support/load-fixture); it is covered in
+    // ../utils/triggerDescription.test.ts.
   });
 });
