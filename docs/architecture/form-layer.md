@@ -112,7 +112,12 @@ Source: `packages/chrome-extension/src/utils/fillForm.ts`
 fillForm(id, timeEntryBillable?)
   ├── toggleDisplayLoader()                         // show loader (on)
   ├── load templates from chrome.storage.local
-  ├── find entry by id; destructure:
+  ├── find entry by id
+  │     └── no match → toggleDisplayLoader(false)          // hide loader again
+  │                    initializeExtension()               // re-render template list
+  │                    alert("This template does not exist anymore. …")
+  │                    return                              // form stays untouched
+  ├── destructure:
   │     contact, contactPerson = null, project = null,
   │     status = null, billable = true, package (as packageValue ?? null)
   ├── triggerField(workFieldID, "work")             // always the literal "work"
@@ -133,6 +138,23 @@ The `timeEntryBillable ?? billable` rule: when the caller passes a boolean
 `timeEntryBillable` (e.g. from a ManicTime import entry), that overrides the
 template. When it is `undefined` (the common interactive case), the template's
 `billable` field is used, defaulting to `true` if absent from the template.
+
+**The unknown-`id` guard (#73):** `id` comes from outside — the side panel's
+template list or the injected buttons on the page — and can be stale when the
+template was deleted in another tab or window. Before the guard existed, `find`
+returned `undefined`, the destructuring threw, and because `toggleDisplayLoader()`
+had already run the loader stayed on screen forever. The guard hides the loader,
+calls `initializeExtension()` so the stale button disappears from the page list,
+and `alert()`s the user. Note that this makes `fillForm` import the app entry
+module — a cycle (`index → renderHtml → fillForm → index`), which is fine because
+`initializeExtension` is a hoisted function declaration only called at runtime,
+and is the same pattern `onMessage.ts` and `confirmTemplateDeletion.ts` already
+use. Tests that import `fillForm` must `vi.mock` that entry module, otherwise its
+top-level `initializeExtension()` call runs on import.
+
+The side panel's own list is *not* refreshed by this — there is no
+content-script → side-panel message channel; it re-reads storage on its own
+`reloadData`. Pinned in: `test/utils/fillForm.test.ts`.
 
 ---
 

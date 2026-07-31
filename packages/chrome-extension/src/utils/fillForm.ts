@@ -6,6 +6,7 @@ import triggerCheckbox from "./triggerCheckbox";
 import triggerContactField from "./triggerContactField";
 import triggerField from "./triggerField";
 import { toggleDisplayLoader } from "./loader";
+import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
 
 /**
  * Fills the bexio monitoring-edit form with the template identified by `id`.
@@ -13,6 +14,8 @@ import { toggleDisplayLoader } from "./loader";
  * Orchestration order (see `docs/architecture/form-layer.md` for details):
  * 1. `toggleDisplayLoader()` — show the loader overlay.
  * 2. Load templates from `chrome.storage.local`; find the entry by `id`.
+ *    No match (a stale id — the template was deleted meanwhile): hide the loader,
+ *    re-render the template list, `alert()` the user and return; the form is untouched.
  * 3. `triggerField(workFieldID, "work")` — always the literal string `"work"`.
  * 4. `triggerField(statusFieldID, status)` — `null` if absent from template.
  * 5. `triggerContactField(contactField, contact)`.
@@ -34,10 +37,20 @@ import { toggleDisplayLoader } from "./loader";
 async function fillForm(id: string, timeEntryBillable?: boolean) {
   toggleDisplayLoader();
   const templateEntries = await chromeStorageTemplateEntries.loadTemplates();
-  // KNOWN ISSUE (#73): `find` returns undefined when no template matches `id`, and the
-  // destructuring below then throws, leaving the loader spinning. The `!` pins that
-  // existing behaviour rather than picking a recovery strategy here.
-  const entry = templateEntries.find((entry) => entry.id === id)!;
+  const entry = templateEntries.find((entry) => entry.id === id);
+
+  // The caller's id can be stale: the side panel (or this page's button list) may still
+  // show a template that was deleted in another tab or window. Close the loader again
+  // instead of throwing on the destructuring below, tell the user why nothing happened,
+  // and re-render the list so the stale button is gone.
+  if (!entry) {
+    console.warn(`No template found for id "${id}" - it was probably deleted in another tab or window.`);
+    toggleDisplayLoader(false);
+    await initializeExtension();
+    alert("This template does not exist anymore. It was probably deleted in another tab or window.");
+    return;
+  }
+
   const { contact, contactPerson = null, project = null, status = null, billable = true } = entry;
   // Workaround because "package" is actually a reserved word
   const packageValue = entry.package ?? null;

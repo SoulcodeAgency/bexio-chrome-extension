@@ -42,6 +42,17 @@ vi.mock(
   }),
 );
 
+// Mocked because the real module re-renders the whole template UI (and calls
+// initializeExtension() at module load, which would need chrome.runtime.getURL).
+vi.mock(
+  "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index",
+  () => ({
+    initializeExtension: vi.fn(async () => {
+      calls.push("reinit");
+    }),
+  }),
+);
+
 const template = (over: Partial<TemplateEntry> = {}): TemplateEntry => ({
   templateName: "T",
   keywords: "",
@@ -118,6 +129,23 @@ describe("fillForm", () => {
     await fillForm("tmpl1");
     // `const { ..., billable = true } = entry` defaults to true when absent
     expect(calls).toContain("billable:true");
+  });
+
+  it("hides the loader, tells the user and refreshes the list when no template matches the id", async () => {
+    await chrome.storage.local.set({ entries: [template()] });
+    loadFixture("monitoring-edit");
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    const { default: fillForm } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
+    );
+
+    await expect(fillForm("deleted-template")).resolves.toBeUndefined();
+
+    // No form field is touched; the loader is closed again and the injected
+    // template list is re-rendered so the stale button disappears.
+    expect(calls).toEqual(["loader:on", "loader:off", "reinit"]);
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(String(alertSpy.mock.calls[0][0])).toMatch(/template/i);
   });
 
   it("passes null to triggerField for absent project/package/status/contactPerson", async () => {
