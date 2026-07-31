@@ -158,6 +158,46 @@ deadline — it is a fixed wait (see Known issues).
 
 ---
 
+## Getting to the form (side panel → tab navigation)
+
+Source: `packages/sidePanel-import/src/utils/openBexioTimeTrackingPage.ts`
+
+The side panel can only apply an import entry when the tab it messages actually
+runs the template content script. `TableCellTrackingDay`'s ▶️ button therefore
+awaits `openBexioTimeTrackingPage()` (in production builds only —
+`utils/development.ts`) before calling its `onButtonClick`.
+
+The function queries the active tab of the last focused window and:
+
+- resolves right away if that tab is already on the plain
+  `https://office.bexio.com/index.php/monitoring/edit` URL. `/edit/id/<id>` is
+  deliberately **not** treated as "already there": that form edits an *existing*
+  time entry, so we navigate to a fresh one instead;
+- otherwise registers a `chrome.tabs.onUpdated` listener, calls
+  `chrome.tabs.update(tabId, { url })`, and resolves when **that tab id** reports
+  `status === "complete"` on a URL that `isTimeTrackingPageUrl` accepts. That
+  predicate mirrors the manifest's content-script patterns
+  (`…/monitoring/edit` and `…/monitoring/edit/id/*`, fragment ignored) — matching
+  anything wider would resolve on a page where the content script does not run;
+- waits a further 500 ms so bexio can finish rendering, then resolves `true`;
+- rejects if there is no tab, if `chrome.tabs.update` fails, or after
+  `NAVIGATION_TIMEOUT_MS` (15 s) — an expired session redirecting to the login
+  page used to leave this promise pending forever *and* leak one permanent
+  `onUpdated` listener per click (#88). A single `finish()` helper is the only
+  exit: it clears the timer and removes the listener on success, timeout and
+  error alike.
+
+The caller catches the rejection, logs it and does **not** apply the entry (the
+content script is not there to receive the message). Pinned in
+`packages/sidePanel-import/test/openBexioTimeTrackingPage.test.ts`.
+
+**Note:** the service worker independently gates the side panel on
+`office.bexio.com/index.php/monitoring*` (`public/service_worker.js`), which is
+wider than the edit form — the side panel is visible on the monitoring list too,
+which is exactly why this navigation step exists.
+
+---
+
 ## `fillForm` orchestration
 
 Source: `packages/chrome-extension/src/utils/fillForm.ts`
