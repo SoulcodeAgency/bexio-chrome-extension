@@ -18,7 +18,8 @@ import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
  * 3. `triggerField(workFieldID, work)` — `null` if absent (legacy templates saved
  *    before the field existed); `triggerField` then leaves the field untouched.
  * 4. `triggerField(statusFieldID, status)` — `null` if absent from template.
- * 5. `triggerContactField(contactField, contact)`.
+ * 5. `triggerContactField(contactField, contact)` — `null` if absent; an empty or
+ *    missing contact is skipped instead of hanging the autocomplete (#82).
  * 6. `triggerField(contactPersonID, contactPerson)` — `null` if absent.
  * 7. `triggerField(projectFieldID, project)` — `null` if absent.
  * 8. `triggerField(packageFieldID, packageValue)` — `null` if absent.
@@ -51,7 +52,7 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
     // A missing entry is handled after the loader is gone (see below), so that the
     // alert() does not pop up over a still-visible overlay.
     if (entry) {
-      const { contact, work = null, contactPerson = null, project = null, status = null, billable = true } = entry;
+      const { contact = null, work = null, contactPerson = null, project = null, status = null, billable = true } = entry;
       // Workaround because "package" is actually a reserved word
       const packageValue = entry.package ?? null;
 
