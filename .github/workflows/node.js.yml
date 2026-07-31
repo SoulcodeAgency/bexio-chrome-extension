@@ -44,10 +44,13 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: "npm"
-      - name: Install PowerShell
+      - name: Install PowerShell and Xvfb
+        # Xvfb is needed by the Playwright extension-smoke step: MV3 service
+        # workers do not surface in Playwright's headless mode, so the e2e
+        # tests run headed inside a virtual display (see docs/architecture/testing.md).
         run: |
           sudo apt-get update
-          sudo apt-get install -y powershell
+          sudo apt-get install -y powershell xvfb
       - name: Install dependencies
         run: npm ci --include=optional
       - name: Typecheck
@@ -58,3 +61,10 @@ jobs:
           .\Build.ps1
       # - run: npm run build --if-present
       - run: npm test --if-present
+      - name: Install Playwright Chromium
+        # .npmrc sets ignore-scripts=true, so the browser download must be
+        # explicit. --with-deps installs the required system libraries.
+        run: npx playwright install --with-deps chromium
+      - name: Extension smoke + behaviour (Playwright)
+        # Reuses the unpacked/ built by the Build step above.
+        run: xvfb-run --auto-servernum npm run test:e2e

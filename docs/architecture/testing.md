@@ -10,17 +10,20 @@ and a manual real-bexio walkthrough checklist.
 
 | Layer | Tool | When to use | Files |
 | --- | --- | --- | --- |
-| **Vitest unit / integration** | Vitest + jsdom | Every PR / CI run — the main safety net | `packages/*/test/**/*.test.ts` |
+| **Vitest unit / integration** | Vitest + jsdom | Every PR / CI run — the main safety net | `packages/*/test/**/*.test.ts(x)` |
 | **Build smoke** | Vitest (slow) | Included in `npm test`; skip with `npm run test:fast` | `packages/*/test/**/*.slow.test.ts` |
-| **Playwright extension-smoke** | Playwright + real Chromium | Opt-in, run manually before releasing | `e2e/*.spec.ts` |
-| **Manual real-bexio walkthrough** | Human + real browser | Before each release — automated candidates | See Section 5 |
+| **Playwright extension smoke + behaviour** | Playwright + real Chromium | Runs in CI (via Xvfb); opt-in locally | `e2e/*.spec.ts` |
+| **Manual real-bexio walkthrough** | Human + real browser | Before each release — the residual, fixture-drift risk | See Section 8 |
 
 The Vitest suite is the primary safety net: it is fast (< 5 s without the slow build smoke test),
 runs in CI without a display, requires no built artifact, and pins current behaviour so refactors
 get caught early.
 
-The Playwright layer is opt-in and labelled "extension-smoke" — it is not part of `npm test` and
-requires a built `unpacked/` plus a one-time `npx playwright install chromium`.
+The Playwright layer is not part of `npm test` and requires a built `unpacked/` plus a one-time
+`npx playwright install chromium`. CI runs it as its own step (see Section 7). It has two specs:
+`extension-smoke.spec.ts` (do the content scripts inject, does the side panel mount) and
+`extension-behaviour.spec.ts` (issue #66: text-mode toggle round-trip, template apply, template
+filter, the Add/Delete dialog flows).
 
 ---
 
@@ -30,7 +33,7 @@ requires a built `unpacked/` plus a one-time `npx playwright install chromium`.
 npm test              # All Vitest projects, including the slow build smoke test
 npm run test:fast     # All Vitest projects, excluding *.slow.test.ts files
 npm run test:watch    # Vitest in watch mode (useful during development)
-npm run test:e2e      # Playwright extension-smoke (separate; opt-in)
+npm run test:e2e      # Playwright smoke + behaviour specs (separate; CI runs it via Xvfb)
 ```
 
 The interactive Vitest UI is not wired up (it needs the `@vitest/ui` dependency, which we
@@ -63,7 +66,12 @@ The root `vitest.config.ts` (via its `test.projects` array) defines three projec
 | --- | --- | --- | --- |
 | `shared` | `packages/shared` | `node` | Storage helpers, template utilities |
 | `chrome-extension` | `packages/chrome-extension` | `jsdom` | Selectors, content scripts, form utils |
-| `sidePanel-import` | `packages/sidePanel-import` | `node` | *(nothing this round; configured for future use)* |
+| `sidePanel-import` | `packages/sidePanel-import` | `jsdom` | ManicTime TSV parse → import table rendering (`ImportEntries`, via `@testing-library/react`) |
+
+The `sidePanel-import` project has two extra setup details: the `~` alias (that package's Vite
+alias for its `src/`) is mirrored in `vitest.config.ts`, and
+`packages/sidePanel-import/test/support/setup-dom.ts` shims `matchMedia`/`ResizeObserver`,
+which antd's internals expect but jsdom does not implement.
 
 ### The in-memory `chrome.*` fake
 
@@ -165,31 +173,54 @@ the npm script made the test fail on the Linux CI runner with
 
 ---
 
-## 7. Playwright extension-smoke — implementation notes
+## 7. Playwright e2e layer — implementation notes
 
-The E2E spec is at `e2e/extension-smoke.spec.ts`. It uses
-`chromium.launchPersistentContext` with `--load-extension=<unpacked>` flags
-because Chrome extensions can only be loaded into a persistent context, not
-a regular `browser` fixture.
+There are two specs, sharing the launch/fixture helpers in `e2e/support.ts`:
+
+- `e2e/extension-smoke.spec.ts` — injection-level: template UI appears on
+  `monitoring/edit`, the side panel mounts, the "Text mode" toggle appears
+  on `monitoring/list`.
+- `e2e/extension-behaviour.spec.ts` — behaviour-level (issue #66): the
+  text-mode toggle round-trip (convert → revert), applying a template through
+  the real `fillForm` synthetic-event path, the template filter, and the
+  Add/Delete flows whose `prompt()`/`confirm()`/`alert()` dialogs are handled
+  via `page.on("dialog")`.
+
+Both use `chromium.launchPersistentContext` with `--load-extension=<unpacked>`
+flags because Chrome extensions can only be loaded into a persistent context,
+not a regular `browser` fixture. The anonymised fixtures are served via
+`page.route()`, so **no bexio credentials are needed**.
+
+### The bexio-form stub (template-apply test)
+
+The fixtures are static HTML — the anonymiser strips bexio's JavaScript
+(jQuery, select2, jQuery-UI autocomplete). The extension's `waitFor*` helpers
+poll for DOM that only those widgets create (`#select2-drop`, `.ac_results`),
+so the template-apply test injects a minimal stub (`installBexioFormStub`)
+that reacts to the extension's synthetic events exactly where the real widgets
+would: it pre-populates the underlying `<select>`s (bexio loads them via AJAX),
+opens `#select2-drop` on Enter, applies the searched value to the `<select>`
+and the `.select2-chosen` span, and shows a visible `.ac_results` for the
+contact field. What is being tested is the extension's orchestration
+(`fillForm`, `trigger*`, `waitFor*`) — not bexio's widgets. When bexio's real
+markup or widget behaviour changes, that drift is caught by the manual
+walkthrough (Section 8), not by this stub.
 
 ### Headless mode and service workers
 
 MV3 extensions use a service worker for the background script. In Playwright
-1.60 / Chromium 148, MV3 service workers **do not surface via
-`context.serviceWorkers()`** when launched in headless mode. The spec therefore
-uses `headless: false`. This opens a visible Chromium window for the duration
-of the test run (~3–5 s locally).
+1.60+ / Chromium 148+, MV3 service workers **do not surface via
+`context.serviceWorkers()`** when launched in headless mode. `e2e/support.ts`
+therefore launches with `headless: false`. This opens a visible Chromium
+window for the duration of the test run (~10 s locally).
 
-On a headless CI machine, wrap the test runner with `Xvfb`:
+On a headless CI machine, the run is wrapped with `Xvfb` — this is exactly
+what `.github/workflows/node.js.yml` does:
 ```sh
 xvfb-run --auto-servernum npm run test:e2e
 ```
 
-Content-script injection (Test 1 — asserting `#SoulcodeExtensionTemplates`)
-works correctly in headless mode; only the side-panel test (Test 2) needs
-the service worker URL to derive the extension ID.
-
-### Extension ID derivation
+### Extension ID and storage seeding
 
 The extension ID is derived from the service worker URL:
 ```
@@ -197,29 +228,27 @@ chrome-extension://<id>/service-worker-loader.js
                   ^^^^
 ```
 `context.serviceWorkers()[0].url()` gives the full URL; `new URL(...).host`
-extracts the ID. If the array is empty on startup, the spec opens a blank page,
-waits 2 s, then re-checks. If the ID still cannot be determined, Test 2 is
-skipped with `test.skip(true, ...)`.
+extracts the ID. If the array is empty on startup, `launchExtensionContext`
+opens a blank page, waits 2 s, then re-checks. If the service worker still
+cannot be found, the tests that need it (side panel; every behaviour test
+that seeds storage) are skipped with `test.skip(...)`.
 
-### `monitoring/list` test skipped
-
-The `bexioProjectList/renderHtml.ts` content script accesses
-`document.getElementsByClassName("globalsearch")[0]` and calls
-`insertAdjacentHTML` on it — throwing a TypeError if the element is absent.
-The anonymised `monitoring-list.html` fixture was trimmed to remove the
-`.globalsearch` navigation element, so the content script throws when served
-the fixture. This is documented as a known issue. The test is present but
-permanently `test.skip`-ed in the spec. See the manual walkthrough (Section 5.2)
-for the corresponding human-run check.
+The behaviour tests seed `chrome.storage.local` by evaluating inside that
+service worker (`serviceWorker.evaluate((v) => chrome.storage.local.set(...), v)`)
+— the only context Playwright can reach that has `chrome.storage` access.
 
 ---
 
 ## 8. Manual real-bexio walkthrough checklist
 
 This checklist is **run by a human** against a real bexio account before each
-release. It is not automated. Each item is a candidate for a future
-Playwright-against-real-bexio spec (which would require real credentials and
-is explicitly out of scope for this round).
+release. Most items now have automated fixture-based counterparts in
+`e2e/extension-behaviour.spec.ts` (issue #66) — the notes per section say
+which. The manual run still matters because the fixtures drift as bexio
+changes; verifying against **live** bexio is what keeps that residual risk in
+check (and the capture procedure in Section 5 is what keeps the fixtures
+honest). A Playwright-against-real-bexio spec would require real credentials
+and remains out of scope.
 
 ### Setup
 1. Build the extension: `npm run build:project -- -Development`
@@ -228,6 +257,10 @@ is explicitly out of scope for this round).
 3. Log into your bexio account in the same Chrome profile.
 
 ### 5.1 — `monitoring/edit`: Templates block
+
+*Automated (on fixtures): items 2–6 — injection (smoke spec), filter, Add
+(prompt), template apply, Delete (confirm) — in `extension-behaviour.spec.ts`.
+The live-bexio run additionally exercises the real select2/AJAX widgets.*
 
 1. Navigate to `https://office.bexio.com/index.php/monitoring/edit`
    (or open an existing time entry).
@@ -243,6 +276,10 @@ is explicitly out of scope for this round).
 
 ### 5.2 — `monitoring/list` + project/package tabs: Text-mode toggle
 
+*Automated (on fixtures): items 1–3 — the toggle round-trip on
+`monitoring/list` — in `extension-behaviour.spec.ts`. The project/package
+tabs (item 4) are still manual-only.*
+
 1. Navigate to `https://office.bexio.com/index.php/monitoring/list`.
    Confirm a **"Text mode"** toggle button appears in the page header.
 2. Click the toggle — confirm tooltip popover icons (`<i rel="popover">`) are
@@ -252,6 +289,11 @@ is explicitly out of scope for this round).
    work-package's Times tab (`pr_project/showPackage/...`).
 
 ### 5.3 — Side panel: Templates and Import tabs
+
+*Automated: item 5 (parse → table, incl. billable icons and ▶ buttons) runs
+as a jsdom Vitest test in `packages/sidePanel-import/test/importEntries.test.tsx`;
+the side panel mounting is covered by the smoke spec. Items 3 and 6
+(tab persistence, cross-tab message to the bexio form) are still manual-only.*
 
 1. On any bexio page (`https://office.bexio.com/index.php/monitoring/...`),
    click the extension icon (or the browser side-panel button) to open the
