@@ -36,4 +36,17 @@ describe("chromeStorageImportData", () => {
     // Both entries survive because no entry has an .id property to match
     expect(loaded).toEqual(entries);
   });
+
+  it("deleteImportData does not touch the 'entries' (template) key", async () => {
+    const templates = [{ id: "t1", templateName: "Template 1" }];
+    await chrome.storage.local.set({ entries: templates });
+    const entries: ImportData[] = [["keep"], ["alsoKeep"]];
+    await importData.saveImportData(entries);
+
+    await importData.deleteImportData("keep");
+
+    const raw = await chrome.storage.local.get(["entries", "importData"]);
+    expect(raw.entries).toEqual(templates);
+    expect(raw.importData).toEqual(entries);
+  });
 });

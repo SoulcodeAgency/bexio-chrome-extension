@@ -71,8 +71,8 @@ In version 0.4.x and earlier there was no `templateName` field; the `id` field s
 
 Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Specifically:
 
-- **`remove(id, key)`** — reads the stored value; if it is an array it filters by `entry.id !== id` and saves the result. If the stored value is **not** an array it saves `[]` (silently drops whatever was stored).
-- **`update(updatedEntry, key, idKey)`** — reads the stored value; if it is an array it finds the index with `findIndex` and does a shallow merge via spread. If the stored value is not an array the update block is skipped and `save` is called with `undefined` (the raw result of `chrome.storage.local.get(key)` when the key is absent), which writes `undefined` to storage.
+- **`remove(id, key)`** — reads the stored value at `key`; if it is an array it filters by `entry.id !== id` and saves the result back to `key`. If the stored value is **not** an array it saves `[]` (silently drops whatever was stored).
+- **`update(updatedEntry, key, idKey)`** — reads the stored value at `key`; if it is an array it finds the index with `findIndex`, does a shallow merge via spread, and saves the array back to `key`. If the stored value is not an array the update block is skipped and `save` is called with `undefined` (the raw result of `chrome.storage.local.get(key)` when the key is absent), which writes `undefined` to that key.
 
 ---
 
@@ -90,6 +90,8 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
 3. **`deleteImportData(id)` is effectively a no-op.**
    `ImportData` is `string[]`, not an object with an `id` field. `chromeStorage.remove` filters by `entry.id !== id`, but `entry.id` is always `undefined` for `string[]` entries, so no entry is ever removed.
    Flagged in: `test/chromeStorageImportData.test.ts` — `// KNOWN ISSUE: deleteImportData(id) is effectively a no-op`.
+
+   *Fixed (issue #89):* `remove()` and `update()` used to read from `key` but call `save()` **without** it, so the result always landed under the default key `"entries"`. For any non-default key that left the target key stale **and** clobbered the template store — `deleteImportData(id)` would have written the `string[][]` import buffer over the user's templates. Both now pass `key` through to `save()`; covered by `test/chromeStorage.test.ts` (`remove`/`update: custom key`, asserted against raw storage keys) and `test/chromeStorageImportData.test.ts` (`deleteImportData does not touch the 'entries' (template) key`).
 
 4. **`sortTemplates` mutates its input array.**
    `Array.prototype.sort` sorts in place; `sortTemplates` returns the same reference it was given. Callers that need the original order must copy the array first.
