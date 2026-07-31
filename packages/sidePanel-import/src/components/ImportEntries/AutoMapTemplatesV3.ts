@@ -20,9 +20,13 @@ export function autoMapTemplatesV3(
     // Fall back to "" for columns the row does not have — a short row must not
     // blow up the whole auto-mapping run with a TypeError on `.match()`.
     const tagColumnsContent = tagColumnIndexes.map((index) => row[index] ?? "");
-    const pointsByTemplateName: {
+    // Buckets are keyed by template `id`, not by name: two distinct templates may
+    // legitimately share the same name, and merging their points into one bucket
+    // would inflate the total and bypass the tie detection below. The display name
+    // is carried inside the bucket instead.
+    const pointsByTemplateId: {
       [key: string]: {
-        id: string;
+        name: string;
         total: number;
         points: { [key: string]: number };
       };
@@ -44,9 +48,9 @@ export function autoMapTemplatesV3(
           templateEntries.map((entry) => {
             let matches = 0;
             // Give points for the following columns if they match the tagWord as single word
-            const templateNameWords = entry.templateName
-              .toLowerCase()
-              .split(" ");
+            // Note: go through getTemplateName - v0.4.x templates have no templateName field
+            const templateName = getTemplateName(entry).toLowerCase();
+            const templateNameWords = templateName.split(" ");
             const contactWords = entry.contact
               ? entry.contact.toLowerCase().split(" ")
               : [];
@@ -65,7 +69,7 @@ export function autoMapTemplatesV3(
 
             if (templateNameWords.includes(tagWord)) {
               matches += highPrio * 2;
-            } else if (entry.templateName.toLowerCase().includes(tagWord)) {
+            } else if (templateName.includes(tagWord)) {
               matches += highPrio;
             }
 
@@ -101,24 +105,21 @@ export function autoMapTemplatesV3(
 
             const countIncrease = matches;
 
-            // Add points to the pointsByTemplateName object
+            // Add points to the pointsByTemplateId object
             if (countIncrease > 0) {
               // Create entry if it doesn't exist
-              if (!pointsByTemplateName[entry.templateName]) {
-                pointsByTemplateName[entry.templateName] = {
-                  id: entry.id,
+              if (!pointsByTemplateId[entry.id]) {
+                pointsByTemplateId[entry.id] = {
+                  name: getTemplateName(entry),
                   total: 0,
                   points: {},
                 };
               }
               // Create points entry if it doesn't exist
-              if (
-                !pointsByTemplateName[entry.templateName]["points"][tagWord]
-              ) {
-                pointsByTemplateName[entry.templateName]["points"][tagWord] =
-                  countIncrease;
+              if (!pointsByTemplateId[entry.id]["points"][tagWord]) {
+                pointsByTemplateId[entry.id]["points"][tagWord] = countIncrease;
               } else {
-                pointsByTemplateName[entry.templateName]["points"][tagWord] +=
+                pointsByTemplateId[entry.id]["points"][tagWord] +=
                   countIncrease;
               }
             }
@@ -127,35 +128,29 @@ export function autoMapTemplatesV3(
     });
 
     // Bail out if we have no matches
-    if (Object.values(pointsByTemplateName).length === 0) {
+    if (Object.values(pointsByTemplateId).length === 0) {
       console.log("No matches found!");
       console.groupEnd();
       return;
     }
 
-    // Count up the total points for every template within the pointsByTemplateName object
-    Object.keys(pointsByTemplateName).map((templateName) => {
-      pointsByTemplateName[templateName]["total"] = Object.values(
-        pointsByTemplateName[templateName]["points"]
+    // Count up the total points for every template within the pointsByTemplateId object
+    Object.keys(pointsByTemplateId).map((templateId) => {
+      pointsByTemplateId[templateId]["total"] = Object.values(
+        pointsByTemplateId[templateId]["points"]
       ).reduce((a, b) => a + b);
     });
 
-    // Sort the pointsByTemplateName object by highest total points
-    const sortedPointsByTemplateName: typeof pointsByTemplateName = {};
-    Object.keys(pointsByTemplateName)
-      .sort(
-        (a, b) =>
-          pointsByTemplateName[b]["total"] - pointsByTemplateName[a]["total"]
-      )
-      .forEach((key) => {
-        sortedPointsByTemplateName[key] = pointsByTemplateName[key];
-      });
+    // Sort the templates by highest total points.
+    // Note: this is kept as an array of [id, data] pairs on purpose - re-inserting
+    // into an object would let integer-like keys (legacy templates whose id is their
+    // name) jump to the front and silently undo the sort.
+    const sortedPointsByTemplateId = Object.entries(pointsByTemplateId).sort(
+      ([, a], [, b]) => b.total - a.total
+    );
 
-    // Get the key(template id) of the sortedPointsByTemplateName which has the highest total points
-    const [topTemplateKeyName, topTemplateValues] = Object.entries(
-      sortedPointsByTemplateName
-    )[0];
-    const topTemplateId = topTemplateValues.id;
+    // Get the key(template id) of the sortedPointsByTemplateId which has the highest total points
+    const [topTemplateId, topTemplateValues] = sortedPointsByTemplateId[0];
 
     const topTemplateEntry = templateEntries.find(
       (entry) => entry.id === topTemplateId
@@ -168,12 +163,9 @@ export function autoMapTemplatesV3(
     const templateName = getTemplateName(topTemplateEntry);
 
     // Check if there is only 1 highest total points, otherwise we do not auto map and leave the decision to the user
-    const highestTotalPoints =
-      sortedPointsByTemplateName[topTemplateKeyName].total;
-    const highestTotalPointsCount = Object.values(
-      sortedPointsByTemplateName
-    ).filter(
-      (templateData) => templateData.total === highestTotalPoints
+    const highestTotalPoints = topTemplateValues.total;
+    const highestTotalPointsCount = sortedPointsByTemplateId.filter(
+      ([, templateData]) => templateData.total === highestTotalPoints
     ).length;
 
     if (highestTotalPointsCount === 1) {
@@ -189,13 +181,11 @@ export function autoMapTemplatesV3(
     }
 
     console.table(
-      Object.entries(sortedPointsByTemplateName).map(
-        ([templateName, templateData]) => ({
-          TemplateName: templateName,
-          TotalPoints: templateData.total,
-          ...templateData.points,
-        })
-      )
+      sortedPointsByTemplateId.map(([, templateData]) => ({
+        TemplateName: templateData.name,
+        TotalPoints: templateData.total,
+        ...templateData.points,
+      }))
     );
 
     console.groupEnd();
