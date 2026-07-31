@@ -11,6 +11,14 @@
 
 name: Node.js CI
 
+# Least privilege for the GITHUB_TOKEN. This job only reads the repo — nothing
+# here pushes, comments or releases. Declared at workflow level so any job added
+# later starts read-only too. Without this the token inherits the repository
+# default, which is read-write, and actions/checkout leaves it in .git/config
+# where every later step (npm ci, Build.ps1, npm test) could use it.
+permissions:
+  contents: read
+
 on:
   push:
     branches: ["main"]
