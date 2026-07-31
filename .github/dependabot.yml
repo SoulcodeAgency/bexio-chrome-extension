@@ -11,6 +11,14 @@
 # Majors are deliberately excluded from the groups so they arrive individually
 # and never auto-merge — see .github/workflows/dependabot-auto-merge.yml, whose
 # `group` bucket is only safe to merge because of that exclusion.
+#
+# IMPORTANT: the group names below (npm-minor-patch, actions-minor-patch) are
+# allowlisted *by name* in scripts/classify-dependabot-update.ts. Renaming one
+# here without renaming it there silently stops those PRs from auto-merging —
+# they fall through to `unknown` and wait for a human. That allowlist is
+# deliberate: Dependabot security updates build their own groups (npm_and_yarn,
+# github_actions) that ignore this file and can contain majors, and the PR
+# title shape is identical, so only the name tells them apart.
 version: 2
 updates:
   # npm: this is an npm-workspaces monorepo with a single root lockfile, so the
