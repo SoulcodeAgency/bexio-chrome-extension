@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
 
+// Kept in sync with src/utils/pollUntil.ts. The tests advance fake timers past
+// this deadline to assert the rejection, so it stays cheap even at 20 s.
+const TIMEOUT_MS = 20_000;
+
 describe("waitFor* helpers", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -44,7 +48,7 @@ describe("waitFor* helpers", () => {
     // Element not present yet
     const p = waitForSearchBoxField();
 
-    // After first poll (0ms) → not found → schedules next poll at 1000ms
+    // After the first poll (0ms) → not found → keeps polling every 250ms
     await vi.advanceTimersByTimeAsync(500);
     // Still not found; inject the element now
     const drop = document.createElement("div");
@@ -59,29 +63,27 @@ describe("waitFor* helpers", () => {
     expect(result).toBe(searchInput);
   });
 
-  it("waitForSearchBoxField never times out on its own (no timeout mechanism)", async () => {
-    // This test verifies the absence of a timeout: after many polls, the promise is still pending.
+  it("waitForSearchBoxField rejects once the timeout elapses (#83)", async () => {
     loadFixture("monitoring-edit");
     const { default: waitForSearchBoxField } = await import(
       "@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxField"
     );
+    const { WaitForTimeoutError } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
+    );
 
-    let settled = false;
-    const p = waitForSearchBoxField().then(() => { settled = true; });
+    // The element never appears — bexio's drop failed to open.
+    let error: unknown;
+    const p = waitForSearchBoxField().catch((e: unknown) => { error = e; });
 
-    // Advance a very long time — the element never appears
-    // Cap at a reasonable count so the test isn't dangerous
-    await vi.advanceTimersByTimeAsync(10_000);
-    // Must still be pending (no automatic reject)
-    expect(settled).toBe(false);
+    // Still polling shortly before the deadline
+    await vi.advanceTimersByTimeAsync(TIMEOUT_MS - 1000);
+    expect(error).toBeUndefined();
 
-    // Cleanup: inject the element so the promise eventually resolves and doesn't leak
-    const drop = document.createElement("div");
-    drop.id = "select2-drop";
-    drop.appendChild(document.createElement("input"));
-    document.body.appendChild(drop);
     await vi.advanceTimersByTimeAsync(2000);
     await p;
+    expect(error).toBeInstanceOf(WaitForTimeoutError);
+    expect((error as Error).message).toMatch(/#select2-drop input/);
   });
 
   // ---------------------------------------------------------------------------
@@ -120,28 +122,32 @@ describe("waitFor* helpers", () => {
     await expect(p).resolves.toBeUndefined();
   });
 
-  it("waitForSearchBoxFieldToBeRemoved never times out on its own", async () => {
+  it("waitForSearchBoxFieldToBeRemoved rejects once the timeout elapses (#83)", async () => {
     loadFixture("monitoring-edit");
     const { default: waitForSearchBoxFieldToBeRemoved } = await import(
       "@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxFieldToBeRemoved"
     );
+    const { WaitForTimeoutError } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
+    );
 
-    // Keep the element in DOM so it never resolves naturally
+    // Keep the element in the DOM — this is what a select2 search with no matching
+    // result looks like: the drop stays open and nothing ever closes it.
     const drop = document.createElement("div");
     drop.id = "select2-drop";
     drop.appendChild(document.createElement("input"));
     document.body.appendChild(drop);
 
-    let settled = false;
-    const p = waitForSearchBoxFieldToBeRemoved().then(() => { settled = true; });
+    let error: unknown;
+    const p = waitForSearchBoxFieldToBeRemoved().catch((e: unknown) => { error = e; });
 
-    await vi.advanceTimersByTimeAsync(10_000);
-    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(TIMEOUT_MS - 1000);
+    expect(error).toBeUndefined();
 
-    // Cleanup
-    drop.remove();
     await vi.advanceTimersByTimeAsync(2000);
     await p;
+    expect(error).toBeInstanceOf(WaitForTimeoutError);
+    expect((error as Error).message).toMatch(/disappear/);
   });
 
   // ---------------------------------------------------------------------------
@@ -184,27 +190,44 @@ describe("waitFor* helpers", () => {
     await expect(p).resolves.toBeUndefined();
   });
 
-  it("waitForSelectOptions never times out on its own", async () => {
+  it("waitForSelectOptions rejects once the timeout elapses, naming the selector (#83)", async () => {
+    loadFixture("monitoring-edit");
+    const { default: waitForSelectOptions } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
+    );
+    const { WaitForTimeoutError } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
+    );
+
+    // package select has only 1 option (the empty one) — the AJAX load never lands
+    let error: unknown;
+    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id").catch((e: unknown) => { error = e; });
+
+    await vi.advanceTimersByTimeAsync(TIMEOUT_MS - 1000);
+    expect(error).toBeUndefined();
+
+    await vi.advanceTimersByTimeAsync(2000);
+    await p;
+    expect(error).toBeInstanceOf(WaitForTimeoutError);
+    expect((error as Error).message).toMatch(/#s2id_monitoring_pr_package_id/);
+  });
+
+  it("waitForSelectOptions honours a custom timeout", async () => {
     loadFixture("monitoring-edit");
     const { default: waitForSelectOptions } = await import(
       "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
     );
 
-    // package select has only 1 option (the empty one)
-    let settled = false;
-    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id").then(() => { settled = true; });
+    let error: unknown;
+    // interval 100 ms, deadline 500 ms
+    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id", 100, 500).catch((e: unknown) => { error = e; });
 
-    await vi.advanceTimersByTimeAsync(10_000);
-    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(400);
+    expect(error).toBeUndefined();
 
-    // Cleanup: inject a second option so it resolves
-    const pkgSelect = document.querySelector("#monitoring_pr_package_id") as HTMLSelectElement;
-    const opt = document.createElement("option");
-    opt.value = "1";
-    opt.text = "Package Alpha";
-    pkgSelect.appendChild(opt);
-    await vi.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(200);
     await p;
+    expect((error as Error).message).toContain("500ms");
   });
 
   // ---------------------------------------------------------------------------
@@ -272,24 +295,25 @@ describe("waitFor* helpers", () => {
     expect(settled).toBe(true);
   });
 
-  it("waitForContacts never times out on its own", async () => {
+  it("waitForContacts rejects once the timeout elapses (#83)", async () => {
     loadFixture("monitoring-edit");
     const { default: waitForContacts } = await import(
       "@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts"
     );
+    const { WaitForTimeoutError } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
+    );
 
-    let settled = false;
-    const p = waitForContacts().then(() => { settled = true; });
+    // No .ac_results anywhere — the contact lookup matched nothing or failed.
+    let error: unknown;
+    const p = waitForContacts().catch((e: unknown) => { error = e; });
 
-    await vi.advanceTimersByTimeAsync(10_000); // no .ac_results anywhere
-    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(TIMEOUT_MS - 1000);
+    expect(error).toBeUndefined();
 
-    // Cleanup
-    const acResults = document.createElement("ul");
-    acResults.className = "ac_results";
-    acResults.style.display = "block";
-    document.body.appendChild(acResults);
     await vi.advanceTimersByTimeAsync(2000);
     await p;
+    expect(error).toBeInstanceOf(WaitForTimeoutError);
+    expect((error as Error).message).toMatch(/\.ac_results/);
   });
 });

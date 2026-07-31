@@ -80,7 +80,7 @@ describe("triggerField", () => {
     // Now waitForSearchBoxFieldToBeRemoved is running — it sees the drop and schedules another timer.
     // Remove the drop so the next poll resolves.
     drop.remove();
-    await vi.advanceTimersByTimeAsync(2000); // let the removal poll fire (interval = 1000ms)
+    await vi.advanceTimersByTimeAsync(2000); // let the removal poll fire (interval = 250ms)
 
     await p;
 

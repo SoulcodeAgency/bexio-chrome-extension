@@ -7,6 +7,7 @@ import triggerContactField from "./triggerContactField";
 import triggerField from "./triggerField";
 import { toggleDisplayLoader } from "./loader";
 import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
+import { WaitForTimeoutError } from "./pollUntil";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 /**
@@ -36,6 +37,14 @@ import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
  * was deleted meanwhile). The form stays untouched; once the loader is gone, the
  * template list is re-rendered and the user gets an `alert()`.
  *
+ * A `WaitForTimeoutError` — one of the `waitFor*` helpers gave up because bexio
+ * never produced the DOM it was waiting for (#83) — is the one error that is
+ * caught here instead of propagating: neither caller awaits `fillForm`, so
+ * rethrowing would only produce an unhandled rejection, and this failure mode is
+ * common enough (AJAX error, offline, no matching option) to deserve real user
+ * feedback. It is reported like the stale-id case: console + `alert()`, after the
+ * loader is gone. Every other error still propagates untouched.
+ *
  * @param id               The template entry's `id` field.
  * @param timeEntryBillable  When provided, overrides the template's `billable`
  *                           flag via `timeEntryBillable ?? billable`.
@@ -44,6 +53,7 @@ import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 async function fillForm(id: string, timeEntryBillable?: boolean) {
   toggleDisplayLoader();
   let entry: TemplateEntry | undefined;
+  let timeout: WaitForTimeoutError | undefined;
 
   try {
     const templateEntries = await chromeStorageTemplateEntries.loadTemplates();
@@ -73,12 +83,17 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
       const submitButton = form.getElementsByClassName("save")[0] as HTMLButtonElement;
       submitButton.focus();
     }
+  } catch (error) {
+    // A waitFor* gave up: bexio never rendered what the next step needs. Handled
+    // below (after the loader is gone) instead of rethrown, because no caller awaits
+    // fillForm and an unhandled rejection would tell the user nothing (#83).
+    if (!(error instanceof WaitForTimeoutError)) throw error;
+    timeout = error;
   } finally {
     // The single place that hides the loader again. Anything in the body can throw -
     // changed bexio markup, a missing save button, a select2 widget that is gone - and
-    // without this the overlay would stay on screen forever (#73). The error is not
-    // swallowed: it keeps propagating to the caller. Note this only covers throws; a
-    // waitFor* that never settles never gets here (see docs/architecture/form-layer.md).
+    // without this the overlay would stay on screen forever (#73). Errors other than a
+    // WaitForTimeoutError are not swallowed: they keep propagating to the caller.
     toggleDisplayLoader(false);
   }
 
@@ -89,6 +104,16 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
     console.warn(`No template found for id "${id}" - it was probably deleted in another tab or window.`);
     await initializeExtension();
     alert("This template does not exist anymore. It was probably deleted in another tab or window.");
+  }
+
+  // The form is left half-filled in this case; say so, so nobody submits a partial
+  // time entry believing the template was applied.
+  if (timeout) {
+    console.error("Applying the template timed out.", timeout);
+    alert(
+      `The template could not be applied completely: ${timeout.message}\n\n` +
+        "bexio may be slow or offline right now. Please check the form and try again.",
+    );
   }
 }
 
