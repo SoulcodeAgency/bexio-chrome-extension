@@ -24,7 +24,7 @@ type TabsStub = {
   update: ReturnType<typeof vi.fn>;
 };
 
-/** The chrome fake throws on unimplemented members, so `tabs` is installed per test. */
+/** Overrides the shared fake's `chrome.tabs` with a deterministic per-test stub. */
 function installTabsStub(overrides: Partial<TabsStub> = {}): TabsStub {
   const tabs: TabsStub = {
     query: vi.fn(async () => [{ id: 7, url: "https://office.bexio.com/index.php/monitoring/edit" }]),
@@ -70,7 +70,10 @@ describe("sendToBexioTab", () => {
   });
 
   it("reports missing extension APIs instead of throwing", async () => {
-    // No chrome.tabs installed — the same situation as the standalone Vite dev server.
+    // No chrome.tabs — the same situation as the standalone Vite dev server. The
+    // shared fake ships a tabs stand-in (issue #88), so it is removed explicitly;
+    // the guard then throws on access and getTabsApi() reports the API as absent.
+    removeTabsStub();
     const result = await sendToBexioTab(reload);
 
     expect(result.ok).toBe(false);

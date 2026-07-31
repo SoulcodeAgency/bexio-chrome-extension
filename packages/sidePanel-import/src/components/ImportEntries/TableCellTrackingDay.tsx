@@ -20,8 +20,9 @@ const TableCellTrackingDay = (props: ImportEntriesTableCellProps) => {
       try {
         await openBexioTimeTrackingPage();
       } catch (error) {
-        // Without a tab to navigate there is nothing to apply the entry to — say so instead of
-        // dying in an unhandled rejection.
+        // Navigation failed (no tab, expired session redirect, timeout). Do not apply the
+        // entry — the content script is not on that page — and say so instead of dying in
+        // an unhandled rejection.
         console.warn("Could not open the bexio time-tracking page:", error);
         message.error("Could not open the bexio time-tracking page. Open it manually and try again.");
         return;
