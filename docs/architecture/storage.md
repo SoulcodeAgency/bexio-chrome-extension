@@ -80,7 +80,11 @@ The `status` values are the German bexio work-status labels. The `[key: string]:
 
 ### Historical note — `id` was the template name before v0.4.x
 
-In version 0.4.x and earlier there was no `templateName` field; the `id` field served as the human-readable name. `getTemplateName.ts` handles this: it returns `entry.templateName ?? entry.id ?? "No template name found"`. Any code that displays a template's name **must** go through `getTemplateName`.
+In version 0.4.x and earlier there was no `templateName` field; the `id` field served as the human-readable name. `getTemplateName.ts` handles this: it returns `entry.templateName ?? entry.id ?? "No template name found"`. Any code that displays **or matches on** a template's name **must** go through `getTemplateName` — there is no migration that backfills `templateName`, so a pre-v0.5 entry survives indefinitely and `entry.templateName` may be `undefined` at any time.
+
+Reading `entry.templateName` directly is what broke the auto-mapper (`AutoMapTemplatesV3.ts`): a single legacy template threw a `TypeError` mid-scoring and the whole "Auto map templates" run aborted silently. It now resolves the name via `getTemplateName` (issue #91). A one-time migration that backfills `templateName` from `id` is still open.
+
+Note also that `id` is not derived from the name — it is a SHA-256 hash of the template's field values (`generateHash.ts`), so **two distinct templates may share the same name**. Anything that groups or indexes templates must key on `id`, never on the name.
 
 ---
 
