@@ -12,10 +12,23 @@
 //   single  "Bump <name> from 1.2.3 to 1.2.4"  (and lowercase "bump …")
 //   grouped "Bump the <group-name> group with N updates"
 //           "Bump the <group-name> group across N directories with M updates"
-// Grouping is configured to bundle only minor+patch (majors excluded), so the
-// `group` bucket is safe to auto-merge — see .github/dependabot.yml.
+//
+// Grouped titles come from two unrelated systems and only one of them is safe:
+//   - the `groups:` in .github/dependabot.yml, which are capped at
+//     update-types: [minor, patch], so majors never land in them;
+//   - Dependabot *security* updates, which invent their own groups named
+//     `npm_and_yarn` / `github_actions`. Those ignore dependabot.yml entirely
+//     and CAN contain major bumps.
+// The title shape is identical, so the group name itself is the only
+// discriminator — hence the allowlist below rather than a shape match.
 
 export type UpdateBucket = "patch" | "minor" | "major" | "group" | "unknown";
+
+// Group names configured in .github/dependabot.yml. An allowlist, not a
+// blocklist, so any group name GitHub introduces later fails closed and waits
+// for a human. Renaming a group there without renaming it here stops those PRs
+// from auto-merging — that file carries a comment saying so.
+const AUTO_MERGEABLE_GROUPS: ReadonlySet<string> = new Set(["npm-minor-patch", "actions-minor-patch"]);
 
 interface VersionCore {
   major: number;
@@ -27,8 +40,14 @@ export function classifyDependabotUpdate(title: unknown): UpdateBucket {
   if (typeof title !== "string") return "unknown";
   const trimmed = title.trim();
 
-  // Grouped update PRs: "Bump the <group-name> group with N updates".
-  if (/\bthe\s+\S+\s+group\b/i.test(trimmed)) return "group";
+  // Grouped update PRs: "Bump the <group-name> group with N updates". Checked
+  // before the version range on purpose — a security-group title can also carry
+  // a "from X to Y" (e.g. "bump next from 15.1.4 to 15.2.3 … in the
+  // npm_and_yarn group"), and the range describes one member, not the group.
+  const group = trimmed.match(/\bthe\s+(\S+)\s+group\b/i);
+  if (group) {
+    return AUTO_MERGEABLE_GROUPS.has(group[1].toLowerCase()) ? "group" : "unknown";
+  }
 
   // Single-package bump: "Bump <name> from <from> to <to>".
   const match = trimmed.match(/\bfrom\s+v?(\S+)\s+to\s+v?(\S+)/i);
