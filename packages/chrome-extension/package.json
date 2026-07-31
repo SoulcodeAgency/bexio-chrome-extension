@@ -31,9 +31,9 @@
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.7.1",
     "@types/chrome": "0.2.2",
-    "@types/node": "25.0.3",
+    "@types/node": "26.1.2",
     "typescript": "7.0.2",
-    "vite": "^8.1.5"
+    "vite": "8.2.0"
   },
   "dependencies": {
     "dompurify": "3.4.12"
