@@ -4,9 +4,10 @@ import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "../../utils/packageInfo";
 import readFormData from "../../utils/readFormData";
 import { toggleDisplayLoader } from "../../utils/loader";
+import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 // Renders all the html code for placing buttons to interact with
-async function renderHtml(templateEntries) {
+async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
   // Add some buttons into the page
   let buttons = "";
   if (templateEntries) {
@@ -77,7 +78,10 @@ async function renderHtml(templateEntries) {
   );
 
   // Track delete mode
-  const deleteTemplateButton = document.getElementById("DeleteTemplate");
+  // `!` because this element is part of the markup rendered a few lines above, so it
+  // is always present by the time we get here. Asserted once at the declaration
+  // rather than at each of the four uses below.
+  const deleteTemplateButton = document.getElementById("DeleteTemplate")!;
   let deleteMode = false;
 
   const disableDeleteMode = () => {

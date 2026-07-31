@@ -10,7 +10,7 @@ async function renderHtml() {
   }
 
   let isRemovePopoversSettingEnabled = await chromeStorageSettings.loadRemovePopoversSetting();
-  const getButtonContent = (isRemovePopoversSettingEnabled) =>
+  const getButtonContent = (isRemovePopoversSettingEnabled: boolean) =>
     isRemovePopoversSettingEnabled ? "👀 Text mode" : "🙈 Popover mode";
   const button = `<button type='button' id='PopoverTextSwitcher' class='btn btn-info' style='float: left; margin-right: 10px;'>${getButtonContent(
     isRemovePopoversSettingEnabled

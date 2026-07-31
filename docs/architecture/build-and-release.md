@@ -27,8 +27,29 @@ The repository uses **npm workspaces** with three packages:
 | Project | Config | Strict? |
 |---|---|---|
 | `packages/shared` | `tsconfig.json` | yes |
-| `packages/chrome-extension` | `tsconfig.json` | **no** — see below |
+| `packages/chrome-extension` | `tsconfig.json` | yes |
 | `packages/sidePanel-import` | `tsconfig.json` (app) + `tsconfig.node.json` (`vite.config.ts`) | yes |
+
+### Strict mode in `chrome-extension`
+
+Strict mode was switched on as a **behaviour-preserving** change, not a bug-fixing one. The build output was verified byte-identical except for one deliberate line (below), so nothing about how the extension behaves in the browser changed.
+
+The rule followed, and the one to keep following:
+
+> Where strict flagged a possible `null`/`undefined`, the fix is a non-null assertion (`!`) or a type-level cast — **not** a runtime guard.
+
+That looks lazy but is the deliberate choice. Adding `if (!x) return` would convert a loud, visible crash into a silent no-op: `fillForm` would leave the loader spinning forever instead of throwing, `swapDisplayStyle` would quietly stop toggling. The existing crash is better failure behaviour than silent nothing, and the test suite pins current behaviour on purpose (see `docs/architecture/testing.md`). Each `!` carries a comment explaining why the value is expected to exist.
+
+The single intentional runtime change is in `convertPopover.ts`: `DOMPurify.sanitize(popoverText ?? "")`. `getPopoverNodeText` genuinely returns `null` when the icon has no `data-content`. This is safe because `sanitize(null)` and `sanitize("")` both return `""` — verified against the pinned DOMPurify version, and the unminified bundle diff for the whole change is exactly this one line.
+
+Strict also surfaced two latent bugs that were **left in place** and marked `// KNOWN ISSUE:` rather than fixed, because fixing them changes user-visible behaviour and belongs in its own change. Both are tracked as issues:
+
+| Where | What | Issue |
+|---|---|---|
+| `readFormData.ts` | `trimAll(workField)` passes the work *element*, not the `work` string read from it, so `.length` is `undefined`, that link in the `templateName` chain is dead, and the suggested name always falls through to `"New Template"`. | #72 |
+| `fillForm.ts` | `templateEntries.find(...)` returns `undefined` for an unknown `id` and the destructuring then throws, leaving the loader spinning. | #73 |
+
+A third finding turned out **not** to be a bug: `keywords` is intentionally never set by `readFormData`. It is a side-panel-only override with no counterpart in the bexio form, so there is nothing there to read it from — templates start without it and gain it when edited in the side panel. `TemplateEntry` still declares it required, which is part of why the object literal in `readFormData` needs its `as TemplateEntry` cast.
 
 ### Two TypeScript versions, on purpose
 
@@ -40,7 +61,7 @@ Collapse this back to a single version once `typescript-eslint` supports TS 7.
 
 ### Things TypeScript 7 changed that bit this repo
 
-- **`strict` defaults to `true`.** `packages/chrome-extension` was written against the old non-strict default and turning it on surfaces ~35 pre-existing nullability and implicit-`any` errors, concentrated in the fragile DOM/form layer. Its `tsconfig.json` sets `"strict": false` explicitly to preserve the previous behaviour; tightening it is a worthwhile separate change (see `docs/architecture/form-layer.md` for the blast radius).
+- **`strict` defaults to `true`.** `packages/chrome-extension` was written against the old non-strict default, and turning it on surfaced 35 pre-existing nullability and implicit-`any` errors concentrated in the fragile DOM/form layer. All three packages are now strict — see "Strict mode in `chrome-extension`" below for the rules that were followed getting there.
 - **`@types/*` packages are no longer auto-included.** TS 7 stopped pulling in every `node_modules/@types/*` package it could find, so each `tsconfig.json` now lists what it needs via `"types"` (`chrome`, plus `node` for the side panel's `process.env` usage). Symptom when this is missing: `Cannot find name 'chrome'`.
 - **`target: "es5"` and `baseUrl` were removed.** `chrome-extension` moved to `target: "ES2022"` (no effect on output — Vite's `build.target` governs that, and the codebase has no classes, so the `useDefineForClassFields` default flip is inert). `sidePanel-import` dropped `baseUrl` and lets its `paths` resolve relative to the tsconfig, which is what it wanted anyway.
 - **`sidePanel-import` no longer uses project references.** `tsconfig.node.json` was `composite: true` and referenced from the app config. Nothing in the repo ever ran `tsc -b`, and a composite project without `noEmit` writes a `vite.config.js` next to `vite.config.ts` — which Vite would then load in preference to the source. The reference and `composite` are gone; `tsconfig.node.json` is now checked standalone as the second half of the package's `typecheck` script.

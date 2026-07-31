@@ -3,8 +3,11 @@ import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
 
 async function confirmActiveTemplateDeletion(buttonId?: string) {
   console.log("confirm buttonID", buttonId);
-  let activeTemplateId = "";
-  let activeTemplateName = "";
+  // Typed as `string | undefined` because both branches below genuinely assign
+  // `undefined` when no button is found — which is what the `!== undefined` check
+  // further down relies on. The initialisers stay `""` so runtime is unchanged.
+  let activeTemplateId: string | undefined = "";
+  let activeTemplateName: string | undefined = "";
   
   if (buttonId === undefined) {
     const activeButton = document.querySelector(".template-button--active") ?? undefined;

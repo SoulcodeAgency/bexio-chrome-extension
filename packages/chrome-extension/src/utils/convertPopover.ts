@@ -40,7 +40,9 @@ export default async function convertPopover() {
   }
 }
 
-export async function convertPopoverToText(popoverNodes) {
+// Takes an array rather than a NodeList: the only caller passes the `.filter`ed
+// result of Array.from(getPopoverNodes()).
+export async function convertPopoverToText(popoverNodes: HTMLElement[]) {
   // iterate over the rows, replacing the text cell content with the data-content attribute
   popoverNodes.forEach((popoverNode, index) => {
     const popoverText = getPopoverNodeText(popoverNode);
@@ -54,7 +56,10 @@ export async function convertPopoverToText(popoverNodes) {
 
     // Set the innerHTML to the popoverText to convert the html entities to text (&amp; -> & etc.)
     const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = DOMPurify.sanitize(popoverText);
+    // getPopoverNodeText returns null when the icon has no data-content attribute.
+    // `?? ""` is behaviour-preserving here, not a fix: DOMPurify.sanitize(null) and
+    // DOMPurify.sanitize("") both return "" (verified against the pinned version).
+    tempDiv.innerHTML = DOMPurify.sanitize(popoverText ?? "");
     cellTextContent.textContent = tempDiv.textContent;
 
     popoverParent.appendChild(cellTextContent);
