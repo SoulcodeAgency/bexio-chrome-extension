@@ -59,8 +59,9 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          # 24 so the classifier can run as TypeScript without a build step.
-          node-version: '24'
+          # .nvmrc is 24, which the classifier needs to run as TypeScript
+          # without a build step (native type stripping, Node 22.18+/24).
+          node-version-file: .nvmrc
 
       - name: Resolve PR for the head branch
         id: pr
