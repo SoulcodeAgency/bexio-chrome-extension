@@ -83,13 +83,32 @@ function ImportEntries() {
     setImportTemplates([]);
   }
 
+  /**
+   * Persists the whole import buffer at once.
+   *
+   * The five keys describe a single dataset: `entryStatus` and `importTemplates` are keyed by
+   * row/column index into `importData`. They are therefore always written together, so storage can
+   * never hold the rows of one import next to the status/templates of another.
+   * See `docs/architecture/storage.md`.
+   */
+  function persistImport(
+    header: ImportRow,
+    data: ImportData,
+    footer: ImportRow,
+    status: EntryStatus,
+    templates: string[],
+  ) {
+    chromeStorage.save(header, "importHeader");
+    chromeStorage.save(data, "importData");
+    chromeStorage.save(footer, "importFooter");
+    chromeStorage.save(status, "entryStatus");
+    chromeStorage.save(templates, "importTemplates");
+  }
+
   function removeImportData() {
     resetImportState();
-    chromeStorage.save([], "importHeader");
-    chromeStorage.save([], "importData");
-    chromeStorage.save({}, "entryStatus");
-    chromeStorage.save([], "importFooter");
-    chromeStorage.save([], "importTemplates");
+    setEntryStatus({});
+    persistImport([], [], [], {}, []);
     setTabs(["import"]);
   }
 
@@ -113,6 +132,10 @@ function ImportEntries() {
       setEntryStatus({});
       setImportTemplates([]);
       setTabs(["import", "apply"]);
+      // A new dataset invalidates the status and the template assignment of the previous one.
+      // Write the whole buffer through right away: from here on every status/template write
+      // (auto map, template select, apply) belongs to the data that is stored.
+      persistImport(importHeader, importData, importFooter, {}, []);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setParseStatus(error.message as string);
@@ -159,12 +182,15 @@ function ImportEntries() {
       await applyTemplate(templateId, billable);
     }
 
-    // Update the entry status
-    const entryStatusCopy = { ...entryStatus };
-    entryStatusCopy[`${columnIndex}-${entryIndex}`] = true;
-    setEntryStatus(entryStatusCopy);
-    chromeStorage.save(entryStatusCopy, "entryStatus");
-    console.log("Updated entry status", entryStatusCopy);
+    // Update the entry status. `entryStatus` from the closure is stale by now (two awaits
+    // happened), so derive the new status from the latest state instead of overwriting it.
+    setEntryStatus((currentEntryStatus) => {
+      const entryStatusCopy = { ...currentEntryStatus };
+      entryStatusCopy[`${columnIndex}-${entryIndex}`] = true;
+      chromeStorage.save(entryStatusCopy, "entryStatus");
+      console.log("Updated entry status", entryStatusCopy);
+      return entryStatusCopy;
+    });
   }
 
   function resetEntryStatus(id: string) {
@@ -177,9 +203,9 @@ function ImportEntries() {
   }
 
   function saveImport() {
-    chromeStorage.save(importHeader, "importHeader");
-    chromeStorage.save(importData, "importData");
-    chromeStorage.save(importFooter, "importFooter");
+    // Status and templates belong to the data currently shown, so they are re-saved as they are —
+    // this must not reset them, that already happened when the data was parsed.
+    persistImport(importHeader, importData, importFooter, entryStatus, importTemplates);
     setTabs(["apply"]);
   }
 

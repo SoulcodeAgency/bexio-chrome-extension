@@ -181,3 +181,134 @@ describe("ImportEntries — applying an entry", () => {
     expect(within(container).getAllByRole("button", { name: "▶️" })).toHaveLength(3);
   });
 });
+
+/**
+ * Stale import state across a side-panel reload (issue #87).
+ *
+ * `entryStatus` and `importTemplates` are keyed by row/column index into `importData`.
+ * A new paste must not leave the previous import's status/templates behind, otherwise a
+ * reload pairs new rows with old checkmarks and old templates — one click would then book
+ * the wrong project, and rows already marked "applied" would silently be skipped.
+ */
+// One column narrower than TSV, so the tracking day sits at column index 2 instead of 3 and a
+// stale `entryStatus` key of dataset A would be recognisable.
+const TSV_B = [
+  ["Tag 1", "Billable", "03.07.2026", "Total"].join("\t"),
+  ["Project Condor", "Billable", "2:00:00", "2:00:00"].join("\t"),
+  ["Total", "", "2:00:00", "2:00:00"].join("\t"),
+].join("\n");
+
+const IMPORT_DATA_B = [["Project Condor", "Billable", "2:00:00", "2:00:00"]];
+
+/** Applies the first ▶️ button and lets the async send/apply chain settle. */
+async function clickFirstApplyButton(container: HTMLElement) {
+  const button = within(container).getAllByRole("button", { name: "▶️" })[0];
+  await act(async () => {
+    fireEvent.click(button);
+  });
+  await act(async () => {});
+}
+
+async function readImportBuffer() {
+  return await chrome.storage.local.get([
+    "importHeader",
+    "importData",
+    "importFooter",
+    "entryStatus",
+    "importTemplates",
+  ]);
+}
+
+describe("ImportEntries — import state does not survive a new import (issue #87)", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    // applyImportEntry / applyTemplate talk to the active tab; the chrome fake has no tabs API.
+    (chrome as unknown as { tabs: unknown }).tabs = {
+      query: async () => [{ id: 1, url: "https://office.bexio.com/index.php/monitoring/edit" }],
+      sendMessage: async () => undefined,
+      update: async () => undefined,
+    };
+  });
+
+  afterEach(() => {
+    delete (chrome as unknown as { tabs?: unknown }).tabs;
+  });
+
+  it("drops the previous status and templates when a new import is pasted and saved", async () => {
+    const first = await renderImportEntries();
+
+    // Dataset A: auto map the templates and apply one entry.
+    pasteIntoTextarea(first.container, TSV);
+    await act(async () => {
+      fireEvent.click(within(first.container).getByRole("button", { name: "Auto map templates" }));
+    });
+    await clickFirstApplyButton(first.container);
+
+    expect(within(first.container).getAllByRole("button", { name: "✅" })).toHaveLength(1);
+    const bufferAfterA = await readImportBuffer();
+    expect(bufferAfterA.entryStatus).toEqual({ "3-0": true });
+    expect(bufferAfterA.importTemplates).toEqual(["tmpl1"]);
+
+    // Dataset B replaces it, and gets saved.
+    pasteIntoTextarea(first.container, TSV_B);
+    await act(async () => {
+      fireEvent.click(within(first.container).getByRole("button", { name: "Save this import" }));
+    });
+
+    const bufferAfterB = await readImportBuffer();
+    expect(bufferAfterB.importData).toEqual(IMPORT_DATA_B);
+    expect(bufferAfterB.entryStatus).toEqual({});
+    expect(bufferAfterB.importTemplates).toEqual([]);
+
+    // Reopening the side panel re-mounts the component and re-reads storage.
+    first.unmount();
+    const second = await renderImportEntries();
+
+    expect(within(second.container).getByText("Project Condor")).toBeDefined();
+    expect(within(second.container).queryAllByRole("button", { name: "✅" })).toHaveLength(0);
+    expect(within(second.container).getAllByRole("button", { name: "▶️" })).toHaveLength(1);
+    const templateSelect = second.container.querySelector("tbody select") as HTMLSelectElement;
+    expect(templateSelect.value).toBe("");
+  });
+
+  it("keeps both statuses when a second entry is applied before the first one settles", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(container, TSV);
+    const buttons = within(container).getAllByRole("button", { name: "▶️" });
+    // Both clicks happen before the async apply chain of the first one resolves — the status of
+    // the first entry must not be clobbered by the stale state the second click started from.
+    await act(async () => {
+      fireEvent.click(buttons[0]);
+      fireEvent.click(buttons[1]);
+    });
+    await act(async () => {});
+
+    const buffer = await readImportBuffer();
+    expect(buffer.entryStatus).toEqual({ "3-0": true, "3-1": true });
+    expect(within(container).getAllByRole("button", { name: "✅" })).toHaveLength(2);
+  });
+
+  it("keeps storage consistent when new data is pasted but not saved", async () => {
+    const first = await renderImportEntries();
+
+    pasteIntoTextarea(first.container, TSV);
+    await clickFirstApplyButton(first.container);
+
+    // No "Save this import" click for dataset B — but applying an entry still persists a status,
+    // so the stored rows have to be B's already.
+    pasteIntoTextarea(first.container, TSV_B);
+    await clickFirstApplyButton(first.container);
+
+    const buffer = await readImportBuffer();
+    expect(buffer.importData).toEqual(IMPORT_DATA_B);
+    expect(buffer.entryStatus).toEqual({ "2-0": true });
+
+    first.unmount();
+    const second = await renderImportEntries();
+
+    // The single checkmark belongs to the row the user actually applied.
+    expect(within(second.container).getByText("Project Condor")).toBeDefined();
+    expect(within(second.container).queryAllByRole("button", { name: "✅" })).toHaveLength(1);
+  });
+});
