@@ -9,8 +9,10 @@
     },
     "permissions": [
         "storage",
-        "sidePanel",
-        "tabs"
+        "sidePanel"
+    ],
+    "host_permissions": [
+        "https://office.bexio.com/*"
     ],
     "icons": {
         "16": "assets/logo16.png",
@@ -24,7 +26,7 @@
                 "assets/logo_orig.png"
             ],
             "matches": [
-                "https://*/*"
+                "https://office.bexio.com/*"
             ]
         }
     ],

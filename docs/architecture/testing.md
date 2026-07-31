@@ -84,6 +84,13 @@ All tests run with an in-memory fake for `chrome.storage.local` and `chrome.runt
 (e.g. `chrome.tabs`, `chrome.sidePanel`). This is intentional — it surfaces new Chrome API
 usage immediately rather than silently returning `undefined`.
 
+The one test that needs those members —
+`packages/chrome-extension/test/service-worker.test.ts`, which imports
+`public/service_worker.js` to drive its `chrome.tabs.onUpdated` side-panel gating — swaps
+`globalThis.chrome` for its own local stub in `beforeAll` (before the import, because the worker
+registers its listeners at module-evaluation time) and restores it in `afterAll`. Keep new
+`chrome.*` surface out of the shared fake unless more than one test needs it.
+
 ---
 
 ## 4. Module-load quirk — always load the fixture first

@@ -16,8 +16,11 @@ chrome.sidePanel
   .catch((error) => console.error(error));
 
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
-  if (!tab.url) return;
-  if (tab.url.startsWith(BEXIO_MONITORING_SIDEBAR)) {
+  // The extension holds no broad "tabs" permission, only a host permission for
+  // office.bexio.com. Chrome therefore populates `tab.url` for bexio tabs only —
+  // for every other tab it is `undefined`. A missing url consequently means
+  // "not a bexio tab", which must disable the side panel rather than bail out.
+  if (tab.url && tab.url.startsWith(BEXIO_MONITORING_SIDEBAR)) {
     await chrome.sidePanel.setOptions({
       tabId,
       path: "/sidePanel-import/index.html",
