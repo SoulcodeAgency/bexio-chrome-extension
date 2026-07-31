@@ -60,7 +60,7 @@ deliberately don't add). If you want it for a debugging session:
 
 ## 3. Vitest workspace — four projects
 
-The root `vitest.config.ts` (via its `test.projects` array) defines four projects. (There is also a `vitest.workspace.ts`, kept as a tombstone with a comment — Vitest 4 deprecated the standalone workspace file in favour of `test.projects`, so that file is *not* what's loaded.)
+The root `vitest.config.ts` (via its `test.projects` array) defines four projects. (Vitest 4 deprecated the standalone `vitest.workspace.ts` file in favour of `test.projects`, so there is no workspace file — `vitest.config.ts` is the only test config.)
 
 | Project | Root | Environment | What it tests |
 | --- | --- | --- | --- |
