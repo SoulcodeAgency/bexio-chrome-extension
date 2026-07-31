@@ -103,9 +103,9 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
    If the key happens to hold a non-array value (e.g. a settings object stored under the wrong key), `remove()` will overwrite it with an empty array without warning.
    Flagged in: `test/chromeStorage.test.ts` — `// KNOWN ISSUE: remove() silently replaces a non-array value with []`.
 
-2. **`update()` with an unknown `id` sets `arr[-1]` (non-index property) on the array.**
-   When `findIndex` returns `-1` (no match), the code does `entries[key][-1] = {...mergedEntry}`. In JavaScript, `arr[-1] = x` sets a named property (not an integer index) on the array object. The array's `length` is unchanged and numeric iteration skips the property, but the property is present on the object.
-   In real `chrome.storage.local` (which serializes via JSON) this property would be silently dropped. In the in-memory test fake it survives the round-trip, making the stored value structurally corrupt until the next `saveTemplates` call replaces the whole array.
+2. **`update()` with an unknown `id` sets `arr[-1]` (non-index property) on the array — the update is silently lost.**
+   When `findIndex` returns `-1` (no match), the code does `entries[key][-1] = {...mergedEntry}`. In JavaScript, `arr[-1] = x` sets a named property (not an integer index) on the array object. The array's `length` is unchanged and numeric iteration skips the property.
+   `chrome.storage.local` serializes via JSON, so the property is dropped on the way in: the caller gets no error, and nothing is stored. The test fake serializes the same way (see `docs/architecture/testing.md`), so this is pinned as it actually behaves in production.
    Flagged in: `test/chromeStorage.test.ts` — `// KNOWN ISSUE: update() with an unknown id uses arr[-1] = {...}`.
 
 3. **`deleteImportData(id)` is effectively a no-op.**
