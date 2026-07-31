@@ -130,6 +130,89 @@ describe("readFormData", () => {
     expect(typeof entry.billable).toBe("boolean");
   });
 
+  // ─── suggested template name ───────────────────────────────────────────────
+  //
+  // The name prefilled into prompt() is a fallback chain:
+  //   package || project || contact || work || "New Template"
+  // Every link runs through trimAll, which strips *all* whitespace, so the
+  // suggestion is the field value with its spaces removed.
+
+  /** Overwrite the rendered select2 text of one field in the loaded fixture. */
+  function setSelect2Text(containerId: string, text: string) {
+    const input = document.querySelector(`${containerId} input`)!;
+    input.closest(".input")!.querySelector(".select2-chosen")!.textContent =
+      text;
+  }
+
+  /** Overwrite the contact autocomplete input in the loaded fixture. */
+  function setContact(text: string) {
+    (
+      document.querySelector(
+        "#autocomplete_monitoring_contact_id",
+      ) as HTMLInputElement
+    ).value = text;
+  }
+
+  async function suggestedTemplateName(): Promise<string | undefined> {
+    const promptSpy = vi
+      .spyOn(globalThis, "prompt")
+      .mockReturnValue("My Template");
+    vi.spyOn(globalThis, "alert").mockImplementation(() => {});
+    vi.spyOn(globalThis, "confirm").mockReturnValue(true);
+
+    const { default: readFormData } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/readFormData"
+    );
+    await readFormData();
+
+    return promptSpy.mock.calls[0]?.[1];
+  }
+
+  it("suggests the package name first, with whitespace stripped", async () => {
+    loadFixture("monitoring-edit-filled");
+    setSelect2Text("#s2id_monitoring_pr_package_id", "Some Package");
+
+    expect(await suggestedTemplateName()).toBe("SomePackage");
+  });
+
+  it("falls back to the project when the package is empty", async () => {
+    loadFixture("monitoring-edit-filled");
+    setSelect2Text("#s2id_monitoring_pr_package_id", "");
+
+    // The filled fixture's project is "Acme - Back Office"
+    expect(await suggestedTemplateName()).toBe("Acme-BackOffice");
+  });
+
+  it("falls back to the contact when package and project are empty", async () => {
+    loadFixture("monitoring-edit-filled");
+    setSelect2Text("#s2id_monitoring_pr_package_id", "");
+    setSelect2Text("#s2id_monitoring_pr_project_id", "");
+    setContact("Acme AG Zurich");
+
+    // readFormData keeps only the first two words of the contact
+    expect(await suggestedTemplateName()).toBe("AcmeAG");
+  });
+
+  it("falls back to the work type when package, project and contact are empty", async () => {
+    loadFixture("monitoring-edit-filled");
+    setSelect2Text("#s2id_monitoring_pr_package_id", "");
+    setSelect2Text("#s2id_monitoring_pr_project_id", "");
+    setContact("");
+    setSelect2Text("#s2id_monitoring_client_service_id", "Project Management");
+
+    expect(await suggestedTemplateName()).toBe("ProjectManagement");
+  });
+
+  it("falls back to 'New Template' when every naming field is empty", async () => {
+    loadFixture("monitoring-edit-filled");
+    setSelect2Text("#s2id_monitoring_pr_package_id", "");
+    setSelect2Text("#s2id_monitoring_pr_project_id", "");
+    setContact("");
+    setSelect2Text("#s2id_monitoring_client_service_id", "");
+
+    expect(await suggestedTemplateName()).toBe("New Template");
+  });
+
   it("aborts and saves nothing when prompt returns null", async () => {
     loadFixture("monitoring-edit-filled");
     vi.spyOn(globalThis, "prompt").mockReturnValue(null);
