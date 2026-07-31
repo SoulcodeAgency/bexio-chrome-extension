@@ -12,6 +12,36 @@ describe("triggerContactField", () => {
     vi.useRealTimers();
   });
 
+  // The empty-value guard (#82). Without it, an empty query never opens .ac_results,
+  // so waitForContacts (no timeout) polls forever and the loader overlay stays up.
+  it.each([
+    ["null", null],
+    ["undefined", undefined],
+    ["an empty string", ""],
+    ["a whitespace-only string", "   "],
+  ])("returns immediately without touching the DOM when value is %s", async (_label, value) => {
+    loadFixture("monitoring-edit");
+    const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");
+    const { default: triggerContactField } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField"
+    );
+
+    const before = contactField.value;
+    const onClick = vi.fn();
+    const onKeydown = vi.fn();
+    contactField.addEventListener("click", onClick);
+    contactField.addEventListener("keydown", onKeydown);
+
+    // No .ac_results is injected on purpose: if the guard were missing this would hang.
+    const p = triggerContactField(contactField, value);
+    await vi.runAllTimersAsync();
+    await expect(p).resolves.toBeUndefined();
+
+    expect(contactField.value).toBe(before);
+    expect(onClick).not.toHaveBeenCalled();
+    expect(onKeydown).not.toHaveBeenCalled();
+  });
+
   it("sets contactField.value to the requested string", async () => {
     loadFixture("monitoring-edit");
     const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");

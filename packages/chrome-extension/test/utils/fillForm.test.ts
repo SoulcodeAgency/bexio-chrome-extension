@@ -170,7 +170,7 @@ describe("fillForm", () => {
     expect(calls).toEqual(["loader:on", "loader:off"]);
   });
 
-  it("passes null to triggerField for absent work/project/package/status/contactPerson", async () => {
+  it("passes null to triggerField for absent work/project/package/status/contactPerson/contact", async () => {
     await chrome.storage.local.set({
       entries: [
         template({
@@ -179,6 +179,7 @@ describe("fillForm", () => {
           package: undefined as unknown as string,
           status: undefined as unknown as string,
           contactPerson: undefined as unknown as string,
+          contact: undefined as unknown as string,
         }),
       ],
     });
@@ -187,12 +188,15 @@ describe("fillForm", () => {
       "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
     );
     await fillForm("tmpl1");
-    // project and package fall through to `?? null`; work, status and contactPerson default to null
+    // project and package fall through to `?? null`; work, status, contactPerson and contact default to null
     // (a legacy template without a `work` field leaves the Tätigkeit untouched)
     expect(calls).toContain("field:#s2id_monitoring_client_service_id:null");
     expect(calls).toContain("field:#s2id_monitoring_pr_project_id:null");
     expect(calls).toContain("field:#s2id_monitoring_pr_package_id:null");
     expect(calls).toContain("field:#s2id_monitoring_monitoring_status_id:null");
     expect(calls).toContain("field:#s2id_monitoring_sub_contact_id:null");
+    // A legacy entry without a contact must reach triggerContactField as null, not the
+    // string "undefined" (#82) - the guard there then skips the autocomplete entirely.
+    expect(calls).toContain("contact:null");
   });
 });

@@ -65,6 +65,14 @@ immediately (the field is left unchanged).
 5. `await delay(1000)` — hard-coded wait for the UI to settle.
    **Known issue:** this is a fixed delay, not a condition check.
 
+Early-return: if `value == null || value.trim() === ""` the function returns
+immediately (the field is left unchanged) — same guard as `triggerField`. The
+loose `== null` also catches `undefined`, which templates saved before the field
+existed can carry and which would otherwise be coerced to the literal string
+`"undefined"`. Without this guard an empty query never opens `.ac_results`, so
+the timeout-less `waitForContacts` polls forever and `fillForm`'s loader overlay
+never comes down (#82).
+
 ### checkbox (`triggerCheckbox`)
 
 Sets `selector.checked = checked`. **Does NOT dispatch a `change` event.**
@@ -116,7 +124,7 @@ fillForm(id, timeEntryBillable?)
   │     ├── find entry by id
   │     └── if (entry) {                            // no match → skip the whole block
   │           ├── destructure:
-  │           │     contact, work = null, contactPerson = null, project = null,
+  │           │     contact = null, work = null, contactPerson = null, project = null,
   │           │     status = null, billable = true, package (as packageValue ?? null)
   │           ├── triggerField(workFieldID, work)   // the template's own Tätigkeit
   │           ├── triggerField(statusFieldID, status)
@@ -251,6 +259,9 @@ The selectors and assumptions most likely to break when bexio changes its markup
   `fillForm`'s `finally` does **not** save the user here: a promise that never
   settles never reaches the `finally`, so the loader still stays up. The `finally`
   covers failures that *throw*; a hanging `waitFor*` needs a timeout of its own.
+  The one *routine* way to hit this — a template with an empty contact — is now
+  ruled out by the `triggerContactField` guard (#82), but a bexio-side failure
+  still hangs the same way.
 
 - **A template without a `work` value leaves the Tätigkeit untouched.** `fillForm`
   applies the template's stored `work` (#81), but templates saved before that field
