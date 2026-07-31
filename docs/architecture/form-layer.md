@@ -38,9 +38,10 @@ search-box `<input class="select2-input">` inside `.select2-drop`.
 
 ### select2 fields (`triggerField`)
 
-1. Call `waitForSelectOptions(selectorId)` — polls every 250 ms until the
-   sibling `<select>` has more than one option (the AJAX load has completed).
-   Rejects after 20 s.
+1. Call `waitForSelectOptions(selectorId, undefined, value)` — polls every
+   250 ms until the sibling `<select>` has more than one option (the AJAX load
+   has completed) **and** holds an option that select2's search for `value`
+   could match (#84). Rejects after 20 s.
 2. Set the focusser input's `.value` to the target string.
 3. Dispatch the shared `pressEnter` `KeyboardEvent` (`keyCode: 13`, **not**
    `key: "Enter"`) on the focusser — triggers select2 to open the drop and run
@@ -103,6 +104,32 @@ dict only specifies `keyCode`. The same object is reused for every dispatch.
 
 Select2 loads its option lists via AJAX after the page renders. The
 `waitForSelectOptions` helper polls until the backing `<select>` has options.
+
+`waitForSelectOptions(selector, timeToWait = 250, expectedValue = null, valueWaitBudgetMs = 5000, timeoutMs = 20000)`:
+
+- The base condition: the sibling `<select>` exists and has more than one
+  `<option>`. Like every `waitFor*`, this rejects with a `WaitForTimeoutError`
+  after `timeoutMs` (#83).
+- With `expectedValue` (what `triggerField` is about to search for), the option
+  list must additionally contain a match. The comparison mirrors select2's own
+  default matcher — a case-insensitive substring test — on whitespace-collapsed,
+  trimmed text, so a positive check means the search that follows can hit
+  something. Case-insensitivity is load-bearing: templates can store a value
+  whose casing differs from the option label (e.g. `work` vs `Work`).
+- **Why:** Kontaktperson and Arbeitspaket are repopulated by AJAX after their
+  parent field (Kontakt / Projekt) changes. Until that response arrives the
+  select still holds the *previous* selection's options, and `options.length > 1`
+  cannot tell a stale list from a fresh one. That is harmless on a pristine form
+  but not when editing an existing entry or applying a second template.
+- **Termination:** the value wait is bounded by `valueWaitBudgetMs`
+  (`VALUE_WAIT_BUDGET_MS`, **5 000 ms**, counted from the moment the base
+  condition first holds). When the value is genuinely absent — a deleted
+  package, a template that no longer matches the contact — the helper resolves
+  anyway and degrades to the plain "options are loaded" behaviour instead of
+  failing the whole fill.
+- The independent fields (Tätigkeit, Status) are not AJAX-repopulated: their
+  options are in the page from the start, so the check passes on the first poll.
+
 Similarly, opening the select2 drop is asynchronous from jsdom's perspective —
 `waitForSearchBoxField` and `waitForSearchBoxFieldToBeRemoved` wait for the
 drop to appear / disappear. The jQuery-UI autocomplete results likewise appear
@@ -279,6 +306,7 @@ The selectors and assumptions most likely to break when bexio changes its markup
 | TinyMCE iframe | `#monitoring_text_ifr` + `#tinymce` body | bexio upgrades TinyMCE or changes the iframe id | `test/selectors/formSelectors.test.ts` (getDescriptionField throw) |
 | Loader element | `#SoulcodeExtensionLoader` | The extension's injected loader is missing from the DOM | `test/utils/misc-utils.test.ts` (toggleDisplayLoader) |
 | `#select2-drop input` global | the drop uses a single global `#select2-drop` container | bexio changes select2 version where each drop has a unique id | `test/utils/triggerField.test.ts` (waitForSearchBoxField behaviour) |
+| Dependent-select freshness | `waitForSelectOptions` matches the searched value against the `<option>` texts | bexio labels an option differently from the string a template stored (then the wait burns its budget and degrades to the old behaviour) | `test/utils/waitFor.test.ts`, `test/utils/triggerField.test.ts` (#84 tests) |
 
 ---
 
@@ -303,6 +331,13 @@ The selectors and assumptions most likely to break when bexio changes its markup
   existed — or with an empty Tätigkeit — fall back to `null`, and `triggerField`
   returns early. The field then keeps whatever bexio pre-selected. Pinned in:
   `test/utils/fillForm.test.ts` (absent-field test).
+
+- **The stale-options guard is a heuristic, not a handshake.** If the value the
+  new template searches for happens to be present in the *previous* selection's
+  option list too, `waitForSelectOptions` still resolves on the stale list —
+  nothing in the DOM marks a list as "freshly loaded". The other direction is
+  the bounded degradation above: a value that never arrives costs ~5 s and then
+  proceeds as before.
 
 - **`triggerContactField` uses a hard-coded `delay(1000)`** instead of polling
   for a stable DOM condition after the autocomplete accepts an entry. This can
