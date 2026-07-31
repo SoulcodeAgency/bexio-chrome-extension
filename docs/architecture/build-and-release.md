@@ -163,15 +163,13 @@ The script is interactive and must be run manually from the `develop` branch (or
 
 ## Gotchas
 
-### `Build.ps1` swallows sub-build errors
+### `Build.ps1` fails fast — and why the old `try/catch` did not (#93)
 
-Each build step is wrapped in a `try/catch`. If `vite build` exits with a non-zero code (e.g. a TypeScript error), PowerShell's `catch` block prints a red warning message but **does not re-throw or exit**. The script continues to the next step and reports success. As a result:
+Each build step used to be wrapped in a `try/catch`. That catch was **dead code**: PowerShell does not throw on native-command failures, so a `vite build` exiting non-zero never entered it. The script printed the green "OK … successfully built" line for a failed build, continued to the next step, and exited **0**. In the publish workflow that was the only gate — a side-panel build failure still produced a zip that `Compress-Archive` and the Chrome Web Store API both accept (valid manifest, valid extension scripts, no `sidePanel-import/`), so a broken extension could ship with no red signal anywhere.
 
-- A failing extension build followed by a successful side-panel build will print "OK" for both.
-- `unpacked/` may be stale or partially built.
-- The exit code of `npm run build:project` will be **0** even when a sub-build failed.
+The script now checks `$LASTEXITCODE` after every `npm run` (`RunBuild`, mirroring `RunScript` in `CreateRelease.ps1`) and exits with that code. Additionally, `-CreatePackage` asserts the output before zipping (`AssertPackageContent`): `unpacked/manifest.json` must exist, and `unpacked/sidePanel-import/index.html` must exist unless `-IgnoreSidePanel` was passed. Anything missing is a red message and `exit 1`. `Compress-Archive`/`New-Item` run with `-ErrorAction Stop` so their `catch` is live too, and the two convenience calls that open the CWS console and the `dist/` folder moved *out* of the `try` with `-ErrorAction SilentlyContinue` — they have nothing to open on a CI runner and must never fail a build.
 
-The smoke test (Task 2.2) guards against the most visible symptom (missing or wrong-versioned files), but it cannot distinguish a genuinely fresh build from a stale one if `unpacked/` already existed from a prior run.
+What still holds: the smoke test (Task 2.2) cannot distinguish a genuinely fresh build from a stale one if `unpacked/` already existed from a prior run, and it only exercises `-Development`, so the production build is gated by the exit code alone.
 
 ### `@swc/core` appears vestigial
 
