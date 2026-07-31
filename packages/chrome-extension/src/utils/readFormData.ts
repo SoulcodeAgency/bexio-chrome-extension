@@ -35,11 +35,7 @@ async function readFormData() {
     trimAll(packageValue) ||
     trimAll(project) ||
     trimAll(contact) ||
-    // KNOWN ISSUE (#72): this passes the work *element*, not the `work` string read from
-    // it above. `element.length` is undefined, so trimAll always returns "" and this link
-    // in the chain is dead — the fallback is always "New Template". Preserved as-is
-    // because fixing it changes the name suggested to the user in the prompt.
-    trimAll(workField as unknown as string) ||
+    trimAll(work) ||
     "New Template";
 
   let formEntry: TemplateEntry;

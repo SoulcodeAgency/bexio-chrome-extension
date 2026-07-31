@@ -182,8 +182,11 @@ content-script → side-panel message channel; it re-reads storage on its own
    displayed text.
 2. `contactField.value` — reads the autocomplete input's current value; takes
    only the first two space-separated words (bexio adds extra context).
-3. `trimAll(packageValue) || trimAll(project) || trimAll(contact) || trimAll(workField) || "New Template"`
-   — constructs a suggested template name.
+3. `trimAll(packageValue) || trimAll(project) || trimAll(contact) || trimAll(work) || "New Template"`
+   — constructs a suggested template name. `trimAll` strips *all* whitespace, so
+   the suggestion is the first non-empty field with its spaces removed
+   (`"Acme - Back Office"` → `"Acme-BackOffice"`). Each link is pinned in
+   `test/utils/readFormData.test.ts`.
 4. Calls `prompt()` so the user can confirm or rename the template.
 5. SHA-256 hashes the JSON of the entry (excluding `id`) via `generateHash`.
 6. Saves via `chromeStorageTemplateEntries.saveTemplates(allEntries)`.
