@@ -91,6 +91,16 @@ events. Read `triggerDate.ts` for the exact event sequence.
 Sets the timepicker input's `.value` and dispatches `change` and `input`
 events. Read `triggerDuration.ts` for the exact event sequence.
 
+### description field (`triggerDescription`)
+
+`getDescriptionField()` reaches through the TinyMCE iframe
+(`#monitoring_text_ifr` → `body#tinymce`) and `triggerDescription` assigns
+`descriptionField.textContent = value`. That is the whole recipe: **no synthetic
+events are dispatched** and the backing `<textarea id="monitoring_text">` is not
+touched. Markup in the value is stored as literal text, and an empty string
+clears the field (there is no early-return guard). Pinned in
+`test/utils/triggerDescription.test.ts`. (See Known Issues.)
+
 ### pressEnter
 
 `pressEnter` is a module-level `KeyboardEvent` **instance** (not a function),
@@ -467,7 +477,7 @@ The selectors and assumptions most likely to break when bexio changes its markup
 | select2-chosen text read | `.closest(".input") .select2-chosen` | bexio restructures the select2 widget HTML | `test/utils/readFormData.test.ts` (readTextFromSelect2 tests) |
 | Contact autocomplete | `#autocomplete_monitoring_contact_id` | bexio renames or replaces the autocomplete field | `test/selectors/formSelectors.test.ts` |
 | Save button selector | `#MonitoringForm .getElementsByClassName("save")[0]` | bexio removes the `save` class from the submit button | `test/utils/fillForm.test.ts` (save-button focus assertion) |
-| TinyMCE iframe | `#monitoring_text_ifr` + `#tinymce` body | bexio upgrades TinyMCE or changes the iframe id | `test/selectors/formSelectors.test.ts` (getDescriptionField throw) |
+| TinyMCE iframe | `#monitoring_text_ifr` + `#tinymce` body | bexio upgrades TinyMCE or changes the iframe id | `test/selectors/formSelectors.test.ts` (getDescriptionField throw) + `test/utils/triggerDescription.test.ts` (success path, against the captured iframe fixture) |
 | Loader element | `#SoulcodeExtensionLoader` | The extension's injected loader is missing from the DOM | `test/utils/misc-utils.test.ts` (toggleDisplayLoader) |
 | `#select2-drop input` global | the drop uses a single global `#select2-drop` container | bexio changes select2 version where each drop has a unique id | `test/utils/triggerField.test.ts` (waitForSearchBoxField behaviour) |
 | Dependent-select freshness | `waitForSelectOptions` matches the searched value against the `<option>` texts | bexio labels an option differently from the string a template stored (then the wait burns its budget and degrades to the old behaviour) | `test/utils/waitFor.test.ts`, `test/utils/triggerField.test.ts` (#84 tests) |
@@ -479,6 +489,19 @@ The selectors and assumptions most likely to break when bexio changes its markup
 - **`triggerCheckbox` does not dispatch a `change` event.** The function only
   sets `.checked`; any listener registered for the `change` event will not fire.
   Pinned in: `test/utils/triggerCheckbox.test.ts`.
+
+- **`triggerDescription` dispatches no events and never syncs the textarea.**
+  It only sets `body#tinymce`'s `textContent`, so TinyMCE is not told the content
+  changed and the hidden `<textarea id="monitoring_text">` — the field bexio
+  actually submits — is left as it was. Pinned in
+  `test/utils/triggerDescription.test.ts`.
+
+- **`triggerDescription`'s `if (descriptionField)` guard is dead code.**
+  `getDescriptionField()` *throws* when the iframe body is missing instead of
+  returning a falsy value, so the guard never sees `undefined` and the call
+  rejects rather than silently no-op'ing. `onMessage` neither awaits nor catches
+  it, so on a page without the TinyMCE iframe this surfaces as an unhandled
+  rejection. Pinned in `test/utils/triggerDescription.test.ts`.
 
 - ~~**None of the `waitFor*` helpers have a timeout.**~~ Resolved in #83: they
   now reject with a `WaitForTimeoutError` after `POLL_TIMEOUT_MS` (20 s), so

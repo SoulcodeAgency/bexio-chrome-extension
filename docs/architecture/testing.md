@@ -146,6 +146,32 @@ Always import the **specific utility module**, never an app entry point
 (`packages/*/src/apps/*/index.ts`), because entry points run side effects
 (event listener registration, storage reads) at import time.
 
+### Iframe fixtures — `loadIframeFixture`
+
+jsdom gives an attached `<iframe>` an empty `about:blank` document; it never
+loads an inner document for you. Code that reaches through
+`iframe.contentWindow.document` — currently only `getDescriptionField()`, which
+navigates into bexio's TinyMCE editor (`#monitoring_text_ifr` → `body#tinymce`)
+— therefore finds nothing unless the inner document is injected by hand.
+
+`loadIframeFixture(iframe, name)` in
+`packages/chrome-extension/test/support/load-fixture.ts` does that: it parses the
+named fixture with `DOMParser` and swaps it in as the iframe document's
+`documentElement` (no navigation involved). It strips inline `onload` attributes
+first — the captured TinyMCE body carries
+`onload="window.parent.tinyMCE...."`, and jsdom fires the iframe's load event
+after the swap, which would throw because the fixtures ship without bexio's
+JavaScript.
+
+```ts
+loadFixture("monitoring-edit");
+const iframe = document.querySelector("#monitoring_text_ifr") as HTMLIFrameElement;
+const iframeDocument = loadIframeFixture(iframe, "monitoring-edit.tinymce-iframe");
+const tinymceBody = iframeDocument.querySelector("#tinymce");
+```
+
+Used by `packages/chrome-extension/test/utils/triggerDescription.test.ts`.
+
 ---
 
 ## 5. Fixture capture procedure
@@ -171,7 +197,8 @@ The procedure is documented in full in
 **Currently captured fixtures:**
 - `monitoring-edit.html` — the time-entry edit form (empty)
 - `monitoring-edit-filled.html` — the same form with values pre-filled
-- `monitoring-edit.tinymce-iframe.html` — the TinyMCE iframe body
+- `monitoring-edit.tinymce-iframe.html` — the TinyMCE iframe body (injected via
+  `loadIframeFixture`; see Section 4)
 - `monitoring-list.html` — full-body capture of the time-entry list (with `.globalsearch` so renderHtml can inject its toggle button; rows trimmed to 12)
 - `pr_project-listMonitoring.html` — a project's times tab (trimmed rows)
 - `pr_project-showPackage.html` — a work-package's times tab (trimmed rows)
