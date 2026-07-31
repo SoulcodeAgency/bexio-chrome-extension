@@ -81,15 +81,21 @@ never comes down (#82).
 Sets `selector.checked = checked`. **Does NOT dispatch a `change` event.**
 (See Known Issues.)
 
-### date field (`triggerDate`)
+### date field (`triggerDate`) and duration field (`triggerDuration`)
 
-Sets the datepicker input's `.value` and dispatches `change` and `input`
-events. Read `triggerDate.ts` for the exact event sequence.
+Both are two lines and identical apart from the selector: set the input's
+`.value`, then dispatch the shared `pressEnter` `KeyboardEvent` on it.
 
-### duration field (`triggerDuration`)
+```ts
+dateField.value = value;
+dateField.dispatchEvent(pressEnter);
+```
 
-Sets the timepicker input's `.value` and dispatches `change` and `input`
-events. Read `triggerDuration.ts` for the exact event sequence.
+**No `change` and no `input` event is dispatched** — only that one `keydown`.
+If a datepicker/timepicker update stops taking effect, the event to look for
+is the `keydown` (`keyCode: 13`), not a `change`. Neither function guards
+against an empty `value`: `triggerDuration("")` clears the field.
+Pinned in `test/utils/triggerDate.test.ts` and `test/utils/triggerDuration.test.ts`.
 
 ### description field (`triggerDescription`)
 

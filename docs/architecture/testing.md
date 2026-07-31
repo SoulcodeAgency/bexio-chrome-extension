@@ -10,7 +10,7 @@ and a manual real-bexio walkthrough checklist.
 
 | Layer | Tool | When to use | Files |
 | --- | --- | --- | --- |
-| **Vitest unit / integration** | Vitest + jsdom | Every PR / CI run — the main safety net | `packages/*/test/**/*.test.ts(x)` |
+| **Vitest unit / integration** | Vitest + jsdom | Every PR / CI run — the main safety net | `packages/*/test/**/*.test.ts(x)`, `scripts/**/*.test.ts` |
 | **Build smoke** | Vitest (slow) | Included in `npm test`; skip with `npm run test:fast` | `packages/*/test/**/*.slow.test.ts` |
 | **Playwright extension smoke + behaviour** | Playwright + real Chromium | Runs in CI (via Xvfb); opt-in locally | `e2e/*.spec.ts` |
 | **Manual real-bexio walkthrough** | Human + real browser | Before each release — the residual, fixture-drift risk | See Section 8 |
@@ -58,15 +58,16 @@ deliberately don't add). If you want it for a debugging session:
 
 ---
 
-## 3. Vitest workspace — three projects
+## 3. Vitest workspace — four projects
 
-The root `vitest.config.ts` (via its `test.projects` array) defines three projects. (There is also a `vitest.workspace.ts`, kept as a tombstone with a comment — Vitest 4 deprecated the standalone workspace file in favour of `test.projects`, so that file is *not* what's loaded.)
+The root `vitest.config.ts` (via its `test.projects` array) defines four projects. (There is also a `vitest.workspace.ts`, kept as a tombstone with a comment — Vitest 4 deprecated the standalone workspace file in favour of `test.projects`, so that file is *not* what's loaded.)
 
 | Project | Root | Environment | What it tests |
 | --- | --- | --- | --- |
 | `shared` | `packages/shared` | `node` | Storage helpers, template utilities |
 | `chrome-extension` | `packages/chrome-extension` | `jsdom` | Selectors, content scripts, form utils |
 | `sidePanel-import` | `packages/sidePanel-import` | `jsdom` | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`) |
+| `scripts` | `scripts` | `node` | Repo tooling that belongs to no package — currently the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review |
 
 The `sidePanel-import` project has two extra setup details: the `~` alias (that package's Vite
 alias for its `src/`) is mirrored in `vitest.config.ts`, and
@@ -75,10 +76,12 @@ which antd's internals expect but jsdom does not implement.
 
 ### The in-memory `chrome.*` fake
 
-All tests run with an in-memory fake for `chrome.storage.local` and `chrome.runtime` (see
+The three package projects run with an in-memory fake for `chrome.storage.local` and `chrome.runtime` (see
 `test/support/chrome-fake.ts` and `test/support/setup-chrome.ts`). The fake is installed on
 `globalThis.chrome` before each test file runs, and reset (`chrome.storage.local` cleared,
 `chrome.runtime.onMessage` listeners cleared) in a `beforeEach` hook so tests are isolated.
+The `scripts` project declares no `setupFiles` — it tests plain Node code that never touches
+`chrome.*`.
 
 **The fake serializes at both boundaries.** `set()` stores a JSON round-trip of each value and
 `get()` returns a fresh JSON round-trip, so a caller never shares a reference with the store —

@@ -234,10 +234,6 @@ The script now checks `$LASTEXITCODE` after every `npm run` (`RunBuild`, mirrori
 
 What still holds: the smoke test (Task 2.2) cannot distinguish a genuinely fresh build from a stale one if `unpacked/` already existed from a prior run, and it only exercises `-Development`, so the production build is gated by the exit code alone.
 
-### `@swc/core` appears vestigial
-
-`@swc/core@1.15.8` is listed as a `dependency` in both `packages/chrome-extension/package.json` and `packages/sidePanel-import/package.json`. Recent commits (`fix(build) Fix esbuild manually`, `fix(build) Getting rid of swc`) suggest that the SWC-based transform was removed. Neither Vite config references `@swc/core` directly. It is likely safe to remove, but doing so is out of scope here — the dependency is noted for a future cleanup.
-
 ### `.npmrc`: `save-exact` + `ignore-scripts`
 
 The `.npmrc` at repo root sets:
