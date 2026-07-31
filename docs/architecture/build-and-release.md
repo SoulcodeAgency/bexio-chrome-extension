@@ -38,7 +38,7 @@ The rule followed, and the one to keep following:
 
 > Where strict flagged a possible `null`/`undefined`, the fix is a non-null assertion (`!`) or a type-level cast — **not** a runtime guard.
 
-That looks lazy but is the deliberate choice. Adding `if (!x) return` would convert a loud, visible crash into a silent no-op: `fillForm` would leave the loader spinning forever instead of throwing, `swapDisplayStyle` would quietly stop toggling. The existing crash is better failure behaviour than silent nothing, and the test suite pins current behaviour on purpose (see `docs/architecture/testing.md`). Each `!` carries a comment explaining why the value is expected to exist.
+That looks lazy but is the deliberate choice. Adding `if (!x) return` would convert a loud, visible crash into a silent no-op: `swapDisplayStyle` would quietly stop toggling. A crash is better failure behaviour than silent nothing, and the test suite pins current behaviour on purpose (see `docs/architecture/testing.md`). Each `!` carries a comment explaining why the value is expected to exist. Where a guard *is* the right answer, it comes with visible feedback rather than a silent `return` — see the unknown-template guard in `fillForm.ts` (#73).
 
 The single intentional runtime change is in `convertPopover.ts`: `DOMPurify.sanitize(popoverText ?? "")`. `getPopoverNodeText` genuinely returns `null` when the icon has no `data-content`. This is safe because `sanitize(null)` and `sanitize("")` both return `""` — verified against the pinned DOMPurify version, and the unminified bundle diff for the whole change is exactly this one line.
 
@@ -47,7 +47,7 @@ Strict also surfaced two latent bugs that were **left in place** and marked `// 
 | Where | What | Issue |
 |---|---|---|
 | `readFormData.ts` | `trimAll(workField)` passes the work *element*, not the `work` string read from it, so `.length` is `undefined`, that link in the `templateName` chain is dead, and the suggested name always falls through to `"New Template"`. | #72 |
-| `fillForm.ts` | `templateEntries.find(...)` returns `undefined` for an unknown `id` and the destructuring then throws, leaving the loader spinning. | #73 |
+| `fillForm.ts` | `templateEntries.find(...)` returned `undefined` for an unknown `id` and the destructuring then threw, leaving the loader spinning. **Fixed:** the `!` was replaced by a guard that re-renders the template list and `alert()`s the user, and the loader is now hidden in a `finally` so no failure in `fillForm` can leave it on screen. | #73 (closed) |
 
 A third finding turned out **not** to be a bug: `keywords` is intentionally never set by `readFormData`. It is a side-panel-only override with no counterpart in the bexio form, so there is nothing there to read it from — templates start without it and gain it when edited in the side panel. `TemplateEntry` still declares it required, which is part of why the object literal in `readFormData` needs its `as TemplateEntry` cast.
 

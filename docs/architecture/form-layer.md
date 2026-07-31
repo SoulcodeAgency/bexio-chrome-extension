@@ -111,28 +111,65 @@ Source: `packages/chrome-extension/src/utils/fillForm.ts`
 ```
 fillForm(id, timeEntryBillable?)
   ├── toggleDisplayLoader()                         // show loader (on)
-  ├── load templates from chrome.storage.local
-  ├── find entry by id; destructure:
-  │     contact, contactPerson = null, project = null,
-  │     status = null, billable = true, package (as packageValue ?? null)
-  ├── triggerField(workFieldID, "work")             // always the literal "work"
-  ├── triggerField(statusFieldID, status)
-  ├── triggerContactField(contactField, contact)
-  ├── triggerField(contactPersonID, contactPerson)
-  ├── triggerField(projectFieldID, project)
-  ├── triggerField(packageFieldID, packageValue)
-  ├── triggerCheckbox(billableCheckbox, timeEntryBillable ?? billable)
-  │     // timeEntryBillable (from the sidePanel import) overrides the template's
-  │     // billable flag; billable defaults to true when absent from the template
-  ├── toggleDisplayLoader(false)                    // hide loader (off)
-  └── document.getElementById("MonitoringForm")
-        .getElementsByClassName("save")[0].focus() // focus submit button
+  ├── try {
+  │     ├── load templates from chrome.storage.local
+  │     ├── find entry by id
+  │     └── if (entry) {                            // no match → skip the whole block
+  │           ├── destructure:
+  │           │     contact, contactPerson = null, project = null,
+  │           │     status = null, billable = true, package (as packageValue ?? null)
+  │           ├── triggerField(workFieldID, "work") // always the literal "work"
+  │           ├── triggerField(statusFieldID, status)
+  │           ├── triggerContactField(contactField, contact)
+  │           ├── triggerField(contactPersonID, contactPerson)
+  │           ├── triggerField(projectFieldID, project)
+  │           ├── triggerField(packageFieldID, packageValue)
+  │           ├── triggerCheckbox(billableCheckbox, timeEntryBillable ?? billable)
+  │           │     // timeEntryBillable (from the sidePanel import) overrides the
+  │           │     // template's billable flag; billable defaults to true when absent
+  │           └── document.getElementById("MonitoringForm")
+  │                 .getElementsByClassName("save")[0].focus() // focus submit button
+  │         }
+  │   } finally {
+  │     └── toggleDisplayLoader(false)              // hide loader (off) — always
+  │   }
+  └── if (!entry)                                   // stale id, form untouched
+        ├── initializeExtension()                   // re-render template list
+        └── alert("This template does not exist anymore. …")
 ```
 
 The `timeEntryBillable ?? billable` rule: when the caller passes a boolean
 `timeEntryBillable` (e.g. from a ManicTime import entry), that overrides the
 template. When it is `undefined` (the common interactive case), the template's
 `billable` field is used, defaulting to `true` if absent from the template.
+
+**The loader is hidden in a `finally` (#73).** That is the only place it is
+switched off. Everything between the two toggles can throw — changed bexio markup,
+a missing save button, a select2 widget that is gone — and the overlay covers the
+whole viewport, so a failure used to look like an endless "Loading…" to the user.
+(A `waitFor*` that never settles is a different case — see Known issues.)
+The `finally` does not catch: the error keeps propagating to the caller
+(which is `renderHtml`'s click handler or `onMessage`, neither of which awaits, so
+it surfaces as an unhandled rejection in the console — loud, as intended).
+
+**The unknown-`id` guard (#73):** `id` comes from outside — the side panel's
+template list or the injected buttons on the page — and can be stale when the
+template was deleted in another tab or window. Before the guard existed, `find`
+returned `undefined` and the destructuring threw. The guard skips the whole fill
+block, so the form is left untouched; the feedback then runs *after* the `finally`
+so the `alert()` does not pop up over a still-visible overlay. It also calls
+`initializeExtension()` so the stale button disappears from the page list.
+
+Note that the guard makes `fillForm` import the app entry module — a cycle
+(`index → renderHtml → fillForm → index`), which is fine because
+`initializeExtension` is a hoisted function declaration only called at runtime,
+and is the same pattern `onMessage.ts` and `confirmTemplateDeletion.ts` already
+use. Tests that import `fillForm` must `vi.mock` that entry module, otherwise its
+top-level `initializeExtension()` call runs on import.
+
+The side panel's own list is *not* refreshed by this — there is no
+content-script → side-panel message channel; it re-reads storage on its own
+`reloadData`. Both behaviours are pinned in `test/utils/fillForm.test.ts`.
 
 ---
 
@@ -198,7 +235,10 @@ The selectors and assumptions most likely to break when bexio changes its markup
 
 - **None of the `waitFor*` helpers have a timeout.** They poll forever if the
   awaited DOM condition never becomes true (e.g. if bexio's AJAX call fails or
-  the markup changes). Pinned in: `test/utils/waitFor.test.ts`.
+  the markup changes). Pinned in: `test/utils/waitFor.test.ts`. Note that
+  `fillForm`'s `finally` does **not** save the user here: a promise that never
+  settles never reaches the `finally`, so the loader still stays up. The `finally`
+  covers failures that *throw*; a hanging `waitFor*` needs a timeout of its own.
 
 - **`triggerContactField` uses a hard-coded `delay(1000)`** instead of polling
   for a stable DOM condition after the autocomplete accepts an entry. This can

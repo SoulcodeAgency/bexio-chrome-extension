@@ -42,6 +42,17 @@ vi.mock(
   }),
 );
 
+// Mocked because the real module re-renders the whole template UI (and calls
+// initializeExtension() at module load, which would need chrome.runtime.getURL).
+vi.mock(
+  "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index",
+  () => ({
+    initializeExtension: vi.fn(async () => {
+      calls.push("reinit");
+    }),
+  }),
+);
+
 const template = (over: Partial<TemplateEntry> = {}): TemplateEntry => ({
   templateName: "T",
   keywords: "",
@@ -118,6 +129,44 @@ describe("fillForm", () => {
     await fillForm("tmpl1");
     // `const { ..., billable = true } = entry` defaults to true when absent
     expect(calls).toContain("billable:true");
+  });
+
+  it("hides the loader, tells the user and refreshes the list when no template matches the id", async () => {
+    await chrome.storage.local.set({ entries: [template()] });
+    loadFixture("monitoring-edit");
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    const { default: fillForm } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
+    );
+
+    await expect(fillForm("deleted-template")).resolves.toBeUndefined();
+
+    // No form field is touched; the loader is closed again and the injected
+    // template list is re-rendered so the stale button disappears.
+    expect(calls).toEqual(["loader:on", "loader:off", "reinit"]);
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(String(alertSpy.mock.calls[0][0])).toMatch(/template/i);
+  });
+
+  it("hides the loader and rethrows when a form trigger fails", async () => {
+    await chrome.storage.local.set({ entries: [template()] });
+    loadFixture("monitoring-edit");
+    // Stands in for anything that can throw mid-fill: changed bexio markup, a
+    // select2 widget that is gone, a missing save button.
+    const { default: triggerField } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/triggerField"
+    );
+    vi.mocked(triggerField).mockRejectedValueOnce(
+      new Error("bexio markup changed")
+    );
+    const { default: fillForm } = await import(
+      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
+    );
+
+    await expect(fillForm("tmpl1")).rejects.toThrow("bexio markup changed");
+
+    // The loader must not survive the failure, and the error still surfaces.
+    expect(calls).toEqual(["loader:on", "loader:off"]);
   });
 
   it("passes null to triggerField for absent project/package/status/contactPerson", async () => {
