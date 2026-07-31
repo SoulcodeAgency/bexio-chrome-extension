@@ -5,3 +5,8 @@ test-results
 playwright-report
 coverage
 *.tsbuildinfo
+
+# Claude Code: personal, per-machine state. `.claude/settings.json` IS checked in
+# (see .claude/settings.json) — only these are local.
+.claude/settings.local.json
+.claude/worktrees/
