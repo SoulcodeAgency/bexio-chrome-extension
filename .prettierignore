@@ -1,0 +1,19 @@
+# Prettier does not read .gitignore, so the build output is repeated here.
+unpacked/
+dist/
+coverage/
+test-results/
+playwright-report/
+
+# npm rewrites this on every install, with its own formatting.
+package-lock.json
+
+# Regenerated wholesale by git-cliff / release-please on every release.
+CHANGELOG.md
+
+# Captured bexio pages: the jsdom and Playwright tests read DOM and text out of
+# these, and two of them do not parse as HTML at all. _raw holds unscrubbed
+# captures (git-ignored). tiny.html is a hand-written entity/whitespace probe.
+packages/chrome-extension/test/fixtures/bexio/*.html
+packages/chrome-extension/test/fixtures/bexio/_raw/
+packages/chrome-extension/test/support/__inline__/tiny.html
