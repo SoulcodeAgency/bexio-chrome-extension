@@ -10,6 +10,8 @@ import { chromeStorage } from "@bexio-chrome-extension/shared";
 import { loadApplyNotesSetting, saveApplyNotesSetting } from "@bexio-chrome-extension/shared/chromeStorageSettings";
 import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
 import { autoMapTemplatesV3 } from "./AutoMapTemplatesV3";
+import { frozenCellProps, getFrozenColumns } from "./frozenColumns";
+import { useFrozenColumnOffsets } from "./useFrozenColumnOffsets";
 import { handleCsvData } from "~/utils/csvParser";
 
 export type ImportRow = string[];
@@ -27,6 +29,7 @@ function ImportEntries() {
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
+  const importDataTableRef = useRef<HTMLTableElement>(null);
   const { templates: templateEntries } = useContext<TemplateContextType>(TemplateContext);
 
   const billableColumnIndex = importHeader.findIndex((column) => column === "Billable");
@@ -302,129 +305,164 @@ function ImportEntries() {
     </div>
   );
 
+  // Everything left of the first date column stays pinned while the date columns scroll.
+  const frozenColumns = getFrozenColumns(importHeader);
+  useFrozenColumnOffsets(importDataTableRef, frozenColumns.count);
+
   const importDataHTML = importData.length ? (
     <div className="content">
-      <Tooltip title="Based on v2, but further weights exact word matches">
-        <Button type="primary" onClick={callAutoMapTemplatesV3}>
-          Auto map templates
-        </Button>
-      </Tooltip>
+      {/* One row of controls above the table. "Delete saved data" is pushed to the far right,
+          away from the two it must not be confused with. */}
+      <div className="importToolbar">
+        <Tooltip title="Based on v2, but further weights exact word matches">
+          <Button type="primary" onClick={callAutoMapTemplatesV3}>
+            Auto map templates
+          </Button>
+        </Tooltip>
 
-      <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
-        <Switch
-          checkedChildren="Apply notes"
-          unCheckedChildren="Ignore notes"
-          defaultChecked={false}
-          onClick={switchApplyNotesSetting}
-          checked={applyNotesSetting}
-        />
-      </Tooltip>
-      <br />
-      <br />
-      <table className="importDataTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th title="Select the template to apply">Template</th>
-            {importHeader.map((field) => (
-              <th key={field} style={{ minWidth: field === "Notes" ? "120px" : "auto" }}>
-                {field}
-                {field === "Notes" && (
-                  <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
-                    <Switch
-                      checkedChildren="Apply notes"
-                      unCheckedChildren="Ignore notes"
-                      defaultChecked={false}
-                      onClick={switchApplyNotesSetting}
-                      checked={applyNotesSetting}
-                    />
-                  </Tooltip>
-                )}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {importData.map((entry, entryIndex) => (
-            <tr key={entry[0] + entryIndex + importTemplates[entryIndex]}>
-              <td>{entryIndex + 1}</td>
-              <td>
-                <TemplateSelect
-                  selectedTemplate={importTemplates[entryIndex]}
-                  onChange={(templateId: string) => onChangeTemplate(templateId, entryIndex)}
-                />
-              </td>
-              {entry.map((fieldValue, columnIndex) => (
-                <ImportEntriesTableCell
-                  templateId={importTemplates[entryIndex]}
-                  columnHeader={importHeader[columnIndex]}
-                  fieldValue={fieldValue}
-                  key={`table-cell-${entryIndex + 1}-${columnIndex}`}
-                  entryStatus={entryStatus[`${columnIndex}-${entryIndex}`]}
-                  onButtonClick={() => applyImportEntry(columnIndex, fieldValue, entryIndex)}
-                  onButtonClickReset={() => resetEntryStatus(`${columnIndex}-${entryIndex}`)}
-                />
-              ))}
-            </tr>
-          ))}
-          <tr>
-            <td></td>
-            <td></td>
-            {importFooter.map((field, index) => (
-              <td key={importHeader[index]}>{field}</td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
-      <br />
-      <br />
-      <div>
-        <Button danger onClick={removeImportData}>
+        <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
+          <Switch
+            checkedChildren="Apply notes"
+            unCheckedChildren="Ignore notes"
+            defaultChecked={false}
+            onClick={switchApplyNotesSetting}
+            checked={applyNotesSetting}
+          />
+        </Tooltip>
+
+        <Button danger onClick={removeImportData} className="importToolbar__end">
           Delete saved data
         </Button>
-
-        <br />
-        <br />
-        <Alert
-          showIcon
-          type="info"
-          message="How to use this:"
-          description={
-            <ol>
-              <li>
-                Select an <strong>Auto-map button</strong> above and check if the templates do match with your entries.
-                <br />
-                You can manually fix single entries, or do it completely manually of course.
-                <br />
-                <i>These changes are saved automatically, in case you leave and come back later.</i>
-              </li>
-              <li>
-                Click on the ▶️-button next to the time you want to track. It will automatically fill the form in bexio
-                and change its status to "applied" (✅)
-                <br />
-                ⚠️ This action currently is not yet saved, so we suggest to go through all entries in one session. If
-                this page gets closed, you will loose the state of the button.
-                <br />
-                ℹ️ You can click the button again, if you want to re-apply it for some reason. <br />
-                ℹ️ If you change the selected template, the state will also get reset.
-              </li>
-              <li>
-                Auto filling
+      </div>
+      {/* The only thing that scrolls sideways: the panel itself never needs a horizontal
+          scrollbar, and the pinned columns stick to this box's left edge. Its height is capped
+          so that it scrolls vertically too — which is what keeps the header row sticky, since a
+          sticky element sticks inside its scroll container and this box is now that container. */}
+      <div className="importDataTableWrapper">
+        <table className="importDataTable" ref={importDataTableRef}>
+          <thead>
+            <tr>
+              <th {...frozenCellProps(frozenColumns.index)}>#</th>
+              <th title="Select the template to apply" {...frozenCellProps(frozenColumns.template)}>
+                Template
+              </th>
+              {importHeader.map((field, columnIndex) => {
+                const frozenProps = frozenCellProps(frozenColumns.data[columnIndex]);
+                return (
+                  // "Notes" reserves extra room for the switch its header hosts.
+                  <th
+                    key={field}
+                    className={frozenProps.className}
+                    style={{ ...frozenProps.style, minWidth: field === "Notes" ? "120px" : undefined }}
+                  >
+                    {field}
+                    {field === "Notes" && (
+                      <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
+                        <Switch
+                          checkedChildren="Apply notes"
+                          unCheckedChildren="Ignore notes"
+                          defaultChecked={false}
+                          onClick={switchApplyNotesSetting}
+                          checked={applyNotesSetting}
+                        />
+                      </Tooltip>
+                    )}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {importData.map((entry, entryIndex) => (
+              <tr key={entry[0] + entryIndex + importTemplates[entryIndex]}>
+                <td {...frozenCellProps(frozenColumns.index)}>{entryIndex + 1}</td>
+                <td {...frozenCellProps(frozenColumns.template)}>
+                  <TemplateSelect
+                    selectedTemplate={importTemplates[entryIndex]}
+                    onChange={(templateId: string) => onChangeTemplate(templateId, entryIndex)}
+                  />
+                </td>
+                {entry.map((fieldValue, columnIndex) => (
+                  <ImportEntriesTableCell
+                    templateId={importTemplates[entryIndex]}
+                    columnHeader={importHeader[columnIndex]}
+                    fieldValue={fieldValue}
+                    key={`table-cell-${entryIndex + 1}-${columnIndex}`}
+                    entryStatus={entryStatus[`${columnIndex}-${entryIndex}`]}
+                    onButtonClick={() => applyImportEntry(columnIndex, fieldValue, entryIndex)}
+                    onButtonClickReset={() => resetEntryStatus(`${columnIndex}-${entryIndex}`)}
+                    frozenColumn={frozenColumns.data[columnIndex]}
+                  />
+                ))}
+              </tr>
+            ))}
+            <tr>
+              <td {...frozenCellProps(frozenColumns.index)}></td>
+              <td {...frozenCellProps(frozenColumns.template)}></td>
+              {importFooter.map((field, index) => (
+                <td key={importHeader[index]} {...frozenCellProps(frozenColumns.data[index])}>
+                  {field}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div className="importHelp">
+        {/* Collapsed by default — the help is long enough to push the table itself off screen. */}
+        <Collapse
+          size="small"
+          items={[
+            {
+              key: "help",
+              label: "How to use this",
+              children: (
                 <ol>
-                  <li>Date and Time will get applied on the bexio form directly.</li>
-                  <li>If added, Billable and Notes are also applied.</li>
                   <li>
-                    If selected also the Template with its values will auto-magically fill out the rest of the form. 🥳
+                    Select an <strong>Auto-map button</strong> above and check if the templates do match with your
+                    entries.
+                    <br />
+                    You can manually fix single entries, or do it completely manually of course.
+                    <br />
+                    <i>These changes are saved automatically, in case you leave and come back later.</i>
+                  </li>
+                  <li>
+                    The columns up to <strong>Billable</strong> stay in place while you scroll to a date on the right,
+                    so you always see which row you are booking.
+                    <br />
+                    ℹ️ With many Tag columns that block gets wide — drag the side panel wider if the dates become hard
+                    to reach.
+                  </li>
+                  <li>
+                    Click on the ▶️-button next to the time you want to track. It will automatically fill the form in
+                    bexio and change its status to "applied" (✅)
+                    <br />
+                    ⚠️ This action currently is not yet saved, so we suggest to go through all entries in one session.
+                    If this page gets closed, you will loose the state of the button.
+                    <br />
+                    ℹ️ You can click the button again, if you want to re-apply it for some reason. <br />
+                    ℹ️ If you change the selected template, the state will also get reset.
+                  </li>
+                  <li>
+                    Auto filling
+                    <ol>
+                      <li>Date and Time will get applied on the bexio form directly.</li>
+                      <li>If added, Billable and Notes are also applied.</li>
+                      <li>
+                        If selected also the Template with its values will auto-magically fill out the rest of the form.
+                        🥳
+                      </li>
+                    </ol>
+                  </li>
+                  <li>
+                    Submit the form <br />
+                    ℹ️ Click the next time entry, to automatically open the time tracking page and auto fill again, no
+                    need to open the time track page within bexio.
                   </li>
                 </ol>
-              </li>
-              <li>
-                Submit the form <br />
-                ℹ️ Click the next time entry, to automatically open the time tracking page and auto fill again, no need
-                to open the time track page within bexio.
-              </li>
-            </ol>
-          }
+              ),
+            },
+          ]}
         />
       </div>
     </div>

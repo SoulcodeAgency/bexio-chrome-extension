@@ -1,10 +1,12 @@
 import { Tooltip } from "antd";
 import { useContext, useEffect, useState } from "react";
 import { TemplateContextType, TemplateContext } from "~/TemplateContext";
+import { FrozenColumn, frozenCellProps } from "./frozenColumns";
 
 type ImportEntriesTableCellProps = {
   templateId: string;
   fieldValue: string;
+  frozenColumn?: FrozenColumn;
 };
 
 const TableCellBillable = (props: ImportEntriesTableCellProps) => {
@@ -52,7 +54,7 @@ const TableCellBillable = (props: ImportEntriesTableCellProps) => {
       <>{fieldIsBillable ? "✅" : "◻️"}</>
     );
 
-  return <td>{rendering}</td>;
+  return <td {...frozenCellProps(props.frozenColumn)}>{rendering}</td>;
 };
 
 export default TableCellBillable;

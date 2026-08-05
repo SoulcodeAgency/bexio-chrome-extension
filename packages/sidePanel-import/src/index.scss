@@ -24,13 +24,16 @@ a:hover {
   color: #3376b5;
 }
 
+/*
+ * Deliberately not a flex container (it was, left over from the Vite template). As a flex item
+ * `#root` was sized by its content, so the wide import table pushed the whole panel wider and the
+ * panel itself grew a horizontal scrollbar. As a plain block `#root` is the width of the panel,
+ * which lets the import table's own scroll container do the sideways scrolling.
+ */
 body {
   margin: 0;
-  display: flex;
   min-width: 320px;
   min-height: 100vh;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 h1 {

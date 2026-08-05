@@ -1,6 +1,7 @@
+/* The side panel is narrow — the padding is kept small so the import table gets the full width. */
 #root {
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0.75rem;
   text-align: center;
   box-sizing: border-box;
   min-width: 100%;
@@ -28,7 +29,7 @@ h2 {
 }
 
 .content {
-  padding: 0 20px 30px;
+  padding: 0 0 30px;
 }
 
 textarea {

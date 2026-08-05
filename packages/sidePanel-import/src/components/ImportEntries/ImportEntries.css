@@ -11,12 +11,90 @@
   color: white;
 }
 
+/*
+ * Opaque on purpose: the frozen columns below paint over the cells scrolling beneath them, and a
+ * translucent stripe would let that content bleed through. These are the two base row colours from
+ * TemplateEntries.css with the former #3276b44a already blended in, so the rendering is unchanged.
+ */
 tr:nth-child(even) {
-  background-color: #3276b44a;
+  background-color: #a9c6df;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: #2e4358;
+  }
+}
+
+/*
+ * The table is the only thing that scrolls sideways, so the side panel itself never needs a
+ * horizontal scrollbar. The height cap makes this box scroll vertically as well, which is what
+ * keeps the header row sticky: a sticky element sticks inside its scroll container, and from here
+ * on that container is this box rather than the page.
+ */
+.importDataTableWrapper {
+  overflow: auto;
+  max-height: 70vh;
+}
+
+/*
+ * Frozen leading columns of the import table (issue #12): everything left of the first date column
+ * stays pinned while the date columns scroll underneath. `left` reads a custom property that
+ * useFrozenColumnOffsets measures onto the table; see frozenColumns.ts.
+ *
+ * Deliberately no width and no clipping here — a column sizes itself to its content, so a long
+ * tag name is never cut off. Long values wrap at spaces (the browser default), and a single word
+ * longer than the column widens the column instead of breaking.
+ */
+.importDataTable .frozenColumn {
+  position: sticky;
+  z-index: 1;
+}
+
+/* Data cells take the colour of their row (base or stripe). The header row and the totals row
+   (tr:last-child, above) bring their own opaque colour and are excluded so they keep it. */
+.importDataTable tbody tr:not(:last-child) td.frozenColumn {
+  background-color: inherit;
+}
+
+/* Above the body cells, and above the sticky thead's own z-index: 2. */
+.importDataTable thead .frozenColumn {
+  z-index: 3;
+}
+
+/* Marks where the frozen block ends. */
+.importDataTable .frozenColumn--last {
+  box-shadow: 2px 0 4px rgb(0 0 0 / 25%);
+}
+
+/* The native select would otherwise size itself to the longest template name and push the
+   Template column far wider than it needs to be. Unlike a table cell, a select truncates its
+   own label — no row content is lost. */
+.importDataTable .frozenColumn select {
+  max-width: 140px;
 }
 
 .content button {
   margin-right: 10px;
+}
+
+.importToolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Pushed to the far right of the toolbar row. */
+.importToolbar__end {
+  margin-left: auto;
+}
+
+/* The gap already spaces the row; the shared button margin would double it. */
+.importToolbar button {
+  margin-right: 0;
+}
+
+.importHelp {
+  margin-top: 10px;
 }
 
 select {

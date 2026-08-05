@@ -107,6 +107,105 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
     expect(within(footer as HTMLElement).getByText("4:15:00")).toBeDefined();
   });
 
+  /**
+   * Frozen leading columns (issue #12). `getFrozenColumns` owns which columns are pinned and is
+   * pinned in test/frozenColumns.test.ts; this checks that every cell of the leading block
+   * actually receives it — header, data rows and the footer row alike — and that the scrolling
+   * columns are left alone.
+   *
+   * Each pinned cell reads its offset from a `--frozen-left-N` custom property that
+   * `useFrozenColumnOffsets` measures onto the table. Nothing here sets a width: the columns
+   * size themselves to their content so nothing is ever clipped. The measured pixel values
+   * cannot be asserted — jsdom has no layout — and are verified in the browser instead.
+   */
+  it("pins the columns before the first date column and leaves the date columns scrolling", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(container, TSV);
+
+    const table = container.querySelector("table.importDataTable") as HTMLElement;
+    const rows = [
+      Array.from(table.querySelectorAll("thead th")) as HTMLElement[],
+      ...Array.from(table.querySelectorAll("tbody tr")).map(
+        (row) => Array.from(row.querySelectorAll("td")) as HTMLElement[],
+      ),
+    ];
+    // Header + 2 data rows + footer row, each with 2 extra columns in front of the 6 imported ones.
+    expect(rows).toHaveLength(4);
+
+    for (const cells of rows) {
+      expect(cells).toHaveLength(8);
+
+      // "#", "Template", "Tag 1", "Notes", "Billable" — the block that stays put.
+      for (let position = 0; position < 5; position++) {
+        const cell = cells[position];
+        expect(cell.className).toContain("frozenColumn");
+        expect(cell.style.left).toBe(`var(--frozen-left-${position})`);
+        // A fixed width would clip the content — the whole point is that it does not.
+        expect(cell.style.width).toBe("");
+      }
+
+      // "Billable" is the rightmost frozen column and carries the separating shadow.
+      expect(cells[4].className).toContain("frozenColumn--last");
+      expect(cells[3].className).not.toContain("frozenColumn--last");
+
+      // The two tracking days and the trailing "Total" column scroll.
+      for (const cell of cells.slice(5)) {
+        expect(cell.className).not.toContain("frozenColumn");
+        expect(cell.style.left).toBe("");
+      }
+    }
+  });
+
+  /**
+   * "Delete saved data" shares the toolbar row with the auto-map button instead of sitting on
+   * its own line below the table — one row of controls above the table, not two blocks around it.
+   */
+  it("puts the delete button on the toolbar row above the table", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(container, TSV);
+
+    const autoMapButton = screen.getByRole("button", { name: "Auto map templates" });
+    const deleteButton = screen.getByRole("button", { name: "Delete saved data" });
+    const table = container.querySelector(".importDataTableWrapper") as HTMLElement;
+
+    expect(deleteButton.parentElement).toBe(autoMapButton.parentElement);
+    expect(deleteButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  /**
+   * The usage help is long enough to push the table off screen, so it is collapsed by default
+   * and only costs its header row until the user asks for it.
+   */
+  it("keeps the usage help collapsed until it is opened", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(container, TSV);
+
+    expect(screen.queryByText("Date and Time will get applied on the bexio form directly.")).toBeNull();
+
+    fireEvent.click(screen.getByText("How to use this"));
+
+    expect(screen.getByText("Date and Time will get applied on the bexio form directly.")).toBeDefined();
+  });
+
+  it("pins nothing when the import has no date column", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(
+      container,
+      [
+        ["Tag 1", "Billable", "Total"].join("\t"),
+        ["Project Falcon", "Billable", "1:30:00"].join("\t"),
+        ["Total", "", "1:30:00"].join("\t"),
+      ].join("\n"),
+    );
+
+    const table = container.querySelector("table.importDataTable") as HTMLElement;
+    expect(table.querySelectorAll(".frozenColumn")).toHaveLength(0);
+  });
+
   it("shows the parser error and no table when the required 'Tag 1' column is missing", async () => {
     const { container } = await renderImportEntries();
 
