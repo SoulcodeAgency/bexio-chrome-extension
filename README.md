@@ -1,98 +1,144 @@
-# bexio Time Tracking Templates - chrome extension
+# bexio Time Tracking Templates — Chrome extension
 
-Improves handling of time tracking in bexio
+A Chrome (Manifest V3) extension that augments [bexio](https://office.bexio.com)'s time tracking pages:
 
-There are 3 main features currently:
+- **Templates** — save the time tracking form as a template and re-apply it with one click.
+- **ManicTime import** — paste a [ManicTime](https://www.manictime.com/) timesheet into the browser side panel and book the entries into bexio semi-automatically.
+- **Tooltip replacement** — replace bexio's tooltip icons in list views with the actual text.
 
-* It enables the user to save the form data as templates, and re-use it later.
-  If you work on a specific project or work package and you have to track over and over again some time, this can help you fill out some of the base fields.
-* Importing time entries from ManicTime, and applying them step by step. This supports complete form filling, from selecting a template and the base fields like contact or project, but also the time, date and billable feature for every entry.
-* Converting the cumbersome tooltips to real text cells
+Install it from the Chrome Web Store:
+[bexio Time Tracking Templates](https://chromewebstore.google.com/detail/bexio-timetracking-templa/nbmjdligmcfaeebdihmgbdpahdfddlhm)
 
-## Feature Overview
+![bexio time tracking form with the extension's side panel](assets/screenshots/sideBySideCleared.png)
 
-### bexio
+## Feature overview
 
-Functionality added within the **bexio time tracking page** itself:
+### On the bexio time tracking page
 
-Clicking the extension icon will bring you to the bexio time tracking page
+Clicking the extension icon brings you to the bexio time tracking page.
 
-* On the time tracking page you can now save and re-use form data as templates
-* Once the filled form is saved as a template you can simply let further forms fill out automatically using the template buttons
-* If you don't need a template anymore, you can also delete it
-* You can filter the templates if you have many of them
+- On the time tracking page you can save the current form data as a template.
+- Saved templates appear as buttons below the form — one click fills the form automatically.
+- Templates can be deleted again, and filtered if you have many of them.
 
 ### Side panel (browser)
 
-Clicking the extension icon on the bexio time tracking page will open the extensions side panel.  
-You can also open it using the browsers sidepanel selection.  
-In the sidepanel you can find the following features:
+Clicking the extension icon on the bexio time tracking page opens the extension's side panel
+(you can also open it via the browser's side panel selection):
 
-* **TEMPLATE TAB**
-  * You will see the saved templates and their content
-  * You can execute the templates also from here
-  * During applying a template, it will show a loader screen, which blocks interactivity while auto-filling your template information (to mitigate bugs)
-  * You can edit or delete the templates
-  * You can also add keywords to templates (which is used for the import feature)
-* **IMPORT FEATURES**
-  * Currently we support [ManicTime](https://www.manictime.com/) out of the box
-  * You can import `ManicTime` data and select which template to use, further features are:
-  * Clicking a time entry (via ▶️ button) will **automatically** fill the time tracking page and apply the selected template if one is selected.
-  * Further it will also apply the **time and date** as well as the **billable** checkbox if the according value exists on the entry
-  * You can use the **auto-mapper** Feature which tries to find the right template for your entries
-  * Automapper also checks the **keywords** as well as other fields on the templates. You can add keywords in the template section
+- **Templates tab**
+  - Shows the saved templates and their content.
+  - Templates can be applied, edited and deleted from here.
+  - While a template is being applied, a loader screen blocks interactivity until auto-filling is done.
+  - You can add **keywords** to templates — these are used by the import feature's auto-mapper.
+- **Import tab**
+  - Import [ManicTime](https://www.manictime.com/) timesheet data from the clipboard and select which template to use per entry.
+  - Clicking an entry's ▶️ button **automatically** fills the time tracking page, applying the selected template if one
+    is set, plus the entry's **time and date** and the **billable** checkbox where the entry provides them.
+  - The **auto-mapper** tries to find the right template for each entry — it checks the template **keywords** as well as
+    other template fields.
 
 ### Tooltip replacement
 
-Bexio has small little tooltip icons, where it hides the text content of an entry.
-Because the content is sometimes very important, and the tooltip is of no help for that, we have created a solution, which replaces these icons with the real text.
+bexio hides some cell content behind small tooltip icons. Because that content is often important, the extension can
+replace those icons with the real text.
 
-On specific pages we place a "Text mode / Popover mode" Button, in the top right corner next to the "Quick find".
-If the "Text mode" is enabled, it will automatically replace the tooltips with the real content.
+On the supported pages a **"Text mode / Popover mode"** button is placed in the top right corner next to the
+"Quick find". With "Text mode" enabled, tooltips are automatically replaced with their content on:
 
-These tooltips are available in different locations, currently the feature to remove them is enabled in the following places:
+- Projects → Time tracking
+- Projects → Projects → Project XY → Times
+- Projects → Projects → Project XY → Work packages → Work package XY → Time tracking
+- Sales → Invoices → Invoice XY → More items → Tracked time
 
-* Projects -> Time tracking
-* Projects -> Projects -> Project XY -> Times
-* Projects -> Projects -> Project XY -> Work packages -> Work package XY -> Time tracking
-* Sales -> Invoices -> Invoice XY -> More items -> Tracked time
+![Tooltip icons replaced with real text](assets/screenshots/TextFeature.png)
 
-## How to use ManicTime feature
+## How to use the ManicTime feature
 
-[ManicTime](https://www.manictime.com/) can generate a timesheet of your worked time, this information can be used to go over your time entries and book them in bexio using the UI. So you keep the control what is happening exactly but get some help with filling the form automatically.
+[ManicTime](https://www.manictime.com/) can generate a timesheet of your worked time. The extension helps you go over
+those entries and book them in bexio through the UI — you keep control of what happens, but the form filling is
+automated.
 
-* Supported language is currently only **English**
-* Create ManicTime exports via (Timesheet -> Generate Report -> Copy `Copy to clipboard`)
-* Make sure you selected `Time format`, not `Decimal format`
-* Include the tags as columns, at least `Tag 1` is required.
-* Check `Include Notes` if you want to use the `Notes` as `Descriptions`
-* Include `Billable` as a column - to have Billable flag support per Time Entry, this will override the template's one
+- The only supported export language is currently **English**.
+- Create the export via Timesheet → Generate Report → `Copy to clipboard`.
+- Make sure you selected `Time format`, not `Decimal format`.
+- Include the tags as columns — at least `Tag 1` is required.
+- Check `Include Notes` if you want to use the notes as descriptions.
+- Include `Billable` as a column to get a billable flag per time entry (overrides the template's flag).
 
-## Development details
+## Development
 
-### NPM
+### Prerequisites
 
-This repository uses npm's new [workspaces feature](https://docs.npmjs.com/cli/v9/using-npm/workspaces) which is a bit special!
+- Node.js — the version in [.nvmrc](.nvmrc) (`nvm use`).
+- PowerShell (`pwsh`) — the build is orchestrated by [Build.ps1](Build.ps1). This is a Windows-first repo, but CI runs
+  the same scripts on Ubuntu with the preinstalled `pwsh`.
 
-The separate sub-projects are all located in the `packages` folder.
+### Repository layout
 
-`package.json` scripts are all ready for using `workspaces` feature:
+An npm workspaces monorepo; the sub-projects live in `packages/`:
 
-* Install all npm packages using roots `installProject` npm script
-* To build a developer release use `build:devRelease` npm script
+| Package                     | What it is                                                                                           |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `packages/chrome-extension` | The MV3 extension: content scripts, service worker, manifest. Vite + `@crxjs/vite-plugin`, plain TS. |
+| `packages/sidePanel-import` | The React 19 + antd app rendered in Chrome's side panel. Vite + `@vitejs/plugin-react`.              |
+| `packages/shared`           | TypeScript-only library (no build step) consumed by both other packages.                             |
 
-### Create new release
+Both Vite builds emit into the repo-root `unpacked/` directory (the loadable unpacked extension); `dist/` holds the
+zipped package for the store upload. Both are git-ignored and recreated by builds.
 
-This repo has a script which will handle and prepare a new release, further details can be found in the [RELEASE.md](./RELEASE.md)
+### Setup and build
 
-## Chrome webstore address
+```bash
+npm run npm:installProject
+```
 
-Extension can be installed over the chrome webstore:
-[bexio Time Tracking Templates](https://chromewebstore.google.com/detail/bexio-timetracking-templa/nbmjdligmcfaeebdihmgbdpahdfddlhm)
+(equivalent to `npm i --workspaces --include-workspace-root`; CI uses `npm run npm:ciProject`)
+
+- `npm run build:project` — production build of both packages into `unpacked/`.
+- `npm run build:project -- -Development` — development-mode build (non-minified).
+- `npm run build:newExtensionRelease` — production build **plus** zip to `dist/bexio-chrome-extension.zip`.
+- `npm run build:cleanup` — remove `dist/` and `unpacked/`.
+
+To load the extension locally: build, then Chrome → Extensions → **Load unpacked** → select the `unpacked/` folder.
+
+### Tests and checks
+
+- `npm test` — full Vitest suite (includes a slow build smoke test that shells out to `Build.ps1`).
+- `npm run test:fast` — Vitest without the `*.slow.test.ts` files.
+- `npm run test:watch` — Vitest watch mode.
+- `npm run test:e2e` — Playwright smoke + behaviour specs in `e2e/`. Locally this needs
+  `npx playwright install chromium` once and a built `unpacked/`; it opens a visible Chromium window because MV3
+  service workers don't surface headlessly.
+- `npm run typecheck` — TypeScript across all workspaces (no emit — Vite does the transpiling).
+- `npm run lint -w @bexio-chrome-extension/side-panel-import` — ESLint (side panel only).
+
+GitHub Actions runs typecheck, build, tests and the e2e specs on every PR.
+
+### Architecture docs
+
+Detailed, behaviour-pinned docs live in [docs/architecture/](docs/architecture) — read the relevant one before changing
+the corresponding code:
+
+- [storage.md](docs/architecture/storage.md) — the `chrome.storage.local` model and template shape.
+- [form-layer.md](docs/architecture/form-layer.md) — how the bexio jQuery/select2 form is filled, and the messaging contract.
+- [tooltip-replacement.md](docs/architecture/tooltip-replacement.md) — the tooltip→text feature.
+- [build-and-release.md](docs/architecture/build-and-release.md) — workspace layout, `Build.ps1`, Vite quirks.
+- [testing.md](docs/architecture/testing.md) — the test layers and the manual walkthrough checklist.
+- [publishing.md](docs/architecture/publishing.md) — the release paths and the Chrome Web Store workflow.
+
+## Releases
+
+Two paths, described in [RELEASE.md](RELEASE.md):
+
+- **Automatic (preferred):** conventional commits on `main` drive [release-please](https://github.com/googleapis/release-please);
+  merging its Release PR tags, builds and publishes to the Chrome Web Store via GitHub Actions.
+- **Manual (fallback):** `npm run createRelease` handles version bump, build, changelog (git-cliff), commit and tag —
+  the zip must then be uploaded via the Chrome Web Store dev console.
 
 ## FAQ
 
-See [FAQ.md](./FAQ.md)
+See [FAQ.md](FAQ.md)
 
 ## Privacy
 
@@ -100,4 +146,4 @@ See [PRIVACY.md](PRIVACY.md)
 
 ## License
 
-See [LICENSE](LICENSE)
+[AGPL-3.0](LICENSE)
