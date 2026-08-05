@@ -4,6 +4,7 @@ import type { TabsProps } from "antd";
 import TemplateProvider from "./TemplateProvider";
 import TemplateEntries from "./components/TemplateEntries/TemplateEntries";
 import ImportEntries from "./components/ImportEntries/ImportEntries";
+import RefreshTemplatesButton from "./components/RefreshTemplatesButton/RefreshTemplatesButton";
 import { useEffect, useState } from "react";
 import {
   loadActiveTabId,
@@ -40,9 +41,19 @@ function App() {
 
   return (
     <TemplateProvider>
-      <h2 style={{ margin: "0", textAlign: "left" }}>
-        bexio Time Tracking Templates
-      </h2>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+        }}
+      >
+        <h2 style={{ margin: "0", textAlign: "left" }}>
+          bexio Time Tracking Templates
+        </h2>
+        <RefreshTemplatesButton />
+      </div>
       <div style={{ textAlign: "left" }}>
         <Tabs
           defaultActiveKey={activeTabId}

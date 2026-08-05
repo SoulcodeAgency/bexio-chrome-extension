@@ -41,7 +41,7 @@ const TSV = [
 
 async function renderImportEntries() {
   const result = render(
-    <TemplateContext.Provider value={{ templates: [template], reloadData: () => {} }}>
+    <TemplateContext.Provider value={{ templates: [template], reloadData: async () => {} }}>
       <ImportEntries />
     </TemplateContext.Provider>,
   );

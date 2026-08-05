@@ -70,7 +70,7 @@ describe("ImportEntries — applying an entry from a short row", () => {
 
   it("falls back to the tag column instead of crashing on the missing Notes cell", async () => {
     const { container } = render(
-      <TemplateContext.Provider value={{ templates: [template], reloadData: () => {} }}>
+      <TemplateContext.Provider value={{ templates: [template], reloadData: async () => {} }}>
         <ImportEntries />
       </TemplateContext.Provider>,
     );
