@@ -67,6 +67,20 @@ if (!$IgnoreSidePanel) {
     RunBuild "@bexio-chrome-extension/side-panel-import" $buildTask "sidePanel import app"
 }
 
+# The extension build owns "unpacked/" and empties it (emptyOutDir in
+# packages/chrome-extension/vite.config.js), while the side panel writes into the
+# unpacked/sidePanel-import/ subfolder afterwards. A full build therefore works, but an
+# extension-only build does not merely *skip* the side panel - it deletes the one a previous
+# build left behind. Nothing failed at that point, so the only symptom is Chrome showing
+# ERR_FILE_NOT_FOUND when the side panel is opened. Say it here instead.
+if (-not (Test-Path -Path (Join-Path $packageDirectorySource "sidePanel-import/index.html"))) {
+    Write-Host ""
+    Write-Host "WARNING $source/ has no side panel ($source/sidePanel-import/index.html is missing)." -ForegroundColor Yellow
+    Write-Host "        Chrome loads this folder, but opening the side panel fails with ERR_FILE_NOT_FOUND." -ForegroundColor Yellow
+    Write-Host "        The extension build empties $source/, so -IgnoreSidePanel removes an existing side panel." -ForegroundColor Yellow
+    Write-Host "        Run a full build before loading it: npm run build:project -- -Development" -ForegroundColor Yellow
+}
+
 # build the package
 if ($CreatePackage) {
     Write-Host ""

@@ -41,6 +41,32 @@ Tests: there is now a Vitest suite — `npm test` (all projects, including a slo
 
 Loading locally: build, then in Chrome → Extensions → Load unpacked → select the `unpacked/` folder.
 
+### Handing a build over for manual testing
+
+Whenever a change needs to be verified by the user in a real browser, **build a dev release first and hand over the absolute Windows path**. Never ask for a manual test without one.
+
+```powershell
+npm run build:devRelease               # bumps package.json, then builds unpacked/
+npm run version:updateManifest         # stamps that version into public/manifest.json
+npm run build:project -- -Development  # full rebuild, so unpacked/ carries the stamped manifest
+```
+
+Path to hand over, for the main checkout:
+
+```
+E:\git\soulcode\bexio-chrome-extension\unpacked
+```
+
+**Why the version bump matters.** `build:devRelease` runs `version:patch` on purpose: the bumped number is how the user tells *which* local build is loaded in Chrome, when several dev builds follow each other in one session. That only works if the number actually reaches the extension.
+
+**Why the last two steps are not optional.** `build:devRelease` bumps `package.json` but does **not** stamp the manifest, and the manifest is copied into `unpacked/` *during* the build. Running only `build:devRelease` — or running `version:updateManifest` after it without rebuilding — leaves `unpacked/manifest.json` on the previous version. Chrome then shows a stale version for the very build that is meant to prove the change, which defeats the point of the bump. Stamp first, then re-emit.
+
+**The last step must be a full build — never `-IgnoreSidePanel`.** `packages/chrome-extension/vite.config.js` sets `outDir: "../../unpacked"` with `emptyOutDir: true`, so the extension build **empties the whole `unpacked/` folder**; Build.ps1 then rebuilds the side panel into `unpacked/sidePanel-import/`. In a full build the order saves you. An extension-only build does not merely skip the side panel — it *deletes* the one already there, and nothing fails: Chrome loads the folder, the injected template UI still works, and only opening the side panel reveals `ERR_FILE_NOT_FOUND`. The same applies to `-IgnoreExtension` in reverse. `Build.ps1` now prints a warning when `unpacked/sidePanel-import/index.html` is missing after a build, but do not rely on spotting it — just build both.
+
+Build in the checkout that actually holds the code under test. A worktree has its own `unpacked/`, so handing over the main checkout's path after building in a worktree ships the wrong build.
+
+The version bump, the stamped `public/manifest.json` and `.release-please-manifest.json` are left **uncommitted**. Versions belong to the CI release process (`release-please`), not to a dev build — see `docs/architecture/publishing.md`.
+
 ## Releases
 
 Run `npm run createRelease` (`CreateRelease.ps1`); see `RELEASE.md`. It bumps the version (`version:patch|minor|major`, which only edits `package.json` — `--no-git-tag-version`), runs `build:newExtensionRelease`, regenerates `CHANGELOG.md` via `git-cliff` (config in `cliff.toml`), runs `version:updateManifest` (`updateManifest.js` copies `package.json` version into `packages/chrome-extension/public/manifest.json` and stamps the build date into `package.json`), then commits as `Release: <version>`, tags, and fast-forward-merges the tag into `main`. The dev branch is `develop`. For the automated CI release path (`release-please` → Chrome Web Store via GitHub Actions, recommended), see `docs/architecture/publishing.md`.
