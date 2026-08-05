@@ -11,8 +11,57 @@
   color: white;
 }
 
+/*
+ * Opaque on purpose: the frozen columns below paint over the cells scrolling beneath them, and a
+ * translucent stripe would let that content bleed through. These are the two base row colours from
+ * TemplateEntries.css with the former #3276b44a already blended in, so the rendering is unchanged.
+ */
 tr:nth-child(even) {
-  background-color: #3276b44a;
+  background-color: #a9c6df;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: #2e4358;
+  }
+}
+
+/*
+ * Frozen leading columns of the import table (issue #12): everything left of the first date column
+ * stays pinned while the date columns scroll underneath. `left` and the width come from inline
+ * styles — they depend on the header of the current import; see frozenColumns.ts.
+ */
+.importDataTable .frozenColumn {
+  position: sticky;
+  z-index: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* The offsets are a sum of the widths, so the widths must be what the cell actually occupies.
+     Without this the cell renders 11px wider than set (padding + border) and each frozen column
+     overlaps the one to its left. */
+  box-sizing: border-box;
+}
+
+/* Data cells take the colour of their row (base or stripe). The header row and the totals row
+   (tr:last-child, above) bring their own opaque colour and are excluded so they keep it. */
+.importDataTable tbody tr:not(:last-child) td.frozenColumn {
+  background-color: inherit;
+}
+
+/* Above the body cells, and above the sticky thead's own z-index: 2. */
+.importDataTable thead .frozenColumn {
+  z-index: 3;
+}
+
+/* Marks where the frozen block ends. */
+.importDataTable .frozenColumn--last {
+  box-shadow: 2px 0 4px rgb(0 0 0 / 25%);
+}
+
+/* Without this the native select sizes itself to the longest template name and blows the
+   fixed column width. */
+.importDataTable .frozenColumn select {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .content button {

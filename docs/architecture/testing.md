@@ -359,8 +359,9 @@ tabs (item 4) are still manual-only.*
 
 *Automated: item 5 (parse → table, incl. billable icons and ▶ buttons) runs
 as a jsdom Vitest test in `packages/sidePanel-import/test/importEntries.test.tsx`;
-the side panel mounting is covered by the smoke spec. Items 3 and 6
-(tab persistence, cross-tab message to the bexio form) are still manual-only.*
+the side panel mounting is covered by the smoke spec. Items 3 and 7
+(tab persistence, cross-tab message to the bexio form) are still manual-only,
+and item 6 is manual for its visual half only.*
 
 1. On any bexio page (`https://office.bexio.com/index.php/monitoring/...`),
    click the extension icon (or the browser side-panel button) to open the
@@ -371,7 +372,14 @@ the side panel mounting is covered by the smoke spec. Items 3 and 6
 4. Switch to the **Import** tab. Paste a ManicTime clipboard export (TSV format)
    into the import text area.
 5. Confirm the parsed rows populate the import table.
-6. Click the ▶ (play / fill) button on one row — confirm the
+6. Scroll the import table horizontally until the date columns move. The block
+   up to and including **Billable** must stay in place, stay fully opaque (no
+   date cells shining through), keep its shadow edge on the right, and the
+   header row must still stick to the top while scrolling vertically. Which
+   columns are pinned is covered by
+   `packages/sidePanel-import/test/frozenColumns.test.ts`; that `position: sticky`
+   actually paints is not — jsdom has no layout, so it is only checked here.
+7. Click the ▶ (play / fill) button on one row — confirm the
    `monitoring/edit` form in the main tab is populated with that entry's values.
 7. **Live template sync.** With the side panel open, save a new template from the
    injected Templates block on `monitoring/edit`. The panel's **Templates** tab

@@ -1,5 +1,6 @@
 import TableCellTrackingDay from "./TableCellTrackingDay";
 import TableCellBillable from "./TableCellBillable";
+import { DATE_COLUMN_REGEX, FrozenColumn, frozenCellProps } from "./frozenColumns";
 
 type ImportEntriesTableCellProps = {
   templateId: string;
@@ -8,10 +9,11 @@ type ImportEntriesTableCellProps = {
   entryStatus: boolean;
   onButtonClick: () => void;
   onButtonClickReset: () => void;
+  /** Set when this column is part of the frozen leading block; tracking days never are. */
+  frozenColumn?: FrozenColumn;
 };
 const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
-  const dateRegex = /^\d{2}[./]\d{2}[./]\d{4}$/;
-  const columnIsATrackingDay = dateRegex.test(props.columnHeader);
+  const columnIsATrackingDay = DATE_COLUMN_REGEX.test(props.columnHeader);
   const columnIsBillable = props.columnHeader === "Billable";
 
   if (columnIsATrackingDay) {
@@ -28,10 +30,16 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
       <TableCellBillable
         templateId={props.templateId}
         fieldValue={props.fieldValue}
+        frozenColumn={props.frozenColumn}
       />
     );
   } else {
-    return <td>{props.fieldValue}</td>;
+    // Frozen cells are clipped to their fixed width, so keep the full value reachable.
+    return (
+      <td {...frozenCellProps(props.frozenColumn)} title={props.frozenColumn ? props.fieldValue : undefined}>
+        {props.fieldValue}
+      </td>
+    );
   }
 };
 

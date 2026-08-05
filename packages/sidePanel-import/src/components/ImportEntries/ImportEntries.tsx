@@ -10,6 +10,7 @@ import { chromeStorage } from "@bexio-chrome-extension/shared";
 import { loadApplyNotesSetting, saveApplyNotesSetting } from "@bexio-chrome-extension/shared/chromeStorageSettings";
 import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
 import { autoMapTemplatesV3 } from "./AutoMapTemplatesV3";
+import { frozenCellProps, getFrozenColumns } from "./frozenColumns";
 import { handleCsvData } from "~/utils/csvParser";
 
 export type ImportRow = string[];
@@ -302,6 +303,9 @@ function ImportEntries() {
     </div>
   );
 
+  // Everything left of the first date column stays pinned while the date columns scroll.
+  const frozenColumns = getFrozenColumns(importHeader);
+
   const importDataHTML = importData.length ? (
     <div className="content">
       <Tooltip title="Based on v2, but further weights exact word matches">
@@ -324,31 +328,43 @@ function ImportEntries() {
       <table className="importDataTable">
         <thead>
           <tr>
-            <th>#</th>
-            <th title="Select the template to apply">Template</th>
-            {importHeader.map((field) => (
-              <th key={field} style={{ minWidth: field === "Notes" ? "120px" : "auto" }}>
-                {field}
-                {field === "Notes" && (
-                  <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
-                    <Switch
-                      checkedChildren="Apply notes"
-                      unCheckedChildren="Ignore notes"
-                      defaultChecked={false}
-                      onClick={switchApplyNotesSetting}
-                      checked={applyNotesSetting}
-                    />
-                  </Tooltip>
-                )}
-              </th>
-            ))}
+            <th {...frozenCellProps(frozenColumns.index)}>#</th>
+            <th title="Select the template to apply" {...frozenCellProps(frozenColumns.template)}>
+              Template
+            </th>
+            {importHeader.map((field, columnIndex) => {
+              const frozenColumn = frozenColumns.data[columnIndex];
+              const frozenProps = frozenCellProps(frozenColumn);
+              return (
+                // A frozen column has a fixed width, which supersedes the extra room the
+                // "Notes" header would otherwise reserve for its switch.
+                <th
+                  key={field}
+                  className={frozenProps.className}
+                  style={frozenProps.style ?? { minWidth: field === "Notes" ? "120px" : "auto" }}
+                >
+                  {field}
+                  {field === "Notes" && (
+                    <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
+                      <Switch
+                        checkedChildren="Apply notes"
+                        unCheckedChildren="Ignore notes"
+                        defaultChecked={false}
+                        onClick={switchApplyNotesSetting}
+                        checked={applyNotesSetting}
+                      />
+                    </Tooltip>
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
           {importData.map((entry, entryIndex) => (
             <tr key={entry[0] + entryIndex + importTemplates[entryIndex]}>
-              <td>{entryIndex + 1}</td>
-              <td>
+              <td {...frozenCellProps(frozenColumns.index)}>{entryIndex + 1}</td>
+              <td {...frozenCellProps(frozenColumns.template)}>
                 <TemplateSelect
                   selectedTemplate={importTemplates[entryIndex]}
                   onChange={(templateId: string) => onChangeTemplate(templateId, entryIndex)}
@@ -363,15 +379,18 @@ function ImportEntries() {
                   entryStatus={entryStatus[`${columnIndex}-${entryIndex}`]}
                   onButtonClick={() => applyImportEntry(columnIndex, fieldValue, entryIndex)}
                   onButtonClickReset={() => resetEntryStatus(`${columnIndex}-${entryIndex}`)}
+                  frozenColumn={frozenColumns.data[columnIndex]}
                 />
               ))}
             </tr>
           ))}
           <tr>
-            <td></td>
-            <td></td>
+            <td {...frozenCellProps(frozenColumns.index)}></td>
+            <td {...frozenCellProps(frozenColumns.template)}></td>
             {importFooter.map((field, index) => (
-              <td key={importHeader[index]}>{field}</td>
+              <td key={importHeader[index]} {...frozenCellProps(frozenColumns.data[index])}>
+                {field}
+              </td>
             ))}
           </tr>
         </tbody>
@@ -397,6 +416,13 @@ function ImportEntries() {
                 You can manually fix single entries, or do it completely manually of course.
                 <br />
                 <i>These changes are saved automatically, in case you leave and come back later.</i>
+              </li>
+              <li>
+                The columns up to <strong>Billable</strong> stay in place while you scroll to a date on
+                the right, so you always see which row you are booking.
+                <br />
+                ℹ️ With many Tag columns that block gets wide — drag the side panel wider if the dates
+                become hard to reach.
               </li>
               <li>
                 Click on the ▶️-button next to the time you want to track. It will automatically fill the form in bexio

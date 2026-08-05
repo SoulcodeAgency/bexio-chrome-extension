@@ -15,6 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { message } from "antd";
 import ImportEntries from "~/components/ImportEntries/ImportEntries";
+import { FROZEN_COLUMN_WIDTHS } from "~/components/ImportEntries/frozenColumns";
 import { TemplateContext } from "~/TemplateContext";
 import { NO_CONTENT_SCRIPT_MESSAGE } from "~/utils/sendToBexioTab";
 import type { TemplateEntry } from "@bexio-chrome-extension/shared/types";
@@ -105,6 +106,71 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
 
     // Footer row shows the totals from the last TSV row.
     expect(within(footer as HTMLElement).getByText("4:15:00")).toBeDefined();
+  });
+
+  /**
+   * Frozen leading columns (issue #12). `getFrozenColumns` owns the arithmetic and is pinned
+   * in test/frozenColumns.test.ts; this checks that every cell of the leading block actually
+   * receives it — header, data rows and the footer row alike — and that the scrolling columns
+   * are left alone. The expected offsets are derived from the exported widths, so tuning a
+   * width does not break this test.
+   */
+  it("pins the columns before the first date column and leaves the date columns scrolling", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(container, TSV);
+
+    const W = FROZEN_COLUMN_WIDTHS;
+    // "#", "Template", "Tag 1", "Notes", "Billable" — the block that stays put.
+    const widths = [W.index, W.template, W.default, W.notes, W.billable];
+    const offsets = widths.map((_, i) => widths.slice(0, i).reduce((sum, width) => sum + width, 0));
+
+    const table = container.querySelector("table.importDataTable") as HTMLElement;
+    const rows = [
+      Array.from(table.querySelectorAll("thead th")) as HTMLElement[],
+      ...Array.from(table.querySelectorAll("tbody tr")).map(
+        (row) => Array.from(row.querySelectorAll("td")) as HTMLElement[],
+      ),
+    ];
+    // Header + 2 data rows + footer row, each with 2 extra columns in front of the 6 imported ones.
+    expect(rows).toHaveLength(4);
+
+    for (const cells of rows) {
+      expect(cells).toHaveLength(8);
+
+      offsets.forEach((offset, columnIndex) => {
+        const cell = cells[columnIndex];
+        expect(cell.className).toContain("frozenColumn");
+        expect(cell.style.left).toBe(`${offset}px`);
+        expect(cell.style.width).toBe(`${widths[columnIndex]}px`);
+      });
+
+      // "Billable" is the rightmost frozen column and carries the separating shadow.
+      expect(cells[4].className).toContain("frozenColumn--last");
+      expect(cells[3].className).not.toContain("frozenColumn--last");
+
+      // The two tracking days and the trailing "Total" column scroll.
+      for (const cell of cells.slice(5)) {
+        expect(cell.className).not.toContain("frozenColumn");
+        expect(cell.style.left).toBe("");
+      }
+    }
+  });
+
+  it("pins nothing when the import has no date column", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(
+      container,
+      [
+        ["Tag 1", "Billable", "Total"].join("\t"),
+        ["Project Falcon", "Billable", "1:30:00"].join("\t"),
+        ["Total", "", "1:30:00"].join("\t"),
+      ].join("\n"),
+    );
+
+    const table = container.querySelector("table.importDataTable") as HTMLElement;
+    expect(table.querySelectorAll(".frozenColumn")).toHaveLength(0);
   });
 
   it("shows the parser error and no table when the required 'Tag 1' column is missing", async () => {

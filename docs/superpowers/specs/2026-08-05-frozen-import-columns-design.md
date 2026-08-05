@@ -118,9 +118,11 @@ declaring its own copy. Both places must agree on what a date column is.
 
 New rules go into `ImportEntries.css`, scoped to `.importDataTable`:
 
-- `.importDataTable .frozenColumn { position: sticky; background-color: inherit; z-index: 1 }`
-  plus the clipping declarations. `left` and `width` come from inline styles, since they depend on
-  the header.
+- `.importDataTable .frozenColumn { position: sticky; z-index: 1 }` plus the clipping declarations
+  and `box-sizing: border-box`. `left` and `width` come from inline styles, since they depend on the
+  header. The `box-sizing` is load-bearing: cells carry 5 px padding and a 1 px border, so under the
+  default `content-box` every column renders 11 px wider than its width constant while the offsets
+  still sum the constants — each frozen column would then overlap its left neighbour by 11 px.
 - `.importDataTable thead .frozenColumn { z-index: 3 }` — above both the body cells and the
   `thead`'s own `z-index: 2`.
 - `.importDataTable .frozenColumn--last` adds `box-shadow: 2px 0 4px rgba(0, 0, 0, 0.25)` so the
@@ -142,8 +144,9 @@ from `TemplateEntries.css`. The rendered colour is unchanged.
 The other two backgrounds are already opaque and stay as they are: `table th` (`#33b7a2` /
 `#1e6f62`) and the footer row `.importDataTable tr:last-child td` (`#33b7a2`).
 
-Frozen cells use `background-color: inherit` so they pick up whichever of those applies to their
-row.
+Frozen data cells use `background-color: inherit` so they pick up whichever of those applies to
+their row. The header row and the totals row are excluded from that rule — they bring their own
+opaque colour and have to keep it.
 
 ## Component changes
 
