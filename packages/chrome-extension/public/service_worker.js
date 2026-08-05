@@ -1,9 +1,6 @@
-const BEXIO_MONITORING_TIMETRACKING =
-  "https://office.bexio.com/index.php/monitoring/edit";
-const BEXIO_MONITORING_LIST =
-  "https://office.bexio.com/index.php/monitoring/list";
-const BEXIO_MONITORING_SIDEBAR =
-  "https://office.bexio.com/index.php/monitoring";
+const BEXIO_MONITORING_TIMETRACKING = "https://office.bexio.com/index.php/monitoring/edit";
+const BEXIO_MONITORING_LIST = "https://office.bexio.com/index.php/monitoring/list";
+const BEXIO_MONITORING_SIDEBAR = "https://office.bexio.com/index.php/monitoring";
 
 // Clicking extension icon will open the browser on the bexio time tracking page
 chrome.action.onClicked.addListener((tab) => {
@@ -11,9 +8,7 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 // Allows users to open the side panel by clicking on the action toolbar icon
-chrome.sidePanel
-  .setPanelBehavior({ openPanelOnActionClick: true })
-  .catch((error) => console.error(error));
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
 
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   // The extension holds no broad "tabs" permission, only a host permission for

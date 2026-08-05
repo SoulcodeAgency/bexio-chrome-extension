@@ -22,9 +22,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForSearchBoxField resolves with the input element when #select2-drop input is already present", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSearchBoxField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxField"
-    );
+    const { default: waitForSearchBoxField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxField");
 
     // Inject the drop container before starting
     const drop = document.createElement("div");
@@ -41,9 +40,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForSearchBoxField keeps polling until the element appears (resolves on second poll)", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSearchBoxField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxField"
-    );
+    const { default: waitForSearchBoxField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxField");
 
     // Element not present yet
     const p = waitForSearchBoxField();
@@ -65,16 +63,15 @@ describe("waitFor* helpers", () => {
 
   it("waitForSearchBoxField rejects once the timeout elapses (#83)", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSearchBoxField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxField"
-    );
-    const { WaitForTimeoutError } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
-    );
+    const { default: waitForSearchBoxField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxField");
+    const { WaitForTimeoutError } = await import("@bexio-chrome-extension/chrome-extension/src/utils/pollUntil");
 
     // The element never appears — bexio's drop failed to open.
     let error: unknown;
-    const p = waitForSearchBoxField().catch((e: unknown) => { error = e; });
+    const p = waitForSearchBoxField().catch((e: unknown) => {
+      error = e;
+    });
 
     // Still polling shortly before the deadline
     await vi.advanceTimersByTimeAsync(TIMEOUT_MS - 1000);
@@ -92,9 +89,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForSearchBoxFieldToBeRemoved resolves immediately when #select2-drop input is absent", async () => {
     loadFixture("monitoring-edit"); // fixture has no #select2-drop
-    const { default: waitForSearchBoxFieldToBeRemoved } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxFieldToBeRemoved"
-    );
+    const { default: waitForSearchBoxFieldToBeRemoved } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxFieldToBeRemoved");
 
     const p = waitForSearchBoxFieldToBeRemoved();
     await vi.advanceTimersByTimeAsync(0);
@@ -103,9 +99,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForSearchBoxFieldToBeRemoved keeps polling until the element is removed", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSearchBoxFieldToBeRemoved } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxFieldToBeRemoved"
-    );
+    const { default: waitForSearchBoxFieldToBeRemoved } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxFieldToBeRemoved");
 
     // Inject the drop so the first poll sees it
     const drop = document.createElement("div");
@@ -124,12 +119,9 @@ describe("waitFor* helpers", () => {
 
   it("waitForSearchBoxFieldToBeRemoved rejects once the timeout elapses (#83)", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSearchBoxFieldToBeRemoved } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxFieldToBeRemoved"
-    );
-    const { WaitForTimeoutError } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
-    );
+    const { default: waitForSearchBoxFieldToBeRemoved } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSearchBoxFieldToBeRemoved");
+    const { WaitForTimeoutError } = await import("@bexio-chrome-extension/chrome-extension/src/utils/pollUntil");
 
     // Keep the element in the DOM — this is what a select2 search with no matching
     // result looks like: the drop stays open and nothing ever closes it.
@@ -139,7 +131,9 @@ describe("waitFor* helpers", () => {
     document.body.appendChild(drop);
 
     let error: unknown;
-    const p = waitForSearchBoxFieldToBeRemoved().catch((e: unknown) => { error = e; });
+    const p = waitForSearchBoxFieldToBeRemoved().catch((e: unknown) => {
+      error = e;
+    });
 
     await vi.advanceTimersByTimeAsync(TIMEOUT_MS - 1000);
     expect(error).toBeUndefined();
@@ -156,9 +150,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForSelectOptions resolves immediately when the sibling select already has >1 options", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
 
     // status select has 6 options (empty + 5 statuses) — resolves on first poll
     const p = waitForSelectOptions("#s2id_monitoring_monitoring_status_id");
@@ -168,9 +161,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForSelectOptions keeps polling when the sibling select has ≤1 options, resolves when more arrive", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
 
     // project select has 0 options initially
     const p = waitForSelectOptions("#s2id_monitoring_pr_project_id");
@@ -192,16 +184,15 @@ describe("waitFor* helpers", () => {
 
   it("waitForSelectOptions rejects once the timeout elapses, naming the selector (#83)", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
-    const { WaitForTimeoutError } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
+    const { WaitForTimeoutError } = await import("@bexio-chrome-extension/chrome-extension/src/utils/pollUntil");
 
     // package select has only 1 option (the empty one) — the AJAX load never lands
     let error: unknown;
-    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id").catch((e: unknown) => { error = e; });
+    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id").catch((e: unknown) => {
+      error = e;
+    });
 
     await vi.advanceTimersByTimeAsync(TIMEOUT_MS - 1000);
     expect(error).toBeUndefined();
@@ -214,16 +205,15 @@ describe("waitFor* helpers", () => {
 
   it("waitForSelectOptions honours a custom timeout", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
 
     let error: unknown;
     // interval 100 ms, deadline 500 ms (the deadline moved to the 5th parameter
     // when #84 added expectedValue/valueWaitBudgetMs in between)
-    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id", 100, null, undefined, 500).catch(
-      (e: unknown) => { error = e; },
-    );
+    const p = waitForSelectOptions("#s2id_monitoring_pr_package_id", 100, null, undefined, 500).catch((e: unknown) => {
+      error = e;
+    });
 
     await vi.advanceTimersByTimeAsync(400);
     expect(error).toBeUndefined();
@@ -239,9 +229,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForSelectOptions resolves immediately when the expected value is already among the options", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
 
     const p = waitForSelectOptions("#s2id_monitoring_monitoring_status_id", undefined, "In Arbeit");
     await vi.advanceTimersByTimeAsync(0);
@@ -251,9 +240,8 @@ describe("waitFor* helpers", () => {
   it("waitForSelectOptions matches the expected value case-insensitively and ignores surrounding whitespace", async () => {
     // fillForm always searches the literal "work" while bexio labels the option "Work".
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
 
     const p = waitForSelectOptions("#s2id_monitoring_client_service_id", undefined, "  work ");
     await vi.advanceTimersByTimeAsync(0);
@@ -262,9 +250,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForSelectOptions keeps polling while the select only holds stale options, resolves when the expected value arrives", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
 
     // Stale list from a previous selection: length > 1, but not the value we want.
     const pkgSelect = document.querySelector("#monitoring_pr_package_id") as HTMLSelectElement;
@@ -298,9 +285,8 @@ describe("waitFor* helpers", () => {
     // project, template that no longer matches the contact). The helper must not fail
     // the whole fill for that — it degrades to the plain "options are loaded" resolve.
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
 
     const pkgSelect = document.querySelector("#monitoring_pr_package_id") as HTMLSelectElement;
     const other = document.createElement("option");
@@ -328,9 +314,8 @@ describe("waitFor* helpers", () => {
     // must not burn the budget and resolve early. (The base wait itself rejects
     // after the 20s deadline, #83 — well beyond this test's horizon.)
     loadFixture("monitoring-edit");
-    const { default: waitForSelectOptions } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions"
-    );
+    const { default: waitForSelectOptions } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForSelectOptions");
 
     let settled = false;
     // project select has 0 options in the fixture
@@ -343,7 +328,10 @@ describe("waitFor* helpers", () => {
 
     // Cleanup: let the options arrive so the promise settles
     const projectSelect = document.querySelector("#monitoring_pr_project_id") as HTMLSelectElement;
-    for (const [value, text] of [["", ""], ["1", "Project Falcon"]]) {
+    for (const [value, text] of [
+      ["", ""],
+      ["1", "Project Falcon"],
+    ]) {
       const option = document.createElement("option");
       option.value = value;
       option.text = text;
@@ -359,9 +347,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForContacts resolves when .ac_results is present and visible (display !== 'none')", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForContacts } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts"
-    );
+    const { default: waitForContacts } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts");
 
     // Inject a visible .ac_results element
     const acResults = document.createElement("ul");
@@ -376,9 +363,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForContacts keeps polling when .ac_results is absent, resolves when it appears", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForContacts } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts"
-    );
+    const { default: waitForContacts } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts");
 
     const p = waitForContacts();
     await vi.advanceTimersByTimeAsync(500); // not found yet
@@ -395,9 +381,8 @@ describe("waitFor* helpers", () => {
 
   it("waitForContacts keeps polling when .ac_results is present but display:none", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForContacts } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts"
-    );
+    const { default: waitForContacts } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts");
 
     // Inject a hidden .ac_results
     const acResults = document.createElement("ul");
@@ -406,7 +391,9 @@ describe("waitFor* helpers", () => {
     document.body.appendChild(acResults);
 
     let settled = false;
-    const p = waitForContacts().then(() => { settled = true; });
+    const p = waitForContacts().then(() => {
+      settled = true;
+    });
 
     await vi.advanceTimersByTimeAsync(3000); // several polls — still hidden
     expect(settled).toBe(false);
@@ -420,16 +407,15 @@ describe("waitFor* helpers", () => {
 
   it("waitForContacts rejects once the timeout elapses (#83)", async () => {
     loadFixture("monitoring-edit");
-    const { default: waitForContacts } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts"
-    );
-    const { WaitForTimeoutError } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
-    );
+    const { default: waitForContacts } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/waitForContacts");
+    const { WaitForTimeoutError } = await import("@bexio-chrome-extension/chrome-extension/src/utils/pollUntil");
 
     // No .ac_results anywhere — the contact lookup matched nothing or failed.
     let error: unknown;
-    const p = waitForContacts().catch((e: unknown) => { error = e; });
+    const p = waitForContacts().catch((e: unknown) => {
+      error = e;
+    });
 
     await vi.advanceTimersByTimeAsync(TIMEOUT_MS - 1000);
     expect(error).toBeUndefined();

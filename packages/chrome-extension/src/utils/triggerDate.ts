@@ -3,8 +3,8 @@ import pressEnter from "./pressEnter";
 
 // Trigger date
 async function triggerDate(value: string) {
-    dateField.value = value;
-    dateField.dispatchEvent(pressEnter);
+  dateField.value = value;
+  dateField.dispatchEvent(pressEnter);
 }
 
 export default triggerDate;

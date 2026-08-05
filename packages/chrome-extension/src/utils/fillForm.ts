@@ -62,7 +62,14 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
     // A missing entry is handled after the loader is gone (see below), so that the
     // alert() does not pop up over a still-visible overlay.
     if (entry) {
-      const { contact = null, work = null, contactPerson = null, project = null, status = null, billable = true } = entry;
+      const {
+        contact = null,
+        work = null,
+        contactPerson = null,
+        project = null,
+        status = null,
+        billable = true,
+      } = entry;
       // Workaround because "package" is actually a reserved word
       const packageValue = entry.package ?? null;
 

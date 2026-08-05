@@ -13,7 +13,7 @@ description currently have to fix every entry by hand.
 ## Feature
 
 A second switch next to the existing **"Apply notes"** switch in the side panel's
-*Apply imported data* section. When it is on, the first letter of the description is
+_Apply imported data_ section. When it is on, the first letter of the description is
 uppercased as the entry is applied to bexio. It is **on by default**; switching it off
 restores today's verbatim behaviour.
 
@@ -34,9 +34,9 @@ user always sees what they actually imported.
 
 A new key next to the existing ones, following the same shape as `applyNotesSetting`:
 
-| Key | Type | Default |
-|-----|------|---------|
-| `"uppercaseFirstLetterSetting"` | `boolean` | `true` |
+| Key                             | Type      | Default |
+| ------------------------------- | --------- | ------- |
+| `"uppercaseFirstLetterSetting"` | `boolean` | `true`  |
 
 Exports `loadUppercaseFirstLetterSetting()` / `saveUppercaseFirstLetterSetting(value)`.
 It lives in `shared` because the side panel writes it and the content script reads it,
@@ -106,12 +106,12 @@ tooltip states; wiring a `disabled` prop would couple the two controls for no re
 
 ## Testing
 
-| Test | File |
-|------|------|
-| default `true`, round-trip, correct storage key | `packages/shared/test/chromeStorageSettings.test.ts` |
-| lower-case, leading whitespace, empty, non-letter start, already-uppercase, astral char | `packages/chrome-extension/test/utils/capitalizeFirstLetter.test.ts` |
-| default on → description capitalized; setting off → verbatim; notes off → no description at all | `packages/chrome-extension/test/eventListeners/onMessage.test.ts` |
-| switch renders, is on by default, persists when toggled | `packages/sidePanel-import/test/importEntries.test.tsx` |
+| Test                                                                                            | File                                                                 |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| default `true`, round-trip, correct storage key                                                 | `packages/shared/test/chromeStorageSettings.test.ts`                 |
+| lower-case, leading whitespace, empty, non-letter start, already-uppercase, astral char         | `packages/chrome-extension/test/utils/capitalizeFirstLetter.test.ts` |
+| default on → description capitalized; setting off → verbatim; notes off → no description at all | `packages/chrome-extension/test/eventListeners/onMessage.test.ts`    |
+| switch renders, is on by default, persists when toggled                                         | `packages/sidePanel-import/test/importEntries.test.tsx`              |
 
 ## Docs to update
 

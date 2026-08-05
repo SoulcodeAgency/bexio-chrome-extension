@@ -7,7 +7,7 @@ import pollUntil, { POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from "./pollUntil";
  * text, but not always with the same whitespace.
  */
 function normalizeOptionText(text: string) {
-    return text.replace(/\s+/g, " ").trim().toLowerCase();
+  return text.replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 /**
@@ -17,7 +17,7 @@ function normalizeOptionText(text: string) {
  * anything at all.
  */
 function hasMatchingOption(select: HTMLSelectElement, needle: string) {
-    return Array.from(select.options).some((option) => normalizeOptionText(option.text).includes(needle));
+  return Array.from(select.options).some((option) => normalizeOptionText(option.text).includes(needle));
 }
 
 /**
@@ -67,34 +67,34 @@ export const VALUE_WAIT_BUDGET_MS = 5_000;
  */
 // Check that the select has any values
 async function waitForSelectOptions(
-    selector: string,
-    timeToWait = POLL_INTERVAL_MS,
-    expectedValue: string | null = null,
-    valueWaitBudgetMs = VALUE_WAIT_BUDGET_MS,
-    timeoutMs = POLL_TIMEOUT_MS,
+  selector: string,
+  timeToWait = POLL_INTERVAL_MS,
+  expectedValue: string | null = null,
+  valueWaitBudgetMs = VALUE_WAIT_BUDGET_MS,
+  timeoutMs = POLL_TIMEOUT_MS,
 ): Promise<void> {
-    const needle = expectedValue === null ? "" : normalizeOptionText(expectedValue);
-    let optionsLoadedAt: number | null = null;
-    await pollUntil(
-        `the select2 options of "${selector}" to load`,
-        () => {
-            const selectSelector = document.querySelector(`${selector}+select`) as HTMLSelectElement | null;
-            if (selectSelector === null || selectSelector.options.length <= 1) {
-                optionsLoadedAt = null;
-                return false;
-            }
-            if (needle === "" || hasMatchingOption(selectSelector, needle)) {
-                return true;
-            }
-            // Options are loaded, but the searched value is not among them (yet):
-            // give the dependent-select AJAX repopulation a bounded extra budget,
-            // then degrade to the old "options are loaded" behaviour.
-            optionsLoadedAt ??= Date.now();
-            return Date.now() - optionsLoadedAt >= valueWaitBudgetMs;
-        },
-        timeToWait,
-        timeoutMs,
-    );
+  const needle = expectedValue === null ? "" : normalizeOptionText(expectedValue);
+  let optionsLoadedAt: number | null = null;
+  await pollUntil(
+    `the select2 options of "${selector}" to load`,
+    () => {
+      const selectSelector = document.querySelector(`${selector}+select`) as HTMLSelectElement | null;
+      if (selectSelector === null || selectSelector.options.length <= 1) {
+        optionsLoadedAt = null;
+        return false;
+      }
+      if (needle === "" || hasMatchingOption(selectSelector, needle)) {
+        return true;
+      }
+      // Options are loaded, but the searched value is not among them (yet):
+      // give the dependent-select AJAX repopulation a bounded extra budget,
+      // then degrade to the old "options are loaded" behaviour.
+      optionsLoadedAt ??= Date.now();
+      return Date.now() - optionsLoadedAt >= valueWaitBudgetMs;
+    },
+    timeToWait,
+    timeoutMs,
+  );
 }
 
 export default waitForSelectOptions;

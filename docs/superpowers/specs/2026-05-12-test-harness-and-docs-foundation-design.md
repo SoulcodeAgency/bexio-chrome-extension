@@ -30,14 +30,14 @@ Establish a **reproducible test harness** and a **developer knowledge base** for
 
 ## Decisions taken during brainstorming
 
-| Question | Decision |
-| --- | --- |
-| Deliverable scope | Test harness + docs only; code improvements are separate later specs. |
-| DOM fixture source | Real captured bexio HTML, committed and anonymised. (Synthetic fixtures only as a stopgap if captures are slow.) |
-| Test runner & layout | Vitest, configured once at the repo root as a workspace with per-package projects. |
-| Documentation location | `docs/architecture/` with one markdown file per topic, linked from `CLAUDE.md`, plus targeted TSDoc comments. |
-| Work structure | Infra first (Phase 1), then breadth across topics (Phase 2) in order 6 → 7 → 4 → 5. |
-| E2E | jsdom + fixtures is the backbone; add a thin opt-in Playwright extension-smoke layer; real-bexio E2E is manual-only and documented, not automated. |
+| Question               | Decision                                                                                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Deliverable scope      | Test harness + docs only; code improvements are separate later specs.                                                                              |
+| DOM fixture source     | Real captured bexio HTML, committed and anonymised. (Synthetic fixtures only as a stopgap if captures are slow.)                                   |
+| Test runner & layout   | Vitest, configured once at the repo root as a workspace with per-package projects.                                                                 |
+| Documentation location | `docs/architecture/` with one markdown file per topic, linked from `CLAUDE.md`, plus targeted TSDoc comments.                                      |
+| Work structure         | Infra first (Phase 1), then breadth across topics (Phase 2) in order 6 → 7 → 4 → 5.                                                                |
+| E2E                    | jsdom + fixtures is the backbone; add a thin opt-in Playwright extension-smoke layer; real-bexio E2E is manual-only and documented, not automated. |
 
 ## Architecture
 
@@ -61,21 +61,21 @@ Establish a **reproducible test harness** and a **developer knowledge base** for
   - `pr_project-listMonitoring.html` — project times (`/index.php/pr_project/listMonitoring/*`).
   - `pr_project-showPackage.html` — work-package times (`/index.php/pr_project/showPackage/*`).
   - `kb_invoice-show.html` — invoice "tracked time" modal (`/index.php/kb_invoice/show/id/*`). **Not captured this round:** the "weitere Positionen → erfasste Zeit" path appears to have changed/disappeared in current bexio, so this fixture is deferred and the `kb_invoice/show` content-script path is flagged for a follow-up investigation (verify whether it still works, adapt to the new UI, or remove it). Captured this round: `monitoring-edit.html`, `monitoring-edit-filled.html` (a filled existing entry), `monitoring-edit.tinymce-iframe.html` (the empty tinymce body), `monitoring-list.html`, `pr_project-listMonitoring.html`, `pr_project-showPackage.html`.
-  Each fixture has a sibling `<page>.md` recording: source URL, capture date, what was trimmed, and that names/contacts/project data were scrubbed. A `loadFixture(name)` helper reads the file and returns a jsdom `Document` (or installs it as `document` for the test).
+    Each fixture has a sibling `<page>.md` recording: source URL, capture date, what was trimmed, and that names/contacts/project data were scrubbed. A `loadFixture(name)` helper reads the file and returns a jsdom `Document` (or installs it as `document` for the test).
 - **Build smoke test (topic 7):** a Vitest test in the `node` project (or a small script it invokes) that:
   1. runs `npm run build:project -- -Development`;
   2. asserts `unpacked/manifest.json` exists and parses;
   3. asserts `manifest.version === package.json.version` (root);
   4. asserts every file referenced by the manifest's `content_scripts[].js`, `content_scripts[].css`, and `background.service_worker` exists in `unpacked/`;
   5. asserts `unpacked/sidePanel-import/index.html` exists.
-  Plus a focused unit test for `updateManifest.js`'s version/date replacement (extract the replace logic to a pure function if practical; otherwise drive it via a temp directory). This test is slow-tagged so a `test:fast` variant can skip it; the default `npm test` includes it.
+     Plus a focused unit test for `updateManifest.js`'s version/date replacement (extract the replace logic to a pure function if practical; otherwise drive it via a temp directory). This test is slow-tagged so a `test:fast` variant can skip it; the default `npm test` includes it.
 - **Scripts (root `package.json`):**
   - `test` — run all Vitest projects (includes the build smoke test).
   - `test:fast` — Vitest excluding the slow-tagged build smoke test.
   - `test:watch` — Vitest watch mode.
   - `test:e2e` — Playwright (separate; requires a build + `npx playwright install chromium`).
   - `test:ui` — `vitest --ui` (optional).
-  `Build.ps1` / `CreateRelease.ps1` / the release flow are unchanged.
+    `Build.ps1` / `CreateRelease.ps1` / the release flow are unchanged.
 
 ### Playwright extension-smoke layer (Phase 1 or end of Phase 2)
 
@@ -105,23 +105,27 @@ New directory with:
 Order: **6 → 7 → 4 → 5** (work needing no bexio access first; topic 5's DOM tests land once the `monitoring-edit.html` fixture is provided).
 
 ### Topic 6 — `shared/`
+
 - `chromeStorage.ts`: `load`/`save`/`remove`/`update`/`clear` round-trips; the array-only assumption in `remove`/`update`; `update` throwing when `updatedEntry` has no id; behaviour when the key is absent.
 - `chromeStorageTemplateEntries.ts`, `chromeStorageSettings.ts`, `chromeStorageImportData.ts`: defaults (`loadTemplates` → `[]`; `loadApplyNotesSetting` → `true`; `loadRemovePopoversSetting` → `false`; `loadActiveTabId` → `undefined`); save/load symmetry; the settings key names.
 - `sortTemplates.ts`: alphabetical by `getTemplateName`; pin the in-place `.sort` mutation. `getTemplateName.ts`: `templateName` → `id` → `"No template name found"`. `confirmTemplateDeletion.ts`.
 - Doc: `docs/architecture/storage.md`.
 
 ### Topic 7 — build & release
+
 - The build smoke test (Section: Test infrastructure).
 - `updateManifest.js` version/date replacement.
 - Doc: `docs/architecture/build-and-release.md`.
 
 ### Topic 4 — tooltip replacement
+
 - `selectors/projectTable_TextCell.ts`: `getPopoverNodes` / `getPopoverNodeText` against the four page fixtures.
 - `convertPopover.ts`: setting OFF → `revertPopover` path; setting ON → target cells hidden, `.new-popover-text` injected with DOMPurify-sanitised text, HTML entities decoded, alternating row colours, idempotent on repeat calls; `revertPopover` restores the original state.
 - `apps/bexioProjectList/index.ts`: test the extractable part — page-path → `MutationObserver` target-node selection; document the observer wiring rather than force a brittle test.
 - Doc: `docs/architecture/tooltip-replacement.md`.
 
 ### Topic 5 — form-manipulation layer
+
 - `selectors/*` (billable checkbox, contact field, date/description/duration fields, the IDs in `selectors.ts`) resolve against `monitoring-edit.html`.
 - `utils/trigger*`: the events dispatched and the resulting DOM/value state, given the fixture + fake timers.
 - `utils/waitFor*`: resolve/timeout behaviour with fake timers and mutated fixtures.

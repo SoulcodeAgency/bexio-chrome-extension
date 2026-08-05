@@ -10,11 +10,11 @@ This document covers the workspace layout, build pipeline, release sequence, and
 
 The repository uses **npm workspaces** with three packages:
 
-| Package | Name | Purpose | Build step? |
-|---|---|---|---|
-| `packages/shared` | `@bexio-chrome-extension/shared` | Shared TypeScript utilities and types (chrome storage wrappers, template helpers) consumed by both other packages | None — source files are imported directly via the workspace symlink |
-| `packages/chrome-extension` | `@bexio-chrome-extension/chrome-extension` | The Chrome extension content scripts and popup | `vite build` / `vite build --mode development` |
-| `packages/sidePanel-import` | `@bexio-chrome-extension/side-panel-import` | The React side-panel app that lives in the Chrome Side Panel | `vite build` / `vite build --mode development` |
+| Package                     | Name                                        | Purpose                                                                                                           | Build step?                                                         |
+| --------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/shared`           | `@bexio-chrome-extension/shared`            | Shared TypeScript utilities and types (chrome storage wrappers, template helpers) consumed by both other packages | None — source files are imported directly via the workspace symlink |
+| `packages/chrome-extension` | `@bexio-chrome-extension/chrome-extension`  | The Chrome extension content scripts and popup                                                                    | `vite build` / `vite build --mode development`                      |
+| `packages/sidePanel-import` | `@bexio-chrome-extension/side-panel-import` | The React side-panel app that lives in the Chrome Side Panel                                                      | `vite build` / `vite build --mode development`                      |
 
 `shared` has no build step. Its `package.json` `"main"` points to `index.ts` and the other packages import it via the npm workspace symlink (`node_modules/@bexio-chrome-extension/shared → packages/shared`). In tests, Vitest's path aliases replicate this resolution (see `vitest.config.ts`).
 
@@ -24,11 +24,11 @@ The repository uses **npm workspaces** with three packages:
 
 `tsc` never emits anything in this repo — Vite/Rolldown does all the transpiling, and every `tsconfig.json` sets `noEmit`. Type checking is a separate gate: `npm run typecheck` (root) fans out to a per-package `typecheck` script, and CI runs it between install and build.
 
-| Project | Config | Strict? |
-|---|---|---|
-| `packages/shared` | `tsconfig.json` | yes |
-| `packages/chrome-extension` | `tsconfig.json` | yes |
-| `packages/sidePanel-import` | `tsconfig.json` (app) + `tsconfig.node.json` (`vite.config.ts`) | yes |
+| Project                     | Config                                                          | Strict? |
+| --------------------------- | --------------------------------------------------------------- | ------- |
+| `packages/shared`           | `tsconfig.json`                                                 | yes     |
+| `packages/chrome-extension` | `tsconfig.json`                                                 | yes     |
+| `packages/sidePanel-import` | `tsconfig.json` (app) + `tsconfig.node.json` (`vite.config.ts`) | yes     |
 
 ### Strict mode in `chrome-extension`
 
@@ -38,16 +38,16 @@ The rule followed, and the one to keep following:
 
 > Where strict flagged a possible `null`/`undefined`, the fix is a non-null assertion (`!`) or a type-level cast — **not** a runtime guard.
 
-That looks lazy but is the deliberate choice. Adding `if (!x) return` would convert a loud, visible crash into a silent no-op: `swapDisplayStyle` would quietly stop toggling. A crash is better failure behaviour than silent nothing, and the test suite pins current behaviour on purpose (see `docs/architecture/testing.md`). Each `!` carries a comment explaining why the value is expected to exist. Where a guard *is* the right answer, it comes with visible feedback rather than a silent `return` — see the unknown-template guard in `fillForm.ts` (#73).
+That looks lazy but is the deliberate choice. Adding `if (!x) return` would convert a loud, visible crash into a silent no-op: `swapDisplayStyle` would quietly stop toggling. A crash is better failure behaviour than silent nothing, and the test suite pins current behaviour on purpose (see `docs/architecture/testing.md`). Each `!` carries a comment explaining why the value is expected to exist. Where a guard _is_ the right answer, it comes with visible feedback rather than a silent `return` — see the unknown-template guard in `fillForm.ts` (#73).
 
 The single intentional runtime change is in `convertPopover.ts`: `DOMPurify.sanitize(popoverText ?? "")`. `getPopoverNodeText` genuinely returns `null` when the icon has no `data-content`. This is safe because `sanitize(null)` and `sanitize("")` both return `""` — verified against the pinned DOMPurify version, and the unminified bundle diff for the whole change is exactly this one line.
 
 Strict also surfaced two latent bugs that were **left in place** and marked `// KNOWN ISSUE:` rather than fixed, because fixing them changes user-visible behaviour and belongs in its own change. Both were tracked as issues, and both have since been fixed in their own changes:
 
-| Where | What | Issue |
-|---|---|---|
-| `readFormData.ts` | `trimAll(workField)` passed the work *element*, not the `work` string read from it, so `.length` was `undefined`, that link in the `templateName` chain was dead, and the suggested name always fell through to `"New Template"`. **Fixed:** the argument is now `work`, so the work type is suggested when package, project and contact are all empty. The whole chain is pinned in `test/utils/readFormData.test.ts`. | #72 (closed) |
-| `fillForm.ts` | `templateEntries.find(...)` returned `undefined` for an unknown `id` and the destructuring then threw, leaving the loader spinning. **Fixed:** the `!` was replaced by a guard that re-renders the template list and `alert()`s the user, and the loader is now hidden in a `finally` so no failure in `fillForm` can leave it on screen. | #73 (closed) |
+| Where             | What                                                                                                                                                                                                                                                                                                                                                                                                                    | Issue        |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `readFormData.ts` | `trimAll(workField)` passed the work _element_, not the `work` string read from it, so `.length` was `undefined`, that link in the `templateName` chain was dead, and the suggested name always fell through to `"New Template"`. **Fixed:** the argument is now `work`, so the work type is suggested when package, project and contact are all empty. The whole chain is pinned in `test/utils/readFormData.test.ts`. | #72 (closed) |
+| `fillForm.ts`     | `templateEntries.find(...)` returned `undefined` for an unknown `id` and the destructuring then threw, leaving the loader spinning. **Fixed:** the `!` was replaced by a guard that re-renders the template list and `alert()`s the user, and the loader is now hidden in a `finally` so no failure in `fillForm` can leave it on screen.                                                                               | #73 (closed) |
 
 A third finding turned out **not** to be a bug: `keywords` is intentionally never set by `readFormData`. It is a side-panel-only override with no counterpart in the bexio form, so there is nothing there to read it from — templates start without it and gain it when edited in the side panel. `TemplateEntry` still declares it required, which is part of why the object literal in `readFormData` needs its `as TemplateEntry` cast.
 
@@ -72,13 +72,13 @@ Collapse this back to a single version once `typescript-eslint` supports TS 7.
 
 `Build.ps1` (repo root) orchestrates both package builds. Invoke it via the root npm script `npm run build:project`.
 
-| Flag | Effect |
-|---|---|
-| *(none)* | Builds both `chrome-extension` and `sidePanel-import` in **production** mode (`vite build`) |
-| `-Development` | Builds both packages in **development** mode (`vite build --mode development`); output is not minified |
-| `-IgnoreExtension` | Skips the `chrome-extension` build |
-| `-IgnoreSidePanel` | Skips the `sidePanel-import` build — **leaves `unpacked/` unloadable**, see below |
-| `-CreatePackage` | After both builds, zips `unpacked/` into `dist/bexio-chrome-extension.zip` and opens the Chrome Web Store developer console |
+| Flag               | Effect                                                                                                                      |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| _(none)_           | Builds both `chrome-extension` and `sidePanel-import` in **production** mode (`vite build`)                                 |
+| `-Development`     | Builds both packages in **development** mode (`vite build --mode development`); output is not minified                      |
+| `-IgnoreExtension` | Skips the `chrome-extension` build                                                                                          |
+| `-IgnoreSidePanel` | Skips the `sidePanel-import` build — **leaves `unpacked/` unloadable**, see below                                           |
+| `-CreatePackage`   | After both builds, zips `unpacked/` into `dist/bexio-chrome-extension.zip` and opens the Chrome Web Store developer console |
 
 ### `-IgnoreSidePanel` does not skip the side panel, it deletes it
 
@@ -89,11 +89,13 @@ Nothing fails when it happens. The build reports success, Chrome loads `unpacked
 Treat the flag as a build-time speedup for CI-style checks, not as a way to produce something loadable. Anything you intend to load in Chrome — in particular a build handed to someone for manual testing — must come from a full build.
 
 Flags can be combined. For example, to build only the side panel in dev mode:
+
 ```powershell
 npm run build:project -- -Development -IgnoreExtension
 ```
 
 Or via PowerShell directly:
+
 ```powershell
 powershell -File Build.ps1 -Development -IgnoreExtension
 ```
@@ -102,11 +104,11 @@ powershell -File Build.ps1 -Development -IgnoreExtension
 
 ## Output Directories
 
-| Directory | Contents | Audience |
-|---|---|---|
-| `unpacked/` | The loadable, unpacked Chrome extension (manifest + built JS/CSS/assets + side-panel sub-directory) | Load via `chrome://extensions` → "Load unpacked"; used as the smoke-test target |
-| `unpacked/sidePanel-import/` | The built React side-panel app nested inside `unpacked/` | Served by Chrome as a side-panel page; referenced by the extension's manifest |
-| `dist/` | A zip of `unpacked/` named `bexio-chrome-extension.zip` | Chrome Web Store upload (created only when `-CreatePackage` is passed) |
+| Directory                    | Contents                                                                                            | Audience                                                                        |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `unpacked/`                  | The loadable, unpacked Chrome extension (manifest + built JS/CSS/assets + side-panel sub-directory) | Load via `chrome://extensions` → "Load unpacked"; used as the smoke-test target |
+| `unpacked/sidePanel-import/` | The built React side-panel app nested inside `unpacked/`                                            | Served by Chrome as a side-panel page; referenced by the extension's manifest   |
+| `dist/`                      | A zip of `unpacked/` named `bexio-chrome-extension.zip`                                             | Chrome Web Store upload (created only when `-CreatePackage` is passed)          |
 
 Both `unpacked/` and `dist/` are git-ignored.
 
@@ -149,11 +151,11 @@ Web Store and re-triggers a store review, so treat each entry as load-bearing. T
 pinned by `packages/chrome-extension/test/manifest.test.ts`, which fails if a pattern broader than
 `https://office.bexio.com/*` shows up anywhere.
 
-| Field | Value | Why |
-|---|---|---|
-| `permissions` | `storage`, `sidePanel` | `chrome.storage.local` for templates/settings/import buffer; `chrome.sidePanel` for enabling and pointing the panel. |
-| `host_permissions` | `https://office.bexio.com/*` | Populates `tab.url` for bexio tabs only (see below). Adds no new install warning — the content-script `matches` already warn for that host. |
-| `web_accessible_resources` | `assets/logo_orig.png` → `https://office.bexio.com/*` | The only consumer is the loader overlay the content script injects into bexio (`renderHtml.ts`, via `chrome.runtime.getURL`). |
+| Field                      | Value                                                 | Why                                                                                                                                         |
+| -------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `permissions`              | `storage`, `sidePanel`                                | `chrome.storage.local` for templates/settings/import buffer; `chrome.sidePanel` for enabling and pointing the panel.                        |
+| `host_permissions`         | `https://office.bexio.com/*`                          | Populates `tab.url` for bexio tabs only (see below). Adds no new install warning — the content-script `matches` already warn for that host. |
+| `web_accessible_resources` | `assets/logo_orig.png` → `https://office.bexio.com/*` | The only consumer is the loader overlay the content script injects into bexio (`renderHtml.ts`, via `chrome.runtime.getURL`).               |
 
 ### Why there is no `tabs` permission
 
@@ -161,14 +163,14 @@ pinned by `packages/chrome-extension/test/manifest.test.ts`, which fails if a pa
 what produces the "Read your browsing history" warning. The extension never needed that breadth.
 Of the `chrome.tabs.*` calls in the codebase, none require the permission:
 
-| Call site | Call | Needs `tabs`? |
-|---|---|---|
-| `public/service_worker.js` | `chrome.tabs.create({ url })` | No — creating a tab is unprivileged. |
-| `public/service_worker.js` | `chrome.tabs.onUpdated` + `tab.url` | No permission needed to *receive* the event; `tab.url` needs host access for that tab, which the host permission supplies for bexio. |
-| `sidePanel-import/src/utils/openBexioTimeTrackingPage.ts` | `chrome.tabs.query`, `chrome.tabs.onUpdated`, `chrome.tabs.update({ url })` | No — `query` returns tabs regardless; `tab.url` is compared against the bexio time-tracking URL, and host access covers it. Navigating a tab via `update` is unprivileged. |
-| `sidePanel-import/src/utils/applyTemplate.ts` | `chrome.tabs.query`, `chrome.tabs.sendMessage`, `chrome.tabs.update({ active: true })` | No — only `tab.id` is read, and messaging an already-injected content script needs no permission. |
-| `sidePanel-import/src/utils/reloadExtension.ts` | `chrome.tabs.query`, `chrome.tabs.sendMessage` | No — `tab.id` only. |
-| `sidePanel-import/src/components/ImportEntries/ImportEntries.tsx` | `chrome.tabs.query`, `chrome.tabs.sendMessage` | No — `tab.id` only. |
+| Call site                                                         | Call                                                                                   | Needs `tabs`?                                                                                                                                                              |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `public/service_worker.js`                                        | `chrome.tabs.create({ url })`                                                          | No — creating a tab is unprivileged.                                                                                                                                       |
+| `public/service_worker.js`                                        | `chrome.tabs.onUpdated` + `tab.url`                                                    | No permission needed to _receive_ the event; `tab.url` needs host access for that tab, which the host permission supplies for bexio.                                       |
+| `sidePanel-import/src/utils/openBexioTimeTrackingPage.ts`         | `chrome.tabs.query`, `chrome.tabs.onUpdated`, `chrome.tabs.update({ url })`            | No — `query` returns tabs regardless; `tab.url` is compared against the bexio time-tracking URL, and host access covers it. Navigating a tab via `update` is unprivileged. |
+| `sidePanel-import/src/utils/applyTemplate.ts`                     | `chrome.tabs.query`, `chrome.tabs.sendMessage`, `chrome.tabs.update({ active: true })` | No — only `tab.id` is read, and messaging an already-injected content script needs no permission.                                                                          |
+| `sidePanel-import/src/utils/reloadExtension.ts`                   | `chrome.tabs.query`, `chrome.tabs.sendMessage`                                         | No — `tab.id` only.                                                                                                                                                        |
+| `sidePanel-import/src/components/ImportEntries/ImportEntries.tsx` | `chrome.tabs.query`, `chrome.tabs.sendMessage`                                         | No — `tab.id` only.                                                                                                                                                        |
 
 `chrome.tabs.query` keeps working without `tabs`, but Chrome **strips** `url`, `pendingUrl`,
 `title` and `favIconUrl` from every returned tab the extension has no host access to. The one
@@ -177,10 +179,18 @@ consequence that mattered lives in the service worker:
 ```js
 // before — a missing url meant "skip", so the disable branch never ran
 if (!tab.url) return;
-if (tab.url.startsWith(BEXIO_MONITORING_SIDEBAR)) { /* enable */ } else { /* disable */ }
+if (tab.url.startsWith(BEXIO_MONITORING_SIDEBAR)) {
+  /* enable */
+} else {
+  /* disable */
+}
 
 // after — a missing url means "not a bexio tab" and must disable the panel
-if (tab.url && tab.url.startsWith(BEXIO_MONITORING_SIDEBAR)) { /* enable */ } else { /* disable */ }
+if (tab.url && tab.url.startsWith(BEXIO_MONITORING_SIDEBAR)) {
+  /* enable */
+} else {
+  /* disable */
+}
 ```
 
 Without that flip, the side panel would stay enabled from whatever bexio tab was visited last.
@@ -218,7 +228,7 @@ The script is interactive and must be run manually from the `develop` branch (or
 
 5. **`version:updateManifest`** (`node updateManifest.js`) — reads `./package.json` for the new version, regex-replaces the `"version"` field in `packages/chrome-extension/public/manifest.json` **and the `"."` entry in `.release-please-manifest.json`**, and stamps today's date (en-US locale: `"May 13, 2026"`) into `package.json`'s `"date"` field. The `.release-please-manifest.json` write keeps the automated path consistent: `release-please` runs in manifest mode and computes the next version from that file, so a manual release that leaves it stale makes the next Release PR propose an already-published version (see `publishing.md` → "Coexistence").
 
-6. **Commit, tag, merge** — stages everything (`git add .`), waits for confirmation, commits as `Release: <version>`, creates a git tag `<version>` (bare, no `v` prefix), checkouts `main`, merges the tag with `--ff-only`, pushes (`git push --all` plus an explicit `git push origin refs/tags/<version>`), and returns to `develop`. Every git command goes through the `RunGit` helper, which exits on a non-zero `$LASTEXITCODE` — a conflicted merge or a rejected push stops the script instead of being pushed over. Two details worth knowing: `--ff-only` is deliberate, because `main` now also receives squash merges from `release-please` and Dependabot, so a non-fast-forward means the branches genuinely diverged and a human has to resolve it; and the tag is pushed by refspec rather than with `--follow-tags`, which only pushes *annotated* tags while `git tag <version>` creates a lightweight one.
+6. **Commit, tag, merge** — stages everything (`git add .`), waits for confirmation, commits as `Release: <version>`, creates a git tag `<version>` (bare, no `v` prefix), checkouts `main`, merges the tag with `--ff-only`, pushes (`git push --all` plus an explicit `git push origin refs/tags/<version>`), and returns to `develop`. Every git command goes through the `RunGit` helper, which exits on a non-zero `$LASTEXITCODE` — a conflicted merge or a rejected push stops the script instead of being pushed over. Two details worth knowing: `--ff-only` is deliberate, because `main` now also receives squash merges from `release-please` and Dependabot, so a non-fast-forward means the branches genuinely diverged and a human has to resolve it; and the tag is pushed by refspec rather than with `--follow-tags`, which only pushes _annotated_ tags while `git tag <version>` creates a lightweight one.
 
 ### `cliff.toml`
 
@@ -238,7 +248,7 @@ The script is interactive and must be run manually from the `develop` branch (or
 
 Each build step used to be wrapped in a `try/catch`. That catch was **dead code**: PowerShell does not throw on native-command failures, so a `vite build` exiting non-zero never entered it. The script printed the green "OK … successfully built" line for a failed build, continued to the next step, and exited **0**. In the publish workflow that was the only gate — a side-panel build failure still produced a zip that `Compress-Archive` and the Chrome Web Store API both accept (valid manifest, valid extension scripts, no `sidePanel-import/`), so a broken extension could ship with no red signal anywhere.
 
-The script now checks `$LASTEXITCODE` after every `npm run` (`RunBuild`, mirroring `RunScript` in `CreateRelease.ps1`) and exits with that code. Additionally, `-CreatePackage` asserts the output before zipping (`AssertPackageContent`): `unpacked/manifest.json` must exist, and `unpacked/sidePanel-import/index.html` must exist unless `-IgnoreSidePanel` was passed. Anything missing is a red message and `exit 1`. `Compress-Archive`/`New-Item` run with `-ErrorAction Stop` so their `catch` is live too, and the two convenience calls that open the CWS console and the `dist/` folder moved *out* of the `try` with `-ErrorAction SilentlyContinue` — they have nothing to open on a CI runner and must never fail a build.
+The script now checks `$LASTEXITCODE` after every `npm run` (`RunBuild`, mirroring `RunScript` in `CreateRelease.ps1`) and exits with that code. Additionally, `-CreatePackage` asserts the output before zipping (`AssertPackageContent`): `unpacked/manifest.json` must exist, and `unpacked/sidePanel-import/index.html` must exist unless `-IgnoreSidePanel` was passed. Anything missing is a red message and `exit 1`. `Compress-Archive`/`New-Item` run with `-ErrorAction Stop` so their `catch` is live too, and the two convenience calls that open the CWS console and the `dist/` folder moved _out_ of the `try` with `-ErrorAction SilentlyContinue` — they have nothing to open on a CI runner and must never fail a build.
 
 What still holds: the smoke test (Task 2.2) cannot distinguish a genuinely fresh build from a stale one if `unpacked/` already existed from a prior run, and it only exercises `-Development`, so the production build is gated by the exit code alone.
 

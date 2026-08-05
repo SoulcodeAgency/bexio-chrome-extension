@@ -76,8 +76,7 @@ function parseVersion(raw: string): VersionCore | null {
 // import.meta.main is Node 24+; the fallback keeps this working if the script
 // is ever run on an older runtime.
 const isMain =
-  (import.meta as { main?: boolean }).main ??
-  (process.argv[1]?.endsWith("classify-dependabot-update.ts") || false);
+  (import.meta as { main?: boolean }).main ?? (process.argv[1]?.endsWith("classify-dependabot-update.ts") || false);
 
 if (isMain) {
   process.stdout.write(classifyDependabotUpdate(process.argv[2] ?? ""));

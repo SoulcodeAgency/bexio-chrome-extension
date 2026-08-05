@@ -30,16 +30,14 @@ function normalizeRows(csvString: string): string[] {
 
 function validateData(rows: string[], importHeader: string[], importData: string[][]) {
   if (importHeader.find((column) => column === "Tag 1") === undefined) {
-    const errorMessage =
-      "The data could not be parsed correctly. Make sure you have atleast a column called 'Tag 1'";
+    const errorMessage = "The data could not be parsed correctly. Make sure you have atleast a column called 'Tag 1'";
     throw new Error(errorMessage);
   } else if (importHeader.length < 2) {
     const errorMessage =
       "The data could not be parsed correctly. Make sure you have atleast 2 columns separated by tabs";
     throw new Error(errorMessage);
   } else if (rows.length < 3) {
-    const errorMessage =
-      "We need at least 1 header row, 1 data row and 1 footer row (can be dummy).";
+    const errorMessage = "We need at least 1 header row, 1 data row and 1 footer row (can be dummy).";
     throw new Error(errorMessage);
   }
   validateRowWidths(importHeader, importData);

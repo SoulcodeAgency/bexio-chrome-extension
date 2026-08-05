@@ -2,13 +2,7 @@ import { chromeStorageTemplateEntries } from "@bexio-chrome-extension/shared";
 import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
 import { billableCheckbox } from "../selectors/billableCheckbox";
 import { contactField } from "../selectors/contactField";
-import {
-  workField,
-  statusField,
-  contactPersonField,
-  projectField,
-  packageField,
-} from "../selectors/selectors";
+import { workField, statusField, contactPersonField, projectField, packageField } from "../selectors/selectors";
 import generateHash from "./generateHash";
 import readTextFromSelect2 from "./readTextFromSelect2";
 import trimAll from "./trimAll";
@@ -31,12 +25,7 @@ async function readFormData() {
   const packageValue = await readTextFromSelect2(packageField);
   const billable = billableCheckbox.checked;
 
-  const templateName =
-    trimAll(packageValue) ||
-    trimAll(project) ||
-    trimAll(contact) ||
-    trimAll(work) ||
-    "New Template";
+  const templateName = trimAll(packageValue) || trimAll(project) || trimAll(contact) || trimAll(work) || "New Template";
 
   let formEntry: TemplateEntry;
 
@@ -85,11 +74,7 @@ async function readFormData() {
     // Check if the hash already exists
     const existingEntry = allEntries.find((entry) => entry.id === hash);
     if (existingEntry !== undefined) {
-      if (
-        confirm(
-          `This entry already exists, or there was a hash conflict, Try again?`
-        )
-      ) {
+      if (confirm(`This entry already exists, or there was a hash conflict, Try again?`)) {
         // yes
       } else {
         // no
@@ -106,9 +91,7 @@ async function readFormData() {
   // Push the new entry to the array and save it
   allEntries.push(formEntry);
   console.log("formEntry", formEntry);
-  chromeStorageTemplateEntries
-    .saveTemplates(allEntries)
-    .then(() => initializeExtension());
+  chromeStorageTemplateEntries.saveTemplates(allEntries).then(() => initializeExtension());
 }
 
 export default readFormData;

@@ -9,8 +9,10 @@ describe("triggerCheckbox", () => {
 
   it("sets a checkbox to checked when value is true — does NOT fire a change event", async () => {
     loadFixture("monitoring-edit");
-    const { billableCheckbox } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/billableCheckbox");
-    const { default: triggerCheckbox } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox");
+    const { billableCheckbox } =
+      await import("@bexio-chrome-extension/chrome-extension/src/selectors/billableCheckbox");
+    const { default: triggerCheckbox } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox");
     const onChange = vi.fn();
     billableCheckbox.addEventListener("change", onChange);
     expect(billableCheckbox.checked).toBe(false);
@@ -22,8 +24,10 @@ describe("triggerCheckbox", () => {
 
   it("unchecks when value is false", async () => {
     loadFixture("monitoring-edit");
-    const { billableCheckbox } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/billableCheckbox");
-    const { default: triggerCheckbox } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox");
+    const { billableCheckbox } =
+      await import("@bexio-chrome-extension/chrome-extension/src/selectors/billableCheckbox");
+    const { default: triggerCheckbox } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox");
     billableCheckbox.checked = true;
     await triggerCheckbox(billableCheckbox, false);
     expect(billableCheckbox.checked).toBe(false);
@@ -31,8 +35,10 @@ describe("triggerCheckbox", () => {
 
   it("does not change state when called without a boolean (undefined)", async () => {
     loadFixture("monitoring-edit");
-    const { billableCheckbox } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/billableCheckbox");
-    const { default: triggerCheckbox } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox");
+    const { billableCheckbox } =
+      await import("@bexio-chrome-extension/chrome-extension/src/selectors/billableCheckbox");
+    const { default: triggerCheckbox } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox");
     billableCheckbox.checked = false;
     await triggerCheckbox(billableCheckbox, undefined);
     expect(billableCheckbox.checked).toBe(false);

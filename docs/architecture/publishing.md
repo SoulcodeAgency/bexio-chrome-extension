@@ -4,17 +4,17 @@ This file is the canonical documentation for how releases reach the Chrome Web S
 
 ## The two paths at a glance
 
-| | Automatic (CI) | Manual (local script) |
-| --- | --- | --- |
-| Trigger | Merge a Release PR on `main` | Run `npm run createRelease` locally |
-| Who bumps the version | `release-please` — always a minor bump (see below) | The human running the script (picks patch/minor/major interactively) |
-| Who regenerates `CHANGELOG.md` | `release-please` (from conventional commits) | `git-cliff` invoked by the script |
-| Who syncs `manifest.json` version | `release-please` `extra-files` JSONPath | `updateManifest.js` invoked by the script |
-| Who updates `.release-please-manifest.json` | `release-please` itself | `updateManifest.js` invoked by the script |
-| Who builds & zips | The publish workflow on `ubuntu-latest` | The human's local machine |
-| CWS upload | Automatic via the Chrome Web Store API | Manual: drag-and-drop into the dev console |
-| GitHub Release with `.zip` attached | Yes, automatically | No |
-| When to use | Default. Almost always. | Bypass / emergency / debugging CI |
+|                                             | Automatic (CI)                                     | Manual (local script)                                                |
+| ------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
+| Trigger                                     | Merge a Release PR on `main`                       | Run `npm run createRelease` locally                                  |
+| Who bumps the version                       | `release-please` — always a minor bump (see below) | The human running the script (picks patch/minor/major interactively) |
+| Who regenerates `CHANGELOG.md`              | `release-please` (from conventional commits)       | `git-cliff` invoked by the script                                    |
+| Who syncs `manifest.json` version           | `release-please` `extra-files` JSONPath            | `updateManifest.js` invoked by the script                            |
+| Who updates `.release-please-manifest.json` | `release-please` itself                            | `updateManifest.js` invoked by the script                            |
+| Who builds & zips                           | The publish workflow on `ubuntu-latest`            | The human's local machine                                            |
+| CWS upload                                  | Automatic via the Chrome Web Store API             | Manual: drag-and-drop into the dev console                           |
+| GitHub Release with `.zip` attached         | Yes, automatically                                 | No                                                                   |
+| When to use                                 | Default. Almost always.                            | Bypass / emergency / debugging CI                                    |
 
 ## The automatic path — release-please
 
@@ -32,21 +32,21 @@ New commits to `main` cause `release-please` to **amend the same PR** — it doe
 4. When you're ready: review the Release PR, click Merge.
 5. The merge commit triggers `release-please` to push the tag (e.g. `1.4.0`) and create a GitHub Release. The same workflow run then **calls** `publish-chrome-web-store.yml` as a reusable workflow, which builds the extension, uploads it to the CWS API, publishes it, and attaches the zip to the GitHub Release as an artifact.
 
-   **Why it is called rather than triggered.** The obvious wiring — let the Release-published event start the publish workflow — silently does nothing. `release-please` creates the release with the default `GITHUB_TOKEN`, and GitHub suppresses workflow runs for events raised by that token, to stop workflows triggering each other in a loop: *"Events triggered by the `GITHUB_TOKEN` will not create a new workflow run, with the following exceptions: `workflow_dispatch` and `repository_dispatch`."* This cost us a release that reached GitHub but never the store. The alternative fix is to give `release-please` a personal access token; chaining was chosen instead, because a PAT is one more long-lived credential that expires and has to be rotated. The `release` trigger is kept on the publish workflow, since a release published by a *human* in the GitHub UI does emit a usable event.
+   **Why it is called rather than triggered.** The obvious wiring — let the Release-published event start the publish workflow — silently does nothing. `release-please` creates the release with the default `GITHUB_TOKEN`, and GitHub suppresses workflow runs for events raised by that token, to stop workflows triggering each other in a loop: _"Events triggered by the `GITHUB_TOKEN` will not create a new workflow run, with the following exceptions: `workflow_dispatch` and `repository_dispatch`."_ This cost us a release that reached GitHub but never the store. The alternative fix is to give `release-please` a personal access token; chaining was chosen instead, because a PAT is one more long-lived credential that expires and has to be rotated. The `release` trigger is kept on the publish workflow, since a release published by a _human_ in the GitHub UI does emit a usable event.
 
-   **The same rule bites differently on the Release PR, and the difference matters.** For the `release` event no run is created at all — that is the silent failure above. For the Release PR's `pull_request` event a run *is* created, and then parked at `action_required`: this repo's fork-PR approval policy is `first_time_contributors`, and the PR's author (`github-actions[bot]`) trips it. A parked run looks identical to a missing one from the PR — no build check, `UNSTABLE` forever — but the fix is the opposite: it needs approving, not replacing. `release-please.yml` approves it (`GITHUB_TOKEN` is allowed to, verified on run 30629539822), and falls back to dispatching CI if that is ever refused. Two details cost a round each when this was built: the action's `prs_created` output is documented as "created or updated" but is only true on creation, and a parked run reads `completed/action_required` — `action_required` is the *conclusion*, not the status.
+   **The same rule bites differently on the Release PR, and the difference matters.** For the `release` event no run is created at all — that is the silent failure above. For the Release PR's `pull_request` event a run _is_ created, and then parked at `action_required`: this repo's fork-PR approval policy is `first_time_contributors`, and the PR's author (`github-actions[bot]`) trips it. A parked run looks identical to a missing one from the PR — no build check, `UNSTABLE` forever — but the fix is the opposite: it needs approving, not replacing. `release-please.yml` approves it (`GITHUB_TOKEN` is allowed to, verified on run 30629539822), and falls back to dispatching CI if that is ever refused. Two details cost a round each when this was built: the action's `prs_created` output is documented as "created or updated" but is only true on creation, and a parked run reads `completed/action_required` — `action_required` is the _conclusion_, not the status.
 
 ### Conventional commits: what triggers a release
 
-**Every store release is a minor bump** — `1.3.5` → `1.4.0` → `1.5.0` → … This is set by `"versioning": "always-bump-minor"` in `release-please-config.json`. Commit types decide *whether* a release happens and how the changelog is grouped; they no longer decide the size of the bump.
+**Every store release is a minor bump** — `1.3.5` → `1.4.0` → `1.5.0` → … This is set by `"versioning": "always-bump-minor"` in `release-please-config.json`. Commit types decide _whether_ a release happens and how the changelog is grouped; they no longer decide the size of the bump.
 
-| Commit prefix | Effect |
-| --- | --- |
-| `feat: …`, `feat(scope): …` | release, listed under "Features" |
-| `fix: …`, `fix(scope): …` | release, listed under "Bug Fixes" |
-| `feat!: …`, `fix!: …`, or any commit with a `BREAKING CHANGE:` footer | release, flagged as breaking in the changelog — still a minor bump. Use `Release-As: 2.0.0` if a breaking change deserves a major |
-| `chore:`, `docs:`, `test:`, `refactor:`, `style:`, `ci:`, `build:`, `perf:` | no release |
-| Anything not starting with a recognized prefix | no release (silent) |
+| Commit prefix                                                               | Effect                                                                                                                            |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `feat: …`, `feat(scope): …`                                                 | release, listed under "Features"                                                                                                  |
+| `fix: …`, `fix(scope): …`                                                   | release, listed under "Bug Fixes"                                                                                                 |
+| `feat!: …`, `fix!: …`, or any commit with a `BREAKING CHANGE:` footer       | release, flagged as breaking in the changelog — still a minor bump. Use `Release-As: 2.0.0` if a breaking change deserves a major |
+| `chore:`, `docs:`, `test:`, `refactor:`, `style:`, `ci:`, `build:`, `perf:` | no release                                                                                                                        |
+| Anything not starting with a recognized prefix                              | no release (silent)                                                                                                               |
 
 Scoped variants (`fix(release):`, `feat(side-panel):`) work identically to their unscoped form. Note that scope does **not** exempt a commit from triggering a release: `fix(test):` is still a `fix` and will open a Release PR.
 
@@ -118,12 +118,12 @@ Recommendation: pick one path per release and stick with it.
 
 Four GitHub Actions secrets must be configured in repo settings → Secrets and variables → Actions:
 
-| Secret | What it is | Source |
-| --- | --- | --- |
-| `CWS_EXTENSION_ID` | The CWS listing id | `nbmjdligmcfaeebdihmgbdpahdfddlhm` (public) |
-| `CWS_CLIENT_ID` | OAuth client id | Step 3 below |
-| `CWS_CLIENT_SECRET` | OAuth client secret | Step 3 below |
-| `CWS_REFRESH_TOKEN` | Long-lived OAuth refresh token | Step 4 below |
+| Secret              | What it is                     | Source                                      |
+| ------------------- | ------------------------------ | ------------------------------------------- |
+| `CWS_EXTENSION_ID`  | The CWS listing id             | `nbmjdligmcfaeebdihmgbdpahdfddlhm` (public) |
+| `CWS_CLIENT_ID`     | OAuth client id                | Step 3 below                                |
+| `CWS_CLIENT_SECRET` | OAuth client secret            | Step 3 below                                |
+| `CWS_REFRESH_TOKEN` | Long-lived OAuth refresh token | Step 4 below                                |
 
 Procedure (run once, by the listing owner):
 
@@ -131,8 +131,8 @@ Procedure (run once, by the listing owner):
 2. **Create or pick a Google Cloud project** at `https://console.cloud.google.com/`. Enable the **Chrome Web Store API**: APIs & Services → Library → search "Chrome Web Store API" → Enable.
 3. **Configure the consent screen**, then **create an OAuth 2.0 client** of type **Desktop app**. Both live under **Google Auth Platform** (`console.cloud.google.com/auth/overview`) in the current console.
    - Consent screen: app name (e.g. "Soulcode CWS Publisher"), support + contact email, user type **External** ("Internal" requires a Google Cloud Organization and is unavailable here).
-   - **Then set the publishing status to "In production"** (Audience → "Publish app"). This is not optional: with user type External and status "Testing", Google issues refresh tokens that **expire after 7 days**, so the pipeline would start failing with a 401 a week later. Publishing does not make the app discoverable — there is no directory of OAuth clients, and it is unusable without the client id *and* secret.
-   - Client: Clients → "Create client" → type **Desktop app** (*not* "Chrome extension" — that type is for an extension authenticating end users). Name it e.g. "cws-publisher (GitHub Actions)".
+   - **Then set the publishing status to "In production"** (Audience → "Publish app"). This is not optional: with user type External and status "Testing", Google issues refresh tokens that **expire after 7 days**, so the pipeline would start failing with a 401 a week later. Publishing does not make the app discoverable — there is no directory of OAuth clients, and it is unusable without the client id _and_ secret.
+   - Client: Clients → "Create client" → type **Desktop app** (_not_ "Chrome extension" — that type is for an extension authenticating end users). Name it e.g. "cws-publisher (GitHub Actions)".
    - **Download the JSON immediately.** The client secret is shown only once. A lost secret can be regenerated on the same client, but not recovered.
 4. **Get the refresh token.** Easiest via the `chrome-webstore-upload-keys` CLI:
 
@@ -141,17 +141,18 @@ Procedure (run once, by the listing owner):
    ```
 
    It will ask for the client id + secret, open a browser tab on a Google consent page, and print the refresh token to your terminal. Two things to watch: **check which account the consent screen is using** (it must be the account from step 1 — easy to get wrong with several Google accounts in one browser), and expect the **"Google hasn't verified this app"** warning — click "Advanced" → "Go to … (unsafe)". The app is unverified because it is only ever used internally; verification is not required for that.
+
 5. **Add all four values to repo secrets.** GitHub repo → Settings → Secrets and variables → Actions → "New repository secret", four times, names matching exactly: `CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`.
 6. **Smoke test — credentials only.** Actions tab → `publish-chrome-web-store` → "Run workflow" → current latest tag, `publish: false`.
 
-   Note the ordering: GitHub only registers workflows that exist on the **default branch**, so neither workflow is dispatchable until the branch carrying them has merged to `main`. This step therefore comes *after* the merge, not before.
+   Note the ordering: GitHub only registers workflows that exist on the **default branch**, so neither workflow is dispatchable until the branch carrying them has merged to `main`. This step therefore comes _after_ the merge, not before.
 
    Note what this can and cannot prove. The CWS API rejects any upload whose manifest version is not **higher** than the published one ("If you have not increased the version field in your extension's manifest file, this will fail"), and the latest tag by definition carries the published version. So a full dry run is not possible — but the failure mode is still informative:
 
    - **401 / 403 from Google**, or `invalid_grant` → one of the four secrets is wrong, the API was enabled in a different project, or a stray newline was copied into `CWS_REFRESH_TOKEN`.
    - **`PKG_INVALID_VERSION_NUMBER`** → the credentials work. That is the result you want here: Google resolved the item, accepted the OAuth exchange, and compared against the published version.
 
-   Pass a ref that exists **on the remote** — `main` is the safe choice. The input is named `tag` but is used as a checkout ref, so a ref that only exists locally makes the run die in checkout. `createRelease.ps1` now pushes its tag explicitly (`git push origin refs/tags/<version>`; `git push --all` pushes branches only, and `--follow-tags` would skip it because the tag is lightweight), so release tags from the local path are on the remote — but tags from releases made before that fix, and tags merely named in a *draft* GitHub release, are not.
+   Pass a ref that exists **on the remote** — `main` is the safe choice. The input is named `tag` but is used as a checkout ref, so a ref that only exists locally makes the run die in checkout. `createRelease.ps1` now pushes its tag explicitly (`git push origin refs/tags/<version>`; `git push --all` pushes branches only, and `--follow-tags` would skip it because the tag is lightweight), so release tags from the local path are on the remote — but tags from releases made before that fix, and tags merely named in a _draft_ GitHub release, are not.
 
    The first genuine end-to-end upload therefore happens on the first real release.
 

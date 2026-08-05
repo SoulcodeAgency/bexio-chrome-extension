@@ -11,7 +11,8 @@ describe("triggerDuration", () => {
     loadFixture("monitoring-edit");
     // Must import selectors after fixture is loaded (module-load quirk)
     const { durationField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/durationField");
-    const { default: triggerDuration } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration");
+    const { default: triggerDuration } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration");
 
     const onKeydown = vi.fn();
     durationField.addEventListener("keydown", onKeydown);
@@ -29,7 +30,8 @@ describe("triggerDuration", () => {
   it("accepts an empty string (does not throw)", async () => {
     loadFixture("monitoring-edit");
     const { durationField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/durationField");
-    const { default: triggerDuration } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration");
+    const { default: triggerDuration } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration");
 
     await expect(triggerDuration("")).resolves.toBeUndefined();
     expect(durationField.value).toBe("");
