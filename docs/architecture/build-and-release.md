@@ -77,8 +77,16 @@ Collapse this back to a single version once `typescript-eslint` supports TS 7.
 | *(none)* | Builds both `chrome-extension` and `sidePanel-import` in **production** mode (`vite build`) |
 | `-Development` | Builds both packages in **development** mode (`vite build --mode development`); output is not minified |
 | `-IgnoreExtension` | Skips the `chrome-extension` build |
-| `-IgnoreSidePanel` | Skips the `sidePanel-import` build |
+| `-IgnoreSidePanel` | Skips the `sidePanel-import` build — **leaves `unpacked/` unloadable**, see below |
 | `-CreatePackage` | After both builds, zips `unpacked/` into `dist/bexio-chrome-extension.zip` and opens the Chrome Web Store developer console |
+
+### `-IgnoreSidePanel` does not skip the side panel, it deletes it
+
+The extension build owns `unpacked/` and clears it (`emptyOutDir: true`, see below); the side-panel build then writes `unpacked/sidePanel-import/`. In a full build that order is what makes the folder complete. With `-IgnoreSidePanel` the first half still runs, so an existing `unpacked/sidePanel-import/` is **wiped and not rebuilt** — the flag can only ever destroy a side panel, never preserve one.
+
+Nothing fails when it happens. The build reports success, Chrome loads `unpacked/`, and the injected template UI on the bexio page works normally; only opening the side panel shows `ERR_FILE_NOT_FOUND`. That is why `Build.ps1` warns after every build when `unpacked/sidePanel-import/index.html` is missing — unlike `AssertPackageContent`, which only runs for `-CreatePackage` and deliberately skips this check when `-IgnoreSidePanel` was passed.
+
+Treat the flag as a build-time speedup for CI-style checks, not as a way to produce something loadable. Anything you intend to load in Chrome — in particular a build handed to someone for manual testing — must come from a full build.
 
 Flags can be combined. For example, to build only the side panel in dev mode:
 ```powershell
