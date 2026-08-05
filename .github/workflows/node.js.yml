@@ -61,6 +61,12 @@ jobs:
         run: npm ci --include=optional
       - name: Typecheck
         run: npm run typecheck
+      - name: Format check
+        # Prettier only agrees with a local run on an LF working tree, which is
+        # what .gitattributes (`* text=auto eol=lf`) guarantees on every
+        # platform. Without it a Windows checkout gets CRLF files and this step
+        # would pass in CI while failing for the developer on every single file.
+        run: npm run format:check
       - name: Build
         shell: pwsh
         run: |
