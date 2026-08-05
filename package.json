@@ -1,67 +1,67 @@
 {
-    "name": "@bexio-chrome-extension/main",
-    "version": "1.8.0",
-    "date": "Jan 5, 2026",
-    "description": "This extension allows saving and loading of form data as templates within the bexio time tracking page.",
-    "type": "module",
-    "scripts": {
-        "build:devRelease": "npm run version:patch && npm run build:project -- -Development",
-        "build:devRelease:sidePanelOnly": "npm run build:devRelease -- -IgnoreExtension",
-        "build:devRelease:extensionOnly": "npm run build:devRelease -- -IgnoreSidePanel",
-        "build:project": "powershell -File Build.ps1",
-        "build:newExtensionRelease": "npm run build:project -- -createPackage",
-        "build:cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\"",
-        "version:patch": "npm --no-git-tag-version version patch",
-        "version:minor": "npm --no-git-tag-version version minor",
-        "version:major": "npm --no-git-tag-version version major",
-        "version:updateManifest": "node updateManifest.js",
-        "changelog": "powershell -Command \"npx --no-install git-cliff --tag $env:npm_package_version -o CHANGELOG.md\"",
-        "createRelease": "powershell -File createRelease.ps1",
-        "npm:installProject": "npm i --workspaces --include-workspace-root",
-        "npm:ciProject": "npm ci --workspaces --include-workspace-root",
-        "npm:nodeModules:cleanup": "powershell \"Remove-Item -Path node_modules -Recurse -Force;\"",
-        "npm:lock:cleanup": "powershell \"Remove-Item -Path package-lock.json -Force;\"",
-        "npmCheckUpdates:check": "npx npm-check-updates -ws",
-        "npmCheckUpdates:update": "npx npm-check-updates -ws -u",
-        "test": "vitest run",
-        "test:fast": "vitest run --exclude \"**/*.slow.test.ts\"",
-        "test:watch": "vitest",
-        "test:e2e": "playwright test --config e2e/playwright.config.ts",
-        "typecheck": "npm run typecheck --workspaces --if-present",
-        "format": "prettier --write .",
-        "format:check": "prettier --check ."
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/SoulcodeAgency/bexio-chrome-extension.git"
-    },
-    "keywords": [
-        "bexio",
-        "time",
-        "tracking",
-        "soulcode",
-        "chrome",
-        "extension"
-    ],
-    "author": "Fabian Gander",
-    "license": "AGPL-3.0",
-    "bugs": {
-        "url": "https://github.com/SoulcodeAgency/bexio-chrome-extension/issues"
-    },
-    "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
-    "devDependencies": {
-        "@playwright/test": "1.62.1",
-        "@types/node": "26.1.2",
-        "fs-extra": "11.4.0",
-        "git-cliff": "2.13.1",
-        "jsdom": "30.0.1",
-        "prettier": "3.9.6",
-        "vite": "8.2.0",
-        "vitest": "4.1.10"
-    },
-    "workspaces": [
-        "packages/shared",
-        "packages/sidePanel-import",
-        "packages/chrome-extension"
-    ]
+  "name": "@bexio-chrome-extension/main",
+  "version": "1.8.0",
+  "date": "Jan 5, 2026",
+  "description": "This extension allows saving and loading of form data as templates within the bexio time tracking page.",
+  "type": "module",
+  "scripts": {
+    "build:devRelease": "npm run version:patch && npm run build:project -- -Development",
+    "build:devRelease:sidePanelOnly": "npm run build:devRelease -- -IgnoreExtension",
+    "build:devRelease:extensionOnly": "npm run build:devRelease -- -IgnoreSidePanel",
+    "build:project": "powershell -File Build.ps1",
+    "build:newExtensionRelease": "npm run build:project -- -createPackage",
+    "build:cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\"",
+    "version:patch": "npm --no-git-tag-version version patch",
+    "version:minor": "npm --no-git-tag-version version minor",
+    "version:major": "npm --no-git-tag-version version major",
+    "version:updateManifest": "node updateManifest.js",
+    "changelog": "powershell -Command \"npx --no-install git-cliff --tag $env:npm_package_version -o CHANGELOG.md\"",
+    "createRelease": "powershell -File createRelease.ps1",
+    "npm:installProject": "npm i --workspaces --include-workspace-root",
+    "npm:ciProject": "npm ci --workspaces --include-workspace-root",
+    "npm:nodeModules:cleanup": "powershell \"Remove-Item -Path node_modules -Recurse -Force;\"",
+    "npm:lock:cleanup": "powershell \"Remove-Item -Path package-lock.json -Force;\"",
+    "npmCheckUpdates:check": "npx npm-check-updates -ws",
+    "npmCheckUpdates:update": "npx npm-check-updates -ws -u",
+    "test": "vitest run",
+    "test:fast": "vitest run --exclude \"**/*.slow.test.ts\"",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test --config e2e/playwright.config.ts",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SoulcodeAgency/bexio-chrome-extension.git"
+  },
+  "keywords": [
+    "bexio",
+    "time",
+    "tracking",
+    "soulcode",
+    "chrome",
+    "extension"
+  ],
+  "author": "Fabian Gander",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/SoulcodeAgency/bexio-chrome-extension/issues"
+  },
+  "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@types/node": "26.1.2",
+    "fs-extra": "11.4.0",
+    "git-cliff": "2.13.1",
+    "jsdom": "30.0.1",
+    "prettier": "3.9.6",
+    "vite": "8.2.0",
+    "vitest": "4.1.10"
+  },
+  "workspaces": [
+    "packages/shared",
+    "packages/sidePanel-import",
+    "packages/chrome-extension"
+  ]
 }

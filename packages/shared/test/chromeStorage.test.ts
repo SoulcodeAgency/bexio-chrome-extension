@@ -52,10 +52,16 @@ describe("chromeStorage", () => {
   });
 
   it("update: replaces matching entry (shallow-merged)", async () => {
-    await cs.save([{ id: "a", x: 1 }, { id: "b", x: 2 }]);
+    await cs.save([
+      { id: "a", x: 1 },
+      { id: "b", x: 2 },
+    ]);
     await cs.update({ id: "b", x: 9 });
     const loaded = await cs.load();
-    expect(loaded).toEqual([{ id: "a", x: 1 }, { id: "b", x: 9 }]);
+    expect(loaded).toEqual([
+      { id: "a", x: 1 },
+      { id: "b", x: 9 },
+    ]);
   });
 
   it("update: throws if updatedEntry has no id", async () => {

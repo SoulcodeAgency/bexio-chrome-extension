@@ -1,7 +1,4 @@
-import {
-  ExchangeRequestData,
-  ExchangeResponse,
-} from "@bexio-chrome-extension/shared/types";
+import { ExchangeRequestData, ExchangeResponse } from "@bexio-chrome-extension/shared/types";
 import fillForm from "../utils/fillForm";
 import triggerDate from "../utils/triggerDate";
 import triggerDescription from "../utils/triggerDescription";
@@ -22,9 +19,7 @@ import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
  * awaiting it could keep the message channel open forever and leave the side panel hanging with
  * no feedback. Every other branch is cheap and is awaited.
  */
-export async function handleExchangeRequest(
-  request: ExchangeRequestData
-): Promise<void> {
+export async function handleExchangeRequest(request: ExchangeRequestData): Promise<void> {
   // Time + Duration + Description
   if (request.mode === "time+duration") {
     triggerDuration(request.duration);
@@ -37,11 +32,7 @@ export async function handleExchangeRequest(
       // Both description settings are read here, right before the single write, so a
       // switch flipped in the side panel takes effect on the very next applied entry.
       const uppercaseFirstLetterSetting = await loadUppercaseFirstLetterSetting();
-      triggerDescription(
-        uppercaseFirstLetterSetting
-          ? capitalizeFirstLetter(request.notes)
-          : request.notes
-      );
+      triggerDescription(uppercaseFirstLetterSetting ? capitalizeFirstLetter(request.notes) : request.notes);
     }
   }
   // Template
@@ -62,7 +53,7 @@ export async function handleExchangeRequest(
 chrome.runtime.onMessage.addListener(function (
   request: ExchangeRequestData,
   _sender,
-  sendResponse: (response: ExchangeResponse) => void
+  sendResponse: (response: ExchangeResponse) => void,
 ) {
   console.log("Received message from side panel:", request);
 
@@ -74,7 +65,7 @@ chrome.runtime.onMessage.addListener(function (
         ok: false,
         error: error instanceof Error ? error.message : String(error),
       });
-    }
+    },
   );
 
   // Keep the message channel open for the asynchronous sendResponse above.

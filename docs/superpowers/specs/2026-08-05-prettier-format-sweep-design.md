@@ -127,11 +127,37 @@ any time. `npm run format:check` fails by design after Phase A; that is the poin
   formatting-only commit, so it can be reviewed by confirming the diff is whitespace and that the
   test suite still passes.
 - `ci: enforce prettier formatting` — adds a `npm run format:check` step to
-  `.github/workflows/node.js.yml` (next to `Typecheck`) and records the sweep's SHA in
+  `.github/workflows/node.js.yml`, next to `Typecheck`, and records the sweep's SHA in
   `.git-blame-ignore-revs`, so `git blame` skips straight past it.
 
 `.git-blame-ignore-revs` cannot be written before Phase B, because it needs the sweep commit's own
 SHA.
+
+### Phase B must be merged with a merge commit
+
+The `.git-blame-ignore-revs` entry only stays valid if the sweep commit reaches `main` with the SHA
+it had on the branch. Of GitHub's three merge methods, only **merge commit** preserves that:
+
+| Method       | Sweep SHA on `main`                                   |
+| ------------ | ----------------------------------------------------- |
+| merge commit | unchanged — the branch commits are the ones that land |
+| squash       | collapsed into one new SHA                            |
+| rebase       | replayed as new SHAs                                  |
+
+Squash merging is disabled on this repository, and #128 was landed with a rebase merge before this
+constraint was understood — its head went in as `35e89df` and came out on `main` as `0e3129c`. That
+is harmless for #128, which recorded no SHA anywhere, but doing the same to Phase B would leave
+`.git-blame-ignore-revs` naming a commit that does not exist on `main`, and
+`git blame --ignore-revs-file` aborts on an unknown revision rather than skipping it — worse than
+having no file at all.
+
+More generally: prefer the merge method that leaves commit hashes stable. Rewritten hashes
+invalidate anything that references them — `.git-blame-ignore-revs`, `git bisect` notes, links in
+issues and PR descriptions, `Fixes: <sha>` trailers.
+
+The file is committed together with the `git config blame.ignoreRevsFile .git-blame-ignore-revs`
+line developers need locally: GitHub applies the file automatically in its blame view, but
+`git blame` on the command line does not.
 
 `style:` and `ci:` are both configured as `hidden` in `release-please-config.json`, so a
 100+-file cosmetic commit and the CI step stay out of the generated release notes.

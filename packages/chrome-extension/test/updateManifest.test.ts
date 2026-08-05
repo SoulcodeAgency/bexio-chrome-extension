@@ -35,7 +35,9 @@ describe("updateManifest.js", () => {
       cwd: dir,
       env: { ...process.env, NODE_PATH: resolve(__dirname, "../../../node_modules") },
     });
-    const manifest = JSON.parse(readFileSync(join(dir, "packages", "chrome-extension", "public", "manifest.json"), "utf8"));
+    const manifest = JSON.parse(
+      readFileSync(join(dir, "packages", "chrome-extension", "public", "manifest.json"), "utf8"),
+    );
     expect(manifest.version).toBe("9.9.9");
     const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
     // date format: en-US "MMM D, YYYY" — just assert it changed away from the sentinel and parses.
@@ -71,7 +73,9 @@ describe("updateManifest.js", () => {
       cwd: dir,
       env: { ...process.env, NODE_PATH: resolve(__dirname, "../../../node_modules") },
     });
-    const manifest = JSON.parse(readFileSync(join(dir, "packages", "chrome-extension", "public", "manifest.json"), "utf8"));
+    const manifest = JSON.parse(
+      readFileSync(join(dir, "packages", "chrome-extension", "public", "manifest.json"), "utf8"),
+    );
     expect(manifest.name).toBe("m");
     expect(manifest.manifest_version).toBe(3);
   });

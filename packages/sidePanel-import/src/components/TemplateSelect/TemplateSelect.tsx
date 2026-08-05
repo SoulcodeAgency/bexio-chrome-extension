@@ -7,8 +7,7 @@ type TemplateSelectProps = {
 };
 
 const TemplateSelect = (props: TemplateSelectProps) => {
-  const { templates: templateEntries } =
-    useContext<TemplateContextType>(TemplateContext);
+  const { templates: templateEntries } = useContext<TemplateContextType>(TemplateContext);
   const handleSelectChange = (event: React.ChangeEvent) => {
     props.onChange((event.target as HTMLInputElement).value);
   };

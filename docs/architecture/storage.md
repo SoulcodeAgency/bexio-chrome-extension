@@ -10,18 +10,18 @@ All storage access goes through the primitives in `packages/shared/chromeStorage
 
 ## Storage keys
 
-| Key | Type | Default (when absent) | Owner module |
-|-----|------|-----------------------|--------------|
-| `"entries"` | `TemplateEntry[]` | `[]` (via `loadTemplates`) | `chromeStorageTemplateEntries.ts` |
-| `"applyNotesSetting"` | `boolean` | `true` | `chromeStorageSettings.ts` |
-| `"uppercaseFirstLetterSetting"` | `boolean` | `true` | `chromeStorageSettings.ts` |
-| `"removePopoversSetting"` | `boolean` | `false` | `chromeStorageSettings.ts` |
-| `"activeTabId"` | `string \| undefined` | `undefined` | `chromeStorageSettings.ts` |
-| `"importData"` | `ImportData[]` (i.e. `string[][]`) | `[]` | `chromeStorageImportData.ts` |
-| `"importHeader"` | `string[]` | `[]` | — (raw `chromeStorage`) |
-| `"importFooter"` | `string[]` | `[]` | — (raw `chromeStorage`) |
-| `"importTemplates"` | `string[]` (template id per import row) | `[]` | — (raw `chromeStorage`) |
-| `"entryStatus"` | `{ [colIndex-rowIndex: string]: boolean }` | `{}` | — (raw `chromeStorage`) |
+| Key                             | Type                                       | Default (when absent)      | Owner module                      |
+| ------------------------------- | ------------------------------------------ | -------------------------- | --------------------------------- |
+| `"entries"`                     | `TemplateEntry[]`                          | `[]` (via `loadTemplates`) | `chromeStorageTemplateEntries.ts` |
+| `"applyNotesSetting"`           | `boolean`                                  | `true`                     | `chromeStorageSettings.ts`        |
+| `"uppercaseFirstLetterSetting"` | `boolean`                                  | `true`                     | `chromeStorageSettings.ts`        |
+| `"removePopoversSetting"`       | `boolean`                                  | `false`                    | `chromeStorageSettings.ts`        |
+| `"activeTabId"`                 | `string \| undefined`                      | `undefined`                | `chromeStorageSettings.ts`        |
+| `"importData"`                  | `ImportData[]` (i.e. `string[][]`)         | `[]`                       | `chromeStorageImportData.ts`      |
+| `"importHeader"`                | `string[]`                                 | `[]`                       | — (raw `chromeStorage`)           |
+| `"importFooter"`                | `string[]`                                 | `[]`                       | — (raw `chromeStorage`)           |
+| `"importTemplates"`             | `string[]` (template id per import row)    | `[]`                       | — (raw `chromeStorage`)           |
+| `"entryStatus"`                 | `{ [colIndex-rowIndex: string]: boolean }` | `{}`                       | — (raw `chromeStorage`)           |
 
 The last four keys ("the import-buffer keys" below) have no wrapper module:
 `packages/sidePanel-import/src/components/ImportEntries/ImportEntries.tsx` calls
@@ -58,7 +58,7 @@ The five keys are **one logical record**, not five independent ones:
 Both are therefore only meaningful together with the exact `"importData"` / `"importHeader"` they were produced for. `ImportEntries.tsx` keeps them consistent by writing all five keys together in `persistImport()`:
 
 - **Parsing new clipboard data** (`convertImportData`, i.e. every successful paste) writes the new header/data/footer and resets `"entryStatus"` to `{}` and `"importTemplates"` to `[]`. The reset lives here, not in `saveImport`, because auto-map, the per-row template `<select>` and the ▶️ apply button all persist their key immediately — even for data the user never saved. Writing the parsed data through on paste is what keeps those later single-key writes attached to the right rows.
-- **"Save this import"** (`saveImport`) re-writes the same five keys with the *current* status/templates. It must not reset them; that already happened when the data was parsed.
+- **"Save this import"** (`saveImport`) re-writes the same five keys with the _current_ status/templates. It must not reset them; that already happened when the data was parsed.
 - **"Delete saved data"** (`removeImportData`) clears all five.
 
 A failed parse writes nothing: storage keeps the last successfully parsed dataset with its own status/templates, so the record stays coherent even though the (empty) React state no longer matches it.
@@ -81,7 +81,7 @@ type TemplateEntry = {
   project: string;
   status: "Offen" | "In Arbeit" | "Erledigt" | "Fakturiert" | "Geschlossen";
   work: string;
-  [key: string]: any;   // escape hatch for future fields
+  [key: string]: any; // escape hatch for future fields
 };
 ```
 
@@ -121,7 +121,7 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
    `ImportData` is `string[]`, not an object with an `id` field. `chromeStorage.remove` filters by `entry.id !== id`, but `entry.id` is always `undefined` for `string[]` entries, so no entry is ever removed.
    Flagged in: `test/chromeStorageImportData.test.ts` — `// KNOWN ISSUE: deleteImportData(id) is effectively a no-op`.
 
-   *Fixed (issue #89):* `remove()` and `update()` used to read from `key` but call `save()` **without** it, so the result always landed under the default key `"entries"`. For any non-default key that left the target key stale **and** clobbered the template store — `deleteImportData(id)` would have written the `string[][]` import buffer over the user's templates. Both now pass `key` through to `save()`; covered by `test/chromeStorage.test.ts` (`remove`/`update: custom key`, asserted against raw storage keys) and `test/chromeStorageImportData.test.ts` (`deleteImportData does not touch the 'entries' (template) key`).
+   _Fixed (issue #89):_ `remove()` and `update()` used to read from `key` but call `save()` **without** it, so the result always landed under the default key `"entries"`. For any non-default key that left the target key stale **and** clobbered the template store — `deleteImportData(id)` would have written the `string[][]` import buffer over the user's templates. Both now pass `key` through to `save()`; covered by `test/chromeStorage.test.ts` (`remove`/`update: custom key`, asserted against raw storage keys) and `test/chromeStorageImportData.test.ts` (`deleteImportData does not touch the 'entries' (template) key`).
 
 4. **`sortTemplates` mutates its input array.**
    `Array.prototype.sort` sorts in place; `sortTemplates` returns the same reference it was given. Callers that need the original order must copy the array first.
@@ -135,14 +135,14 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
 
 ## Who reads / writes what
 
-| Actor | Reads | Writes |
-|-------|-------|--------|
-| **Side panel app** (`packages/sidePanel-import`) | `loadTemplates` (`TemplateProvider.tsx`), `loadApplyNotesSetting`, `loadUppercaseFirstLetterSetting`, `loadActiveTabId`, plus raw `chromeStorage.load` for the import-buffer keys | `saveApplyNotesSetting`, `saveUppercaseFirstLetterSetting`, `saveActiveTabId`, `deleteTemplate` (`TemplateEntries.tsx`), `updateTemplate` (`TemplateModal.tsx`), plus raw `chromeStorage.save` for the import-buffer keys |
-| **Content script** (`packages/chrome-extension`) | `loadTemplates` (`apps/bexioTimetrackingTemplates/index.ts`, `utils/fillForm.ts`), `loadApplyNotesSetting` + `loadUppercaseFirstLetterSetting` (`eventListeners/onMessage.ts`), `loadRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`, `utils/convertPopover.ts`) | `saveTemplates` (`utils/readFormData.ts`), `deleteTemplate` (`utils/confirmTemplateDeletion.ts`), `saveRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`) |
-| **Service worker** (`public/service_worker.js`) | — | — |
+| Actor                                            | Reads                                                                                                                                                                                                                                                                          | Writes                                                                                                                                                                                                                    |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Side panel app** (`packages/sidePanel-import`) | `loadTemplates` (`TemplateProvider.tsx`), `loadApplyNotesSetting`, `loadUppercaseFirstLetterSetting`, `loadActiveTabId`, plus raw `chromeStorage.load` for the import-buffer keys                                                                                              | `saveApplyNotesSetting`, `saveUppercaseFirstLetterSetting`, `saveActiveTabId`, `deleteTemplate` (`TemplateEntries.tsx`), `updateTemplate` (`TemplateModal.tsx`), plus raw `chromeStorage.save` for the import-buffer keys |
+| **Content script** (`packages/chrome-extension`) | `loadTemplates` (`apps/bexioTimetrackingTemplates/index.ts`, `utils/fillForm.ts`), `loadApplyNotesSetting` + `loadUppercaseFirstLetterSetting` (`eventListeners/onMessage.ts`), `loadRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`, `utils/convertPopover.ts`) | `saveTemplates` (`utils/readFormData.ts`), `deleteTemplate` (`utils/confirmTemplateDeletion.ts`), `saveRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`)                                                     |
+| **Service worker** (`public/service_worker.js`)  | —                                                                                                                                                                                                                                                                              | —                                                                                                                                                                                                                         |
 
 **There is no canonical writer.** Both UI contexts write `chrome.storage.local`
-directly, and both write the `"entries"` key. The content script does *not*
+directly, and both write the `"entries"` key. The content script does _not_
 delegate template mutations to the side panel — the "Add" button in the injected
 Templates block writes the template itself (`readFormData.ts`), and the "Delete"
 button calls `deleteTemplate` itself (`confirmTemplateDeletion.ts`). The service
@@ -153,7 +153,7 @@ click and enables the side panel per tab.
 
 Every template mutation is a **read-modify-write of the whole array** with no
 compare-and-swap. The side panel does listen to `chrome.storage.onChanged` (see
-below) and re-reads the key when it changes, but that only makes it *notice* a
+below) and re-reads the key when it changes, but that only makes it _notice_ a
 foreign write after the fact — it does not serialize two writes that overlap.
 The content script has no such listener at all, so an open `monitoring/edit` tab
 still holds an in-memory snapshot that never learns about the panel's writes.
@@ -166,7 +166,7 @@ snapshotted earlier:
 1. Read the form fields and derive a suggested `templateName`.
 2. `prompt("Name of the template:", …)` — a **blocking, unbounded** dialog. Cancel → `alert` + return.
 3. `generateHash(JSON.stringify(formEntry))` → `formEntry.id`.
-4. `loadTemplates()` — takes a snapshot of the *entire* array.
+4. `loadTemplates()` — takes a snapshot of the _entire_ array.
 5. If the hash already exists: `confirm("… Try again?")` — another unbounded dialog. Yes → back to step 2 (which re-runs step 4, so the stale snapshot is discarded). No → return.
 6. `allEntries.push(formEntry)` — mutates the snapshot.
 7. `saveTemplates(allEntries)` — writes the snapshot back over the whole key, then `initializeExtension()` re-renders.
@@ -191,7 +191,7 @@ keys) are ignored.
 
 Two things this deliberately does **not** do:
 
-- It does not resolve the two-writer race above. The panel re-reads *after* the
+- It does not resolve the two-writer race above. The panel re-reads _after_ the
   fact; an overlapping write is still lost.
 - It does not exist in the content script, which still renders its injected
   template list from a mount-time snapshot until `initializeExtension()` runs

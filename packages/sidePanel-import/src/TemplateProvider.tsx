@@ -1,9 +1,6 @@
 import { TemplateContext } from "./TemplateContext";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import {
-  chromeStorageTemplateEntries,
-  sortTemplates,
-} from "@bexio-chrome-extension/shared";
+import { chromeStorageTemplateEntries, sortTemplates } from "@bexio-chrome-extension/shared";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 import { developmentEnv } from "./utils/development";
 
@@ -27,9 +24,7 @@ function getStorageOnChanged(): typeof chrome.storage.onChanged | undefined {
 }
 
 function TemplateProvider({ children }: { children: ReactNode }) {
-  const [templates, setTemplates] = useState<TemplateEntry[]>(
-    sortTemplates([])
-  );
+  const [templates, setTemplates] = useState<TemplateEntry[]>(sortTemplates([]));
 
   async function getDevTemplates() {
     const response = await fetch("devTemplates.json");
@@ -71,11 +66,7 @@ function TemplateProvider({ children }: { children: ReactNode }) {
     return () => onChanged.removeListener(listener);
   }, [reloadData]);
 
-  return (
-    <TemplateContext.Provider value={{ templates, reloadData }}>
-      {children}
-    </TemplateContext.Provider>
-  );
+  return <TemplateContext.Provider value={{ templates, reloadData }}>{children}</TemplateContext.Provider>;
 }
 
 export default TemplateProvider;

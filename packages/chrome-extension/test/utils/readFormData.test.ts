@@ -2,12 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
 
 // Mock initializeExtension so we don't try to boot the full content-script UI
-vi.mock(
-  "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index",
-  () => ({
-    initializeExtension: vi.fn(),
-  }),
-);
+vi.mock("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index", () => ({
+  initializeExtension: vi.fn(),
+}));
 
 describe("readTextFromSelect2", () => {
   beforeEach(() => {
@@ -17,12 +14,9 @@ describe("readTextFromSelect2", () => {
 
   it("returns the .select2-chosen text for the work field (filled fixture)", async () => {
     loadFixture("monitoring-edit-filled");
-    const { workField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/selectors/selectors"
-    );
-    const { default: readTextFromSelect2 } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2"
-    );
+    const { workField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/selectors");
+    const { default: readTextFromSelect2 } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2");
     const result = await readTextFromSelect2(workField);
     // The filled fixture has "Work" in the select2-chosen span for the work field
     expect(result).toBe("Work");
@@ -30,12 +24,9 @@ describe("readTextFromSelect2", () => {
 
   it("returns the .select2-chosen text for the status field (filled fixture)", async () => {
     loadFixture("monitoring-edit-filled");
-    const { statusField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/selectors/selectors"
-    );
-    const { default: readTextFromSelect2 } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2"
-    );
+    const { statusField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/selectors");
+    const { default: readTextFromSelect2 } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2");
     const result = await readTextFromSelect2(statusField);
     // The filled fixture has "Erledigt" in the status select2-chosen span
     expect(result).toBe("Erledigt");
@@ -43,12 +34,9 @@ describe("readTextFromSelect2", () => {
 
   it("returns the .select2-chosen text for the project field (filled fixture)", async () => {
     loadFixture("monitoring-edit-filled");
-    const { projectField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/selectors/selectors"
-    );
-    const { default: readTextFromSelect2 } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2"
-    );
+    const { projectField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/selectors");
+    const { default: readTextFromSelect2 } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2");
     const result = await readTextFromSelect2(projectField);
     // The filled fixture has "Acme - Back Office" for the project
     expect(result).toBe("Acme - Back Office");
@@ -56,12 +44,9 @@ describe("readTextFromSelect2", () => {
 
   it("returns the .select2-chosen text for the package field (filled fixture)", async () => {
     loadFixture("monitoring-edit-filled");
-    const { packageField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/selectors/selectors"
-    );
-    const { default: readTextFromSelect2 } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2"
-    );
+    const { packageField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/selectors");
+    const { default: readTextFromSelect2 } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2");
     const result = await readTextFromSelect2(packageField);
     // The filled fixture has "Misc" for the package
     expect(result).toBe("Misc");
@@ -69,12 +54,9 @@ describe("readTextFromSelect2", () => {
 
   it("returns empty string for the contactPerson field (not filled in fixture)", async () => {
     loadFixture("monitoring-edit-filled");
-    const { contactPersonField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/selectors/selectors"
-    );
-    const { default: readTextFromSelect2 } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2"
-    );
+    const { contactPersonField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/selectors");
+    const { default: readTextFromSelect2 } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/readTextFromSelect2");
     const result = await readTextFromSelect2(contactPersonField);
     // The filled fixture has an empty select2-chosen span for contactPerson
     expect(result).toBe("");
@@ -97,15 +79,11 @@ describe("readFormData", () => {
     vi.spyOn(globalThis, "alert").mockImplementation(() => {});
     vi.spyOn(globalThis, "confirm").mockReturnValue(true);
 
-    const { default: readFormData } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/readFormData"
-    );
+    const { default: readFormData } = await import("@bexio-chrome-extension/chrome-extension/src/utils/readFormData");
     await readFormData();
 
     const stored = await chrome.storage.local.get("entries");
-    const entries: Array<Record<string, unknown>> = stored.entries as Array<
-      Record<string, unknown>
-    >;
+    const entries: Array<Record<string, unknown>> = stored.entries as Array<Record<string, unknown>>;
     expect(Array.isArray(entries)).toBe(true);
     expect(entries.length).toBe(1);
 
@@ -140,29 +118,20 @@ describe("readFormData", () => {
   /** Overwrite the rendered select2 text of one field in the loaded fixture. */
   function setSelect2Text(containerId: string, text: string) {
     const input = document.querySelector(`${containerId} input`)!;
-    input.closest(".input")!.querySelector(".select2-chosen")!.textContent =
-      text;
+    input.closest(".input")!.querySelector(".select2-chosen")!.textContent = text;
   }
 
   /** Overwrite the contact autocomplete input in the loaded fixture. */
   function setContact(text: string) {
-    (
-      document.querySelector(
-        "#autocomplete_monitoring_contact_id",
-      ) as HTMLInputElement
-    ).value = text;
+    (document.querySelector("#autocomplete_monitoring_contact_id") as HTMLInputElement).value = text;
   }
 
   async function suggestedTemplateName(): Promise<string | undefined> {
-    const promptSpy = vi
-      .spyOn(globalThis, "prompt")
-      .mockReturnValue("My Template");
+    const promptSpy = vi.spyOn(globalThis, "prompt").mockReturnValue("My Template");
     vi.spyOn(globalThis, "alert").mockImplementation(() => {});
     vi.spyOn(globalThis, "confirm").mockReturnValue(true);
 
-    const { default: readFormData } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/readFormData"
-    );
+    const { default: readFormData } = await import("@bexio-chrome-extension/chrome-extension/src/utils/readFormData");
     await readFormData();
 
     return promptSpy.mock.calls[0]?.[1];
@@ -216,14 +185,10 @@ describe("readFormData", () => {
   it("aborts and saves nothing when prompt returns null", async () => {
     loadFixture("monitoring-edit-filled");
     vi.spyOn(globalThis, "prompt").mockReturnValue(null);
-    const alertSpy = vi
-      .spyOn(globalThis, "alert")
-      .mockImplementation(() => {});
+    const alertSpy = vi.spyOn(globalThis, "alert").mockImplementation(() => {});
     vi.spyOn(globalThis, "confirm").mockReturnValue(true);
 
-    const { default: readFormData } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/readFormData"
-    );
+    const { default: readFormData } = await import("@bexio-chrome-extension/chrome-extension/src/utils/readFormData");
     await readFormData();
 
     // alert must have been called to inform the user
@@ -233,8 +198,6 @@ describe("readFormData", () => {
     const stored = await chrome.storage.local.get("entries");
     // Either the key doesn't exist or entries is empty
     const entries = stored.entries;
-    expect(!entries || (Array.isArray(entries) && entries.length === 0)).toBe(
-      true,
-    );
+    expect(!entries || (Array.isArray(entries) && entries.length === 0)).toBe(true);
   });
 });

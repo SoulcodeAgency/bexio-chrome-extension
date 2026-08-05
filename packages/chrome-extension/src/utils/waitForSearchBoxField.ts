@@ -13,12 +13,12 @@ import pollUntil, { POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from "./pollUntil";
  */
 // Get search box field
 async function waitForSearchBoxField(timeToWait = POLL_INTERVAL_MS, timeoutMs = POLL_TIMEOUT_MS) {
-    return pollUntil(
-        "the select2 search box (#select2-drop input) to appear",
-        () => document.querySelector("#select2-drop input"),
-        timeToWait,
-        timeoutMs,
-    );
+  return pollUntil(
+    "the select2 search box (#select2-drop input) to appear",
+    () => document.querySelector("#select2-drop input"),
+    timeToWait,
+    timeoutMs,
+  );
 }
 
 export default waitForSearchBoxField;

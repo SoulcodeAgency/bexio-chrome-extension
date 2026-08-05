@@ -15,12 +15,9 @@ const { Option } = Select;
 const MyComponent: React.FC<Props> = ({ templateId, closeModal }) => {
   const [form] = Form.useForm();
 
-  const { templates: templateEntries, reloadData } =
-    useContext<TemplateContextType>(TemplateContext);
+  const { templates: templateEntries, reloadData } = useContext<TemplateContextType>(TemplateContext);
 
-  const template = templateEntries.find(
-    (template) => template.id === templateId
-  );
+  const template = templateEntries.find((template) => template.id === templateId);
 
   const handleSave = async (template: TemplateEntry) => {
     console.log("handleSave", template);
@@ -67,25 +64,15 @@ const MyComponent: React.FC<Props> = ({ templateId, closeModal }) => {
             <Input />
           </Form.Item>
 
-          <Form.Item
-            label="Template Name"
-            name="templateName"
-            style={{ fontWeight: "bold" }}
-          >
+          <Form.Item label="Template Name" name="templateName" style={{ fontWeight: "bold" }}>
             <Input />
           </Form.Item>
-          <Form.Item
-            label="Keywords"
-            name="keywords"
-            style={{ fontWeight: "bold" }}
-          >
+          <Form.Item label="Keywords" name="keywords" style={{ fontWeight: "bold" }}>
             <Input />
           </Form.Item>
           <hr />
           <h2>Bexio values</h2>
-          <p>
-            ⚠️ Be careful changing these values, you can break your template.
-          </p>
+          <p>⚠️ Be careful changing these values, you can break your template.</p>
           <Form.Item label="Contact" name="contact">
             <Input />
           </Form.Item>

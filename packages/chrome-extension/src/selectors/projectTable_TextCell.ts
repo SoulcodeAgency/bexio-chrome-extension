@@ -8,8 +8,7 @@
  *
  * @returns A `NodeListOf<HTMLElement>` matching `i[rel='popover']`.
  */
-export const getPopoverNodes = () =>
-  document.querySelectorAll<HTMLElement>("i[rel='popover']");
+export const getPopoverNodes = () => document.querySelectorAll<HTMLElement>("i[rel='popover']");
 
 /**
  * Reads the raw `data-content` attribute from a popover icon element.
@@ -23,5 +22,4 @@ export const getPopoverNodes = () =>
  * @param node - The `<i rel="popover">` element to read.
  * @returns The decoded `data-content` string, or `null` if the attribute is absent.
  */
-export const getPopoverNodeText = (node: Element) =>
-  node.getAttribute("data-content");
+export const getPopoverNodeText = (node: Element) => node.getAttribute("data-content");

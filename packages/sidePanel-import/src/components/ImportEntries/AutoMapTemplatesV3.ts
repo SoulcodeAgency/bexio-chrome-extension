@@ -7,7 +7,7 @@ export function autoMapTemplatesV3(
   importData: ImportRow[],
   templateEntries: TemplateEntry[],
   importHeader: ImportRow,
-  tagColumnIndexes: number[]
+  tagColumnIndexes: number[],
 ) {
   const lowPrio = 1;
   const mediumPrio = 3;
@@ -35,10 +35,7 @@ export function autoMapTemplatesV3(
     // Split content of every tag column by space to search for every word
     tagColumnsContent.forEach((tagColumn, columnIndex) => {
       const tagWords = tagColumn.match(/[a-zA-Z0-9]+/g);
-      console.log(
-        `Identified words in ${importHeader[columnIndex]}:`,
-        tagWords
-      );
+      console.log(`Identified words in ${importHeader[columnIndex]}:`, tagWords);
       // Count how many times each word occurs in the templateEntries and count them up
       tagWords?.length &&
         tagWords.map((tagWord) => {
@@ -51,21 +48,11 @@ export function autoMapTemplatesV3(
             // Note: go through getTemplateName - v0.4.x templates have no templateName field
             const templateName = getTemplateName(entry).toLowerCase();
             const templateNameWords = templateName.split(" ");
-            const contactWords = entry.contact
-              ? entry.contact.toLowerCase().split(" ")
-              : [];
-            const projectWords = entry.project
-              ? entry.project.toLowerCase().split(" ")
-              : [];
-            const packageWords = entry.package
-              ? entry.package.toLowerCase().split(" ")
-              : [];
-            const contactPersonWords = entry.contactPerson
-              ? entry.contactPerson.toLowerCase().split(" ")
-              : [];
-            const keywordsWords = entry.keywords
-              ? entry.keywords.toLowerCase().split(" ")
-              : [];
+            const contactWords = entry.contact ? entry.contact.toLowerCase().split(" ") : [];
+            const projectWords = entry.project ? entry.project.toLowerCase().split(" ") : [];
+            const packageWords = entry.package ? entry.package.toLowerCase().split(" ") : [];
+            const contactPersonWords = entry.contactPerson ? entry.contactPerson.toLowerCase().split(" ") : [];
+            const keywordsWords = entry.keywords ? entry.keywords.toLowerCase().split(" ") : [];
 
             if (templateNameWords.includes(tagWord)) {
               matches += highPrio * 2;
@@ -119,8 +106,7 @@ export function autoMapTemplatesV3(
               if (!pointsByTemplateId[entry.id]["points"][tagWord]) {
                 pointsByTemplateId[entry.id]["points"][tagWord] = countIncrease;
               } else {
-                pointsByTemplateId[entry.id]["points"][tagWord] +=
-                  countIncrease;
+                pointsByTemplateId[entry.id]["points"][tagWord] += countIncrease;
               }
             }
           });
@@ -136,25 +122,21 @@ export function autoMapTemplatesV3(
 
     // Count up the total points for every template within the pointsByTemplateId object
     Object.keys(pointsByTemplateId).map((templateId) => {
-      pointsByTemplateId[templateId]["total"] = Object.values(
-        pointsByTemplateId[templateId]["points"]
-      ).reduce((a, b) => a + b);
+      pointsByTemplateId[templateId]["total"] = Object.values(pointsByTemplateId[templateId]["points"]).reduce(
+        (a, b) => a + b,
+      );
     });
 
     // Sort the templates by highest total points.
     // Note: this is kept as an array of [id, data] pairs on purpose - re-inserting
     // into an object would let integer-like keys (legacy templates whose id is their
     // name) jump to the front and silently undo the sort.
-    const sortedPointsByTemplateId = Object.entries(pointsByTemplateId).sort(
-      ([, a], [, b]) => b.total - a.total
-    );
+    const sortedPointsByTemplateId = Object.entries(pointsByTemplateId).sort(([, a], [, b]) => b.total - a.total);
 
     // Get the key(template id) of the sortedPointsByTemplateId which has the highest total points
     const [topTemplateId, topTemplateValues] = sortedPointsByTemplateId[0];
 
-    const topTemplateEntry = templateEntries.find(
-      (entry) => entry.id === topTemplateId
-    );
+    const topTemplateEntry = templateEntries.find((entry) => entry.id === topTemplateId);
     if (!topTemplateEntry) {
       console.log("Template not found!");
       console.groupEnd();
@@ -165,16 +147,13 @@ export function autoMapTemplatesV3(
     // Check if there is only 1 highest total points, otherwise we do not auto map and leave the decision to the user
     const highestTotalPoints = topTemplateValues.total;
     const highestTotalPointsCount = sortedPointsByTemplateId.filter(
-      ([, templateData]) => templateData.total === highestTotalPoints
+      ([, templateData]) => templateData.total === highestTotalPoints,
     ).length;
 
     if (highestTotalPointsCount === 1) {
       // We have a winner! Assign the template id to the row
       importTemplateAssignment[rowIndex] = topTemplateId;
-      console.log(
-        "Auto mapping template: TemplateId: " + topTemplateId,
-        "TemplateName: " + templateName
-      );
+      console.log("Auto mapping template: TemplateId: " + topTemplateId, "TemplateName: " + templateName);
     } else {
       // No clear winner, leave empty
       console.log("Auto mapping template: No clear winner!");
@@ -185,7 +164,7 @@ export function autoMapTemplatesV3(
         TemplateName: templateData.name,
         TotalPoints: templateData.total,
         ...templateData.points,
-      }))
+      })),
     );
 
     console.groupEnd();

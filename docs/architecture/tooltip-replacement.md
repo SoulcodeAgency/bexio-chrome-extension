@@ -15,12 +15,12 @@ The `bexioProjectList` content script is injected on the four `office.bexio.com`
 the manifest's second `content_scripts` block, and its observers and UI injection then branch on
 the page URL:
 
-| Path prefix | Element observed | Source function |
-|---|---|---|
-| `/index.php/monitoring/list` | `#monitoring_content` | `observerTimeTrackingPage()` |
-| `/index.php/pr_project/listMonitoring` | `.listBlock` (first) | `observerProjectPage()` |
-| `/index.php/pr_project/showPackage` | `#ui-id-5` | `observerProjectWorkPackagePage()` |
-| `/index.php/kb_invoice/show/id` | `#jqDialog` (modal) → `.block.list` inside it | `observeBillingPage()` → `observeBillingModalTable()` |
+| Path prefix                            | Element observed                              | Source function                                       |
+| -------------------------------------- | --------------------------------------------- | ----------------------------------------------------- |
+| `/index.php/monitoring/list`           | `#monitoring_content`                         | `observerTimeTrackingPage()`                          |
+| `/index.php/pr_project/listMonitoring` | `.listBlock` (first)                          | `observerProjectPage()`                               |
+| `/index.php/pr_project/showPackage`    | `#ui-id-5`                                    | `observerProjectWorkPackagePage()`                    |
+| `/index.php/kb_invoice/show/id`        | `#jqDialog` (modal) → `.block.list` inside it | `observeBillingPage()` → `observeBillingModalTable()` |
 
 ### `kb_invoice/show/id` — the "Zeiten importieren" modal
 
@@ -156,7 +156,7 @@ test (`e2e/extension-smoke.spec.ts`) covers the success path against the same fi
 ## Known issues
 
 - **`renderHtml` crashes without `.globalsearch` in DOM:** `TypeError: Cannot read properties of
-  undefined (reading 'insertAdjacentHTML')` — the content script silently assumes the full bexio
+undefined (reading 'insertAdjacentHTML')` — the content script silently assumes the full bexio
   nav bar is present. The `monitoring-list.html` fixture includes it, so the happy path is
   covered, but a future bexio redesign that drops/renames `.globalsearch` will break this code.
   Both the success path and the negative path are pinned in `test/apps/bexioProjectList.test.ts`.

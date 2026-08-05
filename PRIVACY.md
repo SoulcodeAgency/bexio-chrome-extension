@@ -1,6 +1,6 @@
 # Data Privacy Policy for Soulcode's "bexio Time Tracking Templates"
 
-*We do not track any of your data, period.*
+_We do not track any of your data, period._
 
 1. We do only inject code when you are visiting the bexio time tracking website: <https://office.bexio.com/index.php/monitoring/edit>
 1. We do not track any usage of the extension - that includes form data, tabs, windows, popup opens, etc

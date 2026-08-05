@@ -75,7 +75,8 @@ async function openBexioTimeTrackingPage(): Promise<boolean> {
     };
 
     const timeoutId = setTimeout(
-      () => finish(new Error(`Timed out after ${NAVIGATION_TIMEOUT_MS}ms waiting for ${BEXIO_MONITORING_TIMETRACKING}`)),
+      () =>
+        finish(new Error(`Timed out after ${NAVIGATION_TIMEOUT_MS}ms waiting for ${BEXIO_MONITORING_TIMETRACKING}`)),
       NAVIGATION_TIMEOUT_MS,
     );
 

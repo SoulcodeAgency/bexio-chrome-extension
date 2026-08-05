@@ -25,14 +25,9 @@ describe("test harness", () => {
   });
 
   it("loads an HTML fragment into document.body via loadFixture-style read", () => {
-    const html = readFileSync(
-      resolve(__dirname, "__inline__/tiny.html"),
-      "utf8",
-    );
+    const html = readFileSync(resolve(__dirname, "__inline__/tiny.html"), "utf8");
     document.body.innerHTML = html;
     expect(document.getElementById("probe")).not.toBeNull();
-    expect(document.querySelector("i[rel='popover']")?.getAttribute("data-content")).toBe(
-      "hello & goodbye",
-    );
+    expect(document.querySelector("i[rel='popover']")?.getAttribute("data-content")).toBe("hello & goodbye");
   });
 });

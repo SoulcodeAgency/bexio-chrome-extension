@@ -306,7 +306,7 @@ test("Add saves a template via prompt() and Delete removes it via confirm()", as
   await expect(page.locator("button.template-button")).toHaveCount(0, { timeout: 10_000 });
 
   expect(dialogMessages.some((m) => m.startsWith("alert: Select a template to delete."))).toBe(true);
-  expect(dialogMessages.some((m) => m.startsWith('confirm: Are you sure you want to delete the active template'))).toBe(
+  expect(dialogMessages.some((m) => m.startsWith("confirm: Are you sure you want to delete the active template"))).toBe(
     true,
   );
 
