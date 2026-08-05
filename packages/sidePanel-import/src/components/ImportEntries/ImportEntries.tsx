@@ -411,53 +411,60 @@ function ImportEntries() {
 
         <br />
         <br />
-        <Alert
-          showIcon
-          type="info"
-          message="How to use this:"
-          description={
-            <ol>
-              <li>
-                Select an <strong>Auto-map button</strong> above and check if the templates do match with your entries.
-                <br />
-                You can manually fix single entries, or do it completely manually of course.
-                <br />
-                <i>These changes are saved automatically, in case you leave and come back later.</i>
-              </li>
-              <li>
-                The columns up to <strong>Billable</strong> stay in place while you scroll to a date on
-                the right, so you always see which row you are booking.
-                <br />
-                ℹ️ With many Tag columns that block gets wide — drag the side panel wider if the dates
-                become hard to reach.
-              </li>
-              <li>
-                Click on the ▶️-button next to the time you want to track. It will automatically fill the form in bexio
-                and change its status to "applied" (✅)
-                <br />
-                ⚠️ This action currently is not yet saved, so we suggest to go through all entries in one session. If
-                this page gets closed, you will loose the state of the button.
-                <br />
-                ℹ️ You can click the button again, if you want to re-apply it for some reason. <br />
-                ℹ️ If you change the selected template, the state will also get reset.
-              </li>
-              <li>
-                Auto filling
+        {/* Collapsed by default — the help is long enough to push the table itself off screen. */}
+        <Collapse
+          size="small"
+          items={[
+            {
+              key: "help",
+              label: "How to use this",
+              children: (
                 <ol>
-                  <li>Date and Time will get applied on the bexio form directly.</li>
-                  <li>If added, Billable and Notes are also applied.</li>
                   <li>
-                    If selected also the Template with its values will auto-magically fill out the rest of the form. 🥳
+                    Select an <strong>Auto-map button</strong> above and check if the templates do match with your
+                    entries.
+                    <br />
+                    You can manually fix single entries, or do it completely manually of course.
+                    <br />
+                    <i>These changes are saved automatically, in case you leave and come back later.</i>
+                  </li>
+                  <li>
+                    The columns up to <strong>Billable</strong> stay in place while you scroll to a date on the right,
+                    so you always see which row you are booking.
+                    <br />
+                    ℹ️ With many Tag columns that block gets wide — drag the side panel wider if the dates become hard
+                    to reach.
+                  </li>
+                  <li>
+                    Click on the ▶️-button next to the time you want to track. It will automatically fill the form in
+                    bexio and change its status to "applied" (✅)
+                    <br />
+                    ⚠️ This action currently is not yet saved, so we suggest to go through all entries in one session.
+                    If this page gets closed, you will loose the state of the button.
+                    <br />
+                    ℹ️ You can click the button again, if you want to re-apply it for some reason. <br />
+                    ℹ️ If you change the selected template, the state will also get reset.
+                  </li>
+                  <li>
+                    Auto filling
+                    <ol>
+                      <li>Date and Time will get applied on the bexio form directly.</li>
+                      <li>If added, Billable and Notes are also applied.</li>
+                      <li>
+                        If selected also the Template with its values will auto-magically fill out the rest of the form.
+                        🥳
+                      </li>
+                    </ol>
+                  </li>
+                  <li>
+                    Submit the form <br />
+                    ℹ️ Click the next time entry, to automatically open the time tracking page and auto fill again, no
+                    need to open the time track page within bexio.
                   </li>
                 </ol>
-              </li>
-              <li>
-                Submit the form <br />
-                ℹ️ Click the next time entry, to automatically open the time tracking page and auto fill again, no need
-                to open the time track page within bexio.
-              </li>
-            </ol>
-          }
+              ),
+            },
+          ]}
         />
       </div>
     </div>

@@ -157,6 +157,22 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
     }
   });
 
+  /**
+   * The usage help is long enough to push the table off screen, so it is collapsed by default
+   * and only costs its header row until the user asks for it.
+   */
+  it("keeps the usage help collapsed until it is opened", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(container, TSV);
+
+    expect(screen.queryByText("Date and Time will get applied on the bexio form directly.")).toBeNull();
+
+    fireEvent.click(screen.getByText("How to use this"));
+
+    expect(screen.getByText("Date and Time will get applied on the bexio form directly.")).toBeDefined();
+  });
+
   it("pins nothing when the import has no date column", async () => {
     const { container } = await renderImportEntries();
 
