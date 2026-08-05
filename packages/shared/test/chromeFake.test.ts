@@ -33,6 +33,64 @@ describe("chrome fake — storage serialization boundary", () => {
   });
 });
 
+/**
+ * `chrome.storage.onChanged` is how the side panel notices templates the content script saved on
+ * the bexio page (`packages/sidePanel-import/src/TemplateProvider.tsx`). The fake has to fire it
+ * from the write methods, otherwise that subscription would look correct in tests while never
+ * being exercised.
+ */
+describe("chrome fake — storage.onChanged", () => {
+  type Changes = { [key: string]: chrome.storage.StorageChange };
+  const record = () => {
+    const seen: Array<{ changes: Changes; areaName: string }> = [];
+    const listener = (changes: Changes, areaName: string) => {
+      seen.push({ changes, areaName });
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return { seen, listener };
+  };
+
+  it("fires on set() with the area name and the new value", async () => {
+    const { seen } = record();
+    await chrome.storage.local.set({ entries: [{ id: "a" }] });
+
+    expect(seen).toHaveLength(1);
+    expect(seen[0].areaName).toBe("local");
+    expect(seen[0].changes.entries.newValue).toEqual([{ id: "a" }]);
+  });
+
+  it("omits oldValue for a key that did not exist yet, and reports it on an update", async () => {
+    const { seen } = record();
+    await chrome.storage.local.set({ entries: [{ id: "a" }] });
+    await chrome.storage.local.set({ entries: [{ id: "a" }, { id: "b" }] });
+
+    expect("oldValue" in seen[0].changes.entries).toBe(false);
+    expect(seen[1].changes.entries.oldValue).toEqual([{ id: "a" }]);
+    expect(seen[1].changes.entries.newValue).toEqual([{ id: "a" }, { id: "b" }]);
+  });
+
+  it("fires on remove() with only an oldValue, and stays silent for an absent key", async () => {
+    await chrome.storage.local.set({ entries: [{ id: "a" }] });
+    const { seen } = record();
+
+    await chrome.storage.local.remove("entries");
+    expect(seen).toHaveLength(1);
+    expect(seen[0].changes.entries.oldValue).toEqual([{ id: "a" }]);
+    expect("newValue" in seen[0].changes.entries).toBe(false);
+
+    await chrome.storage.local.remove("neverStored");
+    expect(seen).toHaveLength(1);
+  });
+
+  it("stops calling a removed listener", async () => {
+    const { seen, listener } = record();
+    chrome.storage.onChanged.removeListener(listener);
+
+    await chrome.storage.local.set({ entries: [{ id: "a" }] });
+    expect(seen).toHaveLength(0);
+  });
+});
+
 describe("chrome fake — throw-loudly guard", () => {
   it("throws for an unimplemented top-level member", () => {
     expect(() => (chrome as any).sidePanel).toThrow("chrome fake: chrome.sidePanel is not implemented");
@@ -52,6 +110,7 @@ describe("chrome fake — throw-loudly guard", () => {
     expect(typeof chrome.runtime.sendMessage).toBe("function");
     expect(typeof chrome.runtime.getURL).toBe("function");
     expect(typeof chrome.tabs.query).toBe("function");
+    expect(typeof chrome.storage.onChanged.addListener).toBe("function");
     expect(chrome.runtime.lastError).toBeUndefined();
   });
 });

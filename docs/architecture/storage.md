@@ -151,9 +151,11 @@ click and enables the side panel per tab.
 ### Two-writer race on the `"entries"` key
 
 Every template mutation is a **read-modify-write of the whole array** with no
-compare-and-swap, and nothing anywhere listens to `chrome.storage.onChanged`. An
-open side panel and an open `monitoring/edit` tab therefore hold independent
-in-memory snapshots that never learn about each other's writes.
+compare-and-swap. The side panel does listen to `chrome.storage.onChanged` (see
+below) and re-reads the key when it changes, but that only makes it *notice* a
+foreign write after the fact — it does not serialize two writes that overlap.
+The content script has no such listener at all, so an open `monitoring/edit` tab
+still holds an in-memory snapshot that never learns about the panel's writes.
 
 `chromeStorage.remove` / `chromeStorage.update` (behind `deleteTemplate` /
 `updateTemplate`) at least re-read immediately before writing, so their window is
@@ -176,7 +178,29 @@ one deleted from the side panel's template list, reappears/reverts as soon as th
 bexio tab saves. The reverse also holds — a side-panel `deleteTemplate` that
 lands just after step 4 is undone by step 7.
 
-The side panel's own template list is loaded once per `reload` flip
-(`TemplateProvider.tsx`), so after a content-script write it keeps showing the
-pre-write list until something calls `reloadData`. This is not pinned by a test;
-it is a latent hazard to keep in mind when adding new write paths.
+### The side panel's `chrome.storage.onChanged` subscription
+
+`TemplateProvider.tsx` subscribes to `chrome.storage.onChanged` and calls
+`reloadData()` whenever the `local` area reports a change to `"entries"`. Chrome
+fires that event in every extension context, so a template saved on the bexio
+page (`readFormData.ts`) reaches the open side panel without it being closed and
+reopened — which is what "Auto map templates" needs to be able to match a
+freshly created template. Changes to other keys (the import buffer, the settings
+keys) are ignored.
+
+Two things this deliberately does **not** do:
+
+- It does not resolve the two-writer race above. The panel re-reads *after* the
+  fact; an overlapping write is still lost.
+- It does not exist in the content script, which still renders its injected
+  template list from a mount-time snapshot until `initializeExtension()` runs
+  again (the side panel triggers that explicitly via the `"reload"` message —
+  see `docs/architecture/form-layer.md`).
+
+The lookup is guarded (`typeof chrome !== "undefined" && chrome.storage?.onChanged`)
+because the app also runs on the standalone Vite dev server, where there are no
+`chrome.*` APIs at all. The listener is removed on unmount.
+
+`packages/sidePanel-import/test/templateRefresh.test.tsx` pins the behaviour,
+including the manual 🔄 refresh button in the panel header, which calls the same
+`reloadData` for the case where the subscription was not yet attached.

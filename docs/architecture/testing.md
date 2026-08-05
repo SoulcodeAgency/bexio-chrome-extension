@@ -105,6 +105,15 @@ it to *check* for an error. `chrome.tabs` is a real member of the fake (a `FakeT
 `query`/`update`/`sendMessage`/`onUpdated` and a test-only `__emitUpdated`); tests may replace or
 delete it, and `resetChromeFake()` puts a fresh instance back.
 
+**`chrome.storage.onChanged` is driven by the storage writes themselves.** `set()`, `remove()` and
+`clear()` build a `{ key: { oldValue?, newValue? } }` change set and fire the event with area name
+`"local"`, following Chrome's own rules: `oldValue` is absent for a key that did not exist,
+`newValue` is absent on removal, and a call that changed nothing fires nothing. A test can
+therefore just write to storage and assert that the subscriber reacted, instead of poking a
+`__emit` helper (which exists as well, for the "storage changed without us hearing about it" case).
+`resetChromeFake()` clears the listeners — otherwise a component a test forgot to unmount would
+keep firing into the next test's React tree.
+
 Both contracts are pinned by `packages/shared/test/chromeFake.test.ts`; extending the fake means
 extending that file.
 
@@ -364,6 +373,12 @@ the side panel mounting is covered by the smoke spec. Items 3 and 6
 5. Confirm the parsed rows populate the import table.
 6. Click the ▶ (play / fill) button on one row — confirm the
    `monitoring/edit` form in the main tab is populated with that entry's values.
+7. **Live template sync.** With the side panel open, save a new template from the
+   injected Templates block on `monitoring/edit`. The panel's **Templates** tab
+   must list it without being closed and reopened, and **Auto map templates** on
+   the Import tab must be able to match it. Then click the 🔄 button in the panel
+   header and confirm the list still shows it — that button is the manual
+   fallback for the same reload.
 
 ### 5.4 — `kb_invoice` tracked-time tooltip (`kb_invoice/show/id/*`)
 

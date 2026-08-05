@@ -21,8 +21,45 @@ function serialize<T>(value: T): T {
   return (json === undefined ? undefined : JSON.parse(json)) as T;
 }
 
+/** The `{ oldValue?, newValue? }` shape Chrome hands to `chrome.storage.onChanged` listeners. */
+type FakeStorageChange = { oldValue?: unknown; newValue?: unknown };
+type FakeStorageChanges = Record<string, FakeStorageChange>;
+type FakeOnChangedListener = (changes: FakeStorageChanges, areaName: string) => void;
+
+/**
+ * Stand-in for `chrome.storage.onChanged`, the event Chrome fires in *every* extension context
+ * (side panel, content script, service worker) when a storage area is written. The side panel
+ * relies on it to notice templates the content script saved on the bexio page.
+ */
+class FakeOnChangedEvent {
+  __listeners: FakeOnChangedListener[] = [];
+
+  addListener = (fn: FakeOnChangedListener): void => {
+    this.__listeners.push(fn);
+  };
+
+  removeListener = (fn: FakeOnChangedListener): void => {
+    const index = this.__listeners.indexOf(fn);
+    if (index !== -1) this.__listeners.splice(index, 1);
+  };
+
+  hasListener = (fn: FakeOnChangedListener): boolean => this.__listeners.includes(fn);
+
+  /** test-only: fire the event at the registered listeners. */
+  __emit(changes: FakeStorageChanges, areaName = "local"): void {
+    for (const listener of [...this.__listeners]) listener(changes, areaName);
+  }
+
+  /** test-only */
+  __reset(): void {
+    this.__listeners.length = 0;
+  }
+}
+
 class FakeLocalStorageArea {
   private store: StorageRecord = {};
+
+  constructor(private readonly onChanged: FakeOnChangedEvent) {}
 
   async get(key?: string | string[] | null): Promise<StorageRecord> {
     const out: StorageRecord = {};
@@ -32,16 +69,41 @@ class FakeLocalStorageArea {
   }
 
   async set(items: StorageRecord): Promise<void> {
-    for (const [k, v] of Object.entries(items)) this.store[k] = serialize(v);
+    const changes: FakeStorageChanges = {};
+    for (const [k, v] of Object.entries(items)) {
+      // Chrome omits `oldValue` for a key that did not exist yet, so a listener can tell an
+      // insert from an update. Read it before overwriting.
+      const change: FakeStorageChange = { newValue: serialize(v) };
+      if (k in this.store) change.oldValue = serialize(this.store[k]);
+      this.store[k] = serialize(v);
+      changes[k] = change;
+    }
+    this.emit(changes);
   }
 
   async remove(key: string | string[]): Promise<void> {
     const keys = Array.isArray(key) ? key : [key];
-    for (const k of keys) delete this.store[k];
+    const changes: FakeStorageChanges = {};
+    for (const k of keys) {
+      // A key that is not there is not a change — Chrome reports nothing for it.
+      if (!(k in this.store)) continue;
+      changes[k] = { oldValue: serialize(this.store[k]) };
+      delete this.store[k];
+    }
+    this.emit(changes);
   }
 
   async clear(): Promise<void> {
+    const changes: FakeStorageChanges = {};
+    for (const [k, v] of Object.entries(this.store)) changes[k] = { oldValue: serialize(v) };
     this.store = {};
+    this.emit(changes);
+  }
+
+  /** Chrome does not fire the event when a call changed nothing. */
+  private emit(changes: FakeStorageChanges): void {
+    if (Object.keys(changes).length === 0) return;
+    this.onChanged.__emit(changes, "local");
   }
 
   /** test-only */
@@ -126,7 +188,7 @@ function guard<T extends object>(target: T, path: string): T {
 }
 
 export interface ChromeFake {
-  storage: { local: FakeLocalStorageArea };
+  storage: { local: FakeLocalStorageArea; onChanged: FakeOnChangedEvent };
   tabs: FakeTabsApi;
   runtime: {
     onMessage: { addListener: (fn: unknown) => void; __listeners: unknown[] };
@@ -139,8 +201,9 @@ export interface ChromeFake {
 let current: ChromeFake | undefined;
 
 export function installChromeFake(): ChromeFake {
+  const onChanged = new FakeOnChangedEvent();
   const fake: ChromeFake = {
-    storage: { local: new FakeLocalStorageArea() },
+    storage: { local: new FakeLocalStorageArea(onChanged), onChanged },
     tabs: new FakeTabsApi(),
     runtime: {
       onMessage: {
@@ -176,6 +239,9 @@ export function resetChromeFake(): void {
     return;
   }
   current.storage.local.__reset();
+  // Listeners registered by a component that a test never unmounted would otherwise keep firing
+  // into the next test's React tree.
+  current.storage.onChanged.__reset();
   // Tests may delete chrome.tabs (to simulate a missing API, e.g. the standalone
   // Vite dev server) or replace it with a plain per-test stub. Put a fresh fake
   // back instead of tripping the throw-loudly guard or calling __reset() on a
