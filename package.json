@@ -27,7 +27,9 @@
         "test:fast": "vitest run --exclude \"**/*.slow.test.ts\"",
         "test:watch": "vitest",
         "test:e2e": "playwright test --config e2e/playwright.config.ts",
-        "typecheck": "npm run typecheck --workspaces --if-present"
+        "typecheck": "npm run typecheck --workspaces --if-present",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
     },
     "repository": {
         "type": "git",
@@ -53,6 +55,7 @@
         "fs-extra": "11.4.0",
         "git-cliff": "2.13.1",
         "jsdom": "30.0.1",
+        "prettier": "3.9.6",
         "vite": "8.2.0",
         "vitest": "4.1.10"
     },
