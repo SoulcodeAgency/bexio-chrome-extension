@@ -11,6 +11,7 @@ import { loadApplyNotesSetting, saveApplyNotesSetting } from "@bexio-chrome-exte
 import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
 import { autoMapTemplatesV3 } from "./AutoMapTemplatesV3";
 import { frozenCellProps, getFrozenColumns } from "./frozenColumns";
+import { useFrozenColumnOffsets } from "./useFrozenColumnOffsets";
 import { handleCsvData } from "~/utils/csvParser";
 
 export type ImportRow = string[];
@@ -28,6 +29,7 @@ function ImportEntries() {
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
+  const importDataTableRef = useRef<HTMLTableElement>(null);
   const { templates: templateEntries } = useContext<TemplateContextType>(TemplateContext);
 
   const billableColumnIndex = importHeader.findIndex((column) => column === "Billable");
@@ -305,6 +307,7 @@ function ImportEntries() {
 
   // Everything left of the first date column stays pinned while the date columns scroll.
   const frozenColumns = getFrozenColumns(importHeader);
+  useFrozenColumnOffsets(importDataTableRef, frozenColumns.count);
 
   const importDataHTML = importData.length ? (
     <div className="content">
@@ -325,76 +328,80 @@ function ImportEntries() {
       </Tooltip>
       <br />
       <br />
-      <table className="importDataTable">
-        <thead>
-          <tr>
-            <th {...frozenCellProps(frozenColumns.index)}>#</th>
-            <th title="Select the template to apply" {...frozenCellProps(frozenColumns.template)}>
-              Template
-            </th>
-            {importHeader.map((field, columnIndex) => {
-              const frozenColumn = frozenColumns.data[columnIndex];
-              const frozenProps = frozenCellProps(frozenColumn);
-              return (
-                // A frozen column has a fixed width, which supersedes the extra room the
-                // "Notes" header would otherwise reserve for its switch.
-                <th
-                  key={field}
-                  className={frozenProps.className}
-                  style={frozenProps.style ?? { minWidth: field === "Notes" ? "120px" : "auto" }}
-                >
+      {/* The only thing that scrolls sideways: the panel itself never needs a horizontal
+          scrollbar, and the pinned columns stick to this box's left edge. Its height is capped
+          so that it scrolls vertically too — which is what keeps the header row sticky, since a
+          sticky element sticks inside its scroll container and this box is now that container. */}
+      <div className="importDataTableWrapper">
+        <table className="importDataTable" ref={importDataTableRef}>
+          <thead>
+            <tr>
+              <th {...frozenCellProps(frozenColumns.index)}>#</th>
+              <th title="Select the template to apply" {...frozenCellProps(frozenColumns.template)}>
+                Template
+              </th>
+              {importHeader.map((field, columnIndex) => {
+                const frozenProps = frozenCellProps(frozenColumns.data[columnIndex]);
+                return (
+                  // "Notes" reserves extra room for the switch its header hosts.
+                  <th
+                    key={field}
+                    className={frozenProps.className}
+                    style={{ ...frozenProps.style, minWidth: field === "Notes" ? "120px" : undefined }}
+                  >
+                    {field}
+                    {field === "Notes" && (
+                      <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
+                        <Switch
+                          checkedChildren="Apply notes"
+                          unCheckedChildren="Ignore notes"
+                          defaultChecked={false}
+                          onClick={switchApplyNotesSetting}
+                          checked={applyNotesSetting}
+                        />
+                      </Tooltip>
+                    )}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {importData.map((entry, entryIndex) => (
+              <tr key={entry[0] + entryIndex + importTemplates[entryIndex]}>
+                <td {...frozenCellProps(frozenColumns.index)}>{entryIndex + 1}</td>
+                <td {...frozenCellProps(frozenColumns.template)}>
+                  <TemplateSelect
+                    selectedTemplate={importTemplates[entryIndex]}
+                    onChange={(templateId: string) => onChangeTemplate(templateId, entryIndex)}
+                  />
+                </td>
+                {entry.map((fieldValue, columnIndex) => (
+                  <ImportEntriesTableCell
+                    templateId={importTemplates[entryIndex]}
+                    columnHeader={importHeader[columnIndex]}
+                    fieldValue={fieldValue}
+                    key={`table-cell-${entryIndex + 1}-${columnIndex}`}
+                    entryStatus={entryStatus[`${columnIndex}-${entryIndex}`]}
+                    onButtonClick={() => applyImportEntry(columnIndex, fieldValue, entryIndex)}
+                    onButtonClickReset={() => resetEntryStatus(`${columnIndex}-${entryIndex}`)}
+                    frozenColumn={frozenColumns.data[columnIndex]}
+                  />
+                ))}
+              </tr>
+            ))}
+            <tr>
+              <td {...frozenCellProps(frozenColumns.index)}></td>
+              <td {...frozenCellProps(frozenColumns.template)}></td>
+              {importFooter.map((field, index) => (
+                <td key={importHeader[index]} {...frozenCellProps(frozenColumns.data[index])}>
                   {field}
-                  {field === "Notes" && (
-                    <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
-                      <Switch
-                        checkedChildren="Apply notes"
-                        unCheckedChildren="Ignore notes"
-                        defaultChecked={false}
-                        onClick={switchApplyNotesSetting}
-                        checked={applyNotesSetting}
-                      />
-                    </Tooltip>
-                  )}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody>
-          {importData.map((entry, entryIndex) => (
-            <tr key={entry[0] + entryIndex + importTemplates[entryIndex]}>
-              <td {...frozenCellProps(frozenColumns.index)}>{entryIndex + 1}</td>
-              <td {...frozenCellProps(frozenColumns.template)}>
-                <TemplateSelect
-                  selectedTemplate={importTemplates[entryIndex]}
-                  onChange={(templateId: string) => onChangeTemplate(templateId, entryIndex)}
-                />
-              </td>
-              {entry.map((fieldValue, columnIndex) => (
-                <ImportEntriesTableCell
-                  templateId={importTemplates[entryIndex]}
-                  columnHeader={importHeader[columnIndex]}
-                  fieldValue={fieldValue}
-                  key={`table-cell-${entryIndex + 1}-${columnIndex}`}
-                  entryStatus={entryStatus[`${columnIndex}-${entryIndex}`]}
-                  onButtonClick={() => applyImportEntry(columnIndex, fieldValue, entryIndex)}
-                  onButtonClickReset={() => resetEntryStatus(`${columnIndex}-${entryIndex}`)}
-                  frozenColumn={frozenColumns.data[columnIndex]}
-                />
+                </td>
               ))}
             </tr>
-          ))}
-          <tr>
-            <td {...frozenCellProps(frozenColumns.index)}></td>
-            <td {...frozenCellProps(frozenColumns.template)}></td>
-            {importFooter.map((field, index) => (
-              <td key={importHeader[index]} {...frozenCellProps(frozenColumns.data[index])}>
-                {field}
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
       <br />
       <br />
       <div>

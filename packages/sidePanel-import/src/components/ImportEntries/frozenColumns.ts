@@ -1,10 +1,12 @@
 /**
  * Which columns of the import table stay pinned to the left while the date columns
- * scroll underneath them, and where each of them sits.
+ * scroll underneath them.
  *
- * Widths are fixed constants so the `left` offsets are a plain running sum — no DOM
- * measurement, which also keeps the behaviour testable in jsdom. Cells are clipped to
- * their width (see ImportEntries.css), the full value stays reachable via `title`.
+ * This module only decides *which* columns are pinned and in what order. It says nothing
+ * about widths: the columns size themselves to their content, so a value is never clipped.
+ * The pixel offset each pinned column needs is therefore not knowable here — it is measured
+ * from the rendered header by `useFrozenColumnOffsets` and handed to the cells through the
+ * `--frozen-left-<position>` custom properties.
  *
  * See docs/superpowers/specs/2026-08-05-frozen-import-columns-design.md.
  */
@@ -16,20 +18,9 @@
  */
 export const DATE_COLUMN_REGEX = /^\d{2}[./]\d{2}[./]\d{4}$/;
 
-export const FROZEN_COLUMN_WIDTHS = {
-  index: 32,
-  template: 110,
-  /** Wider than the rest: the header of this column also hosts the apply-notes switch. */
-  notes: 170,
-  /** Narrower than the rest: the cells only render ✅ or ◻️. */
-  billable: 44,
-  default: 90,
-} as const;
-
 export type FrozenColumn = {
-  /** Offset from the left edge of the frozen block, in px. */
-  left: number;
-  width: number;
+  /** Index within the frozen block, 0 being the leftmost. Names the CSS custom property. */
+  position: number;
   /** The rightmost frozen column, which carries the separating shadow. */
   isLast: boolean;
 };
@@ -39,12 +30,13 @@ export type FrozenColumns = {
   template?: FrozenColumn;
   /** One slot per `importHeader` column; `undefined` means the column scrolls. */
   data: (FrozenColumn | undefined)[];
+  /** How many columns are pinned in total — how many offsets have to be measured. */
+  count: number;
 };
 
-function columnWidth(header: string): number {
-  if (header === "Notes") return FROZEN_COLUMN_WIDTHS.notes;
-  if (header === "Billable") return FROZEN_COLUMN_WIDTHS.billable;
-  return FROZEN_COLUMN_WIDTHS.default;
+/** The custom property a pinned cell reads its offset from. */
+export function frozenLeftVariable(position: number): string {
+  return `--frozen-left-${position}`;
 }
 
 /**
@@ -56,43 +48,36 @@ function columnWidth(header: string): number {
 export function getFrozenColumns(importHeader: string[]): FrozenColumns {
   const firstDateColumn = importHeader.findIndex((header) => DATE_COLUMN_REGEX.test(header));
   if (firstDateColumn < 0) {
-    return { data: importHeader.map(() => undefined) };
+    return { data: importHeader.map(() => undefined), count: 0 };
   }
 
-  let left = 0;
-  const take = (width: number): FrozenColumn => {
-    const column = { left, width, isLast: false };
-    left += width;
-    return column;
-  };
+  let position = 0;
+  const take = (): FrozenColumn => ({ position: position++, isLast: false });
 
-  const index = take(FROZEN_COLUMN_WIDTHS.index);
-  const template = take(FROZEN_COLUMN_WIDTHS.template);
-  const data = importHeader.map((header, columnIndex) =>
-    columnIndex < firstDateColumn ? take(columnWidth(header)) : undefined,
-  );
+  const index = take();
+  const template = take();
+  const data = importHeader.map((_, columnIndex) => (columnIndex < firstDateColumn ? take() : undefined));
 
   const last = data[firstDateColumn - 1] ?? template;
   last.isLast = true;
 
-  return { index, template, data };
+  return { index, template, data, count: position };
 }
 
 /**
  * The `<th>` / `<td>` attributes that pin a cell. Spread into the cell; an undefined column
  * yields an empty object, so the cell renders exactly as it did before.
  *
- * The offsets are written as inline styles rather than CSS because they depend on the header
- * of the current import. The width is fixed in all three dimensions so the browser cannot
- * widen the column to fit its content, which would desynchronise it from the offsets.
+ * Deliberately no width: the column sizes itself to its content. Before the offsets have been
+ * measured the custom property is unset, `left` resolves to `auto` and the cell simply behaves
+ * like an ordinary one.
  */
 export function frozenCellProps(column?: FrozenColumn) {
   if (!column) {
     return {};
   }
-  const width = `${column.width}px`;
   return {
     className: column.isLast ? "frozenColumn frozenColumn--last" : "frozenColumn",
-    style: { left: `${column.left}px`, width, minWidth: width, maxWidth: width },
+    style: { left: `var(${frozenLeftVariable(column.position)})` },
   };
 }

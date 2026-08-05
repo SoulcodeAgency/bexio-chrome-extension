@@ -25,20 +25,28 @@ tr:nth-child(even) {
 }
 
 /*
+ * The table is the only thing that scrolls sideways, so the side panel itself never needs a
+ * horizontal scrollbar. The height cap makes this box scroll vertically as well, which is what
+ * keeps the header row sticky: a sticky element sticks inside its scroll container, and from here
+ * on that container is this box rather than the page.
+ */
+.importDataTableWrapper {
+  overflow: auto;
+  max-height: 70vh;
+}
+
+/*
  * Frozen leading columns of the import table (issue #12): everything left of the first date column
- * stays pinned while the date columns scroll underneath. `left` and the width come from inline
- * styles — they depend on the header of the current import; see frozenColumns.ts.
+ * stays pinned while the date columns scroll underneath. `left` reads a custom property that
+ * useFrozenColumnOffsets measures onto the table; see frozenColumns.ts.
+ *
+ * Deliberately no width and no clipping here — a column sizes itself to its content, so a long
+ * tag name is never cut off. Long values wrap at spaces (the browser default), and a single word
+ * longer than the column widens the column instead of breaking.
  */
 .importDataTable .frozenColumn {
   position: sticky;
   z-index: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  /* The offsets are a sum of the widths, so the widths must be what the cell actually occupies.
-     Without this the cell renders 11px wider than set (padding + border) and each frozen column
-     overlaps the one to its left. */
-  box-sizing: border-box;
 }
 
 /* Data cells take the colour of their row (base or stripe). The header row and the totals row
@@ -57,11 +65,11 @@ tr:nth-child(even) {
   box-shadow: 2px 0 4px rgb(0 0 0 / 25%);
 }
 
-/* Without this the native select sizes itself to the longest template name and blows the
-   fixed column width. */
+/* The native select would otherwise size itself to the longest template name and push the
+   Template column far wider than it needs to be. Unlike a table cell, a select truncates its
+   own label — no row content is lost. */
 .importDataTable .frozenColumn select {
-  width: 100%;
-  box-sizing: border-box;
+  max-width: 140px;
 }
 
 .content button {

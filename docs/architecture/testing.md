@@ -372,13 +372,16 @@ and item 6 is manual for its visual half only.*
 4. Switch to the **Import** tab. Paste a ManicTime clipboard export (TSV format)
    into the import text area.
 5. Confirm the parsed rows populate the import table.
-6. Scroll the import table horizontally until the date columns move. The block
-   up to and including **Billable** must stay in place, stay fully opaque (no
-   date cells shining through), keep its shadow edge on the right, and the
-   header row must still stick to the top while scrolling vertically. Which
-   columns are pinned is covered by
-   `packages/sidePanel-import/test/frozenColumns.test.ts`; that `position: sticky`
-   actually paints is not — jsdom has no layout, so it is only checked here.
+6. Scroll the import table sideways until the date columns move. Only the table
+   itself may scroll — the side panel must never grow a horizontal scrollbar.
+   The block up to and including **Billable** must stay in place, stay fully
+   opaque (no date cells shining through), keep its shadow edge on the right,
+   and the header row must still stick to the top while scrolling down. No cell
+   value may be cut off: long values wrap onto more lines instead. Drag the
+   panel wider and narrower and confirm the pinned block follows. Which columns
+   are pinned is covered by
+   `packages/sidePanel-import/test/frozenColumns.test.ts`; the measured pixel
+   offsets are not — jsdom has no layout, so they are only checked here.
 7. Click the ▶ (play / fill) button on one row — confirm the
    `monitoring/edit` form in the main tab is populated with that entry's values.
 7. **Live template sync.** With the side panel open, save a new template from the

@@ -15,7 +15,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { message } from "antd";
 import ImportEntries from "~/components/ImportEntries/ImportEntries";
-import { FROZEN_COLUMN_WIDTHS } from "~/components/ImportEntries/frozenColumns";
 import { TemplateContext } from "~/TemplateContext";
 import { NO_CONTENT_SCRIPT_MESSAGE } from "~/utils/sendToBexioTab";
 import type { TemplateEntry } from "@bexio-chrome-extension/shared/types";
@@ -109,21 +108,20 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
   });
 
   /**
-   * Frozen leading columns (issue #12). `getFrozenColumns` owns the arithmetic and is pinned
-   * in test/frozenColumns.test.ts; this checks that every cell of the leading block actually
-   * receives it — header, data rows and the footer row alike — and that the scrolling columns
-   * are left alone. The expected offsets are derived from the exported widths, so tuning a
-   * width does not break this test.
+   * Frozen leading columns (issue #12). `getFrozenColumns` owns which columns are pinned and is
+   * pinned in test/frozenColumns.test.ts; this checks that every cell of the leading block
+   * actually receives it — header, data rows and the footer row alike — and that the scrolling
+   * columns are left alone.
+   *
+   * Each pinned cell reads its offset from a `--frozen-left-N` custom property that
+   * `useFrozenColumnOffsets` measures onto the table. Nothing here sets a width: the columns
+   * size themselves to their content so nothing is ever clipped. The measured pixel values
+   * cannot be asserted — jsdom has no layout — and are verified in the browser instead.
    */
   it("pins the columns before the first date column and leaves the date columns scrolling", async () => {
     const { container } = await renderImportEntries();
 
     pasteIntoTextarea(container, TSV);
-
-    const W = FROZEN_COLUMN_WIDTHS;
-    // "#", "Template", "Tag 1", "Notes", "Billable" — the block that stays put.
-    const widths = [W.index, W.template, W.default, W.notes, W.billable];
-    const offsets = widths.map((_, i) => widths.slice(0, i).reduce((sum, width) => sum + width, 0));
 
     const table = container.querySelector("table.importDataTable") as HTMLElement;
     const rows = [
@@ -138,12 +136,14 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
     for (const cells of rows) {
       expect(cells).toHaveLength(8);
 
-      offsets.forEach((offset, columnIndex) => {
-        const cell = cells[columnIndex];
+      // "#", "Template", "Tag 1", "Notes", "Billable" — the block that stays put.
+      for (let position = 0; position < 5; position++) {
+        const cell = cells[position];
         expect(cell.className).toContain("frozenColumn");
-        expect(cell.style.left).toBe(`${offset}px`);
-        expect(cell.style.width).toBe(`${widths[columnIndex]}px`);
-      });
+        expect(cell.style.left).toBe(`var(--frozen-left-${position})`);
+        // A fixed width would clip the content — the whole point is that it does not.
+        expect(cell.style.width).toBe("");
+      }
 
       // "Billable" is the rightmost frozen column and carries the separating shadow.
       expect(cells[4].className).toContain("frozenColumn--last");
