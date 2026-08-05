@@ -2,6 +2,7 @@ import { load, save } from "./chromeStorage";
 export const applyNotesKey = "applyNotesSetting";
 export const activeTabIdKey = "activeTabId";
 export const removePopoversKey = "removePopoversSetting";
+export const uppercaseFirstLetterKey = "uppercaseFirstLetterSetting";
 
 export async function loadApplyNotesSetting(): Promise<boolean> {
   const loadedSetting = await load<boolean>(applyNotesKey);
@@ -11,6 +12,16 @@ export async function saveApplyNotesSetting(
   applyNotesSetting: boolean
 ): Promise<any> {
   return save<boolean>(applyNotesSetting, applyNotesKey);
+}
+
+export async function loadUppercaseFirstLetterSetting(): Promise<boolean> {
+  const loadedSetting = await load<boolean>(uppercaseFirstLetterKey);
+  return loadedSetting ?? true;
+}
+export async function saveUppercaseFirstLetterSetting(
+  uppercaseFirstLetterSetting: boolean
+): Promise<any> {
+  return save<boolean>(uppercaseFirstLetterSetting, uppercaseFirstLetterKey);
 }
 
 export async function loadActiveTabId(): Promise<string | undefined> {

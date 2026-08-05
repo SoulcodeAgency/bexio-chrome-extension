@@ -6,7 +6,11 @@ import fillForm from "../utils/fillForm";
 import triggerDate from "../utils/triggerDate";
 import triggerDescription from "../utils/triggerDescription";
 import triggerDuration from "../utils/triggerDuration";
-import { loadApplyNotesSetting } from "@bexio-chrome-extension/shared/chromeStorageSettings";
+import {
+  loadApplyNotesSetting,
+  loadUppercaseFirstLetterSetting,
+} from "@bexio-chrome-extension/shared/chromeStorageSettings";
+import capitalizeFirstLetter from "../utils/capitalizeFirstLetter";
 import triggerCheckbox from "../utils/triggerCheckbox";
 import { billableCheckbox } from "../selectors/billableCheckbox";
 import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
@@ -30,7 +34,14 @@ export async function handleExchangeRequest(
     // Check if we should apply some notes
     const applyNotesSetting = await loadApplyNotesSetting();
     if (applyNotesSetting && request.notes !== undefined) {
-      triggerDescription(request.notes);
+      // Both description settings are read here, right before the single write, so a
+      // switch flipped in the side panel takes effect on the very next applied entry.
+      const uppercaseFirstLetterSetting = await loadUppercaseFirstLetterSetting();
+      triggerDescription(
+        uppercaseFirstLetterSetting
+          ? capitalizeFirstLetter(request.notes)
+          : request.notes
+      );
     }
   }
   // Template

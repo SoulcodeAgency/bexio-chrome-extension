@@ -81,6 +81,14 @@ tr:nth-child(even) {
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+/* The side panel is user-resizable and gets narrow. Flex items shrink by default, which
+   clips the switch labels ("Apply notes" → "Apply"); keep their natural width and let the
+   row wrap instead. */
+.importToolbar > * {
+  flex-shrink: 0;
 }
 
 /* Pushed to the far right of the toolbar row. */

@@ -224,6 +224,68 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
 });
 
 /**
+ * The two description switches above the table.
+ *
+ * antd renders both `checkedChildren` and `unCheckedChildren` into the DOM and only hides one
+ * of them with CSS, so the on/off state has to be read from `aria-checked`, not from the text.
+ */
+describe("ImportEntries — description switches", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  /** The switch labelled "Capitalize notes" — the only one carrying that text. */
+  function getCapitalizeSwitch(container: HTMLElement) {
+    const found = within(container)
+      .getAllByRole("switch")
+      .find((element) => element.textContent?.includes("Capitalize notes"));
+    if (!found) throw new Error("capitalize switch not found");
+    return found;
+  }
+
+  it("is on by default, next to the apply-notes switch", async () => {
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+
+    expect(getCapitalizeSwitch(container).getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("persists the setting when switched off", async () => {
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+
+    await act(async () => {
+      fireEvent.click(getCapitalizeSwitch(container));
+    });
+
+    expect(getCapitalizeSwitch(container).getAttribute("aria-checked")).toBe("false");
+    expect(await chrome.storage.local.get("uppercaseFirstLetterSetting")).toEqual({
+      uppercaseFirstLetterSetting: false,
+    });
+  });
+
+  it("shows a stored 'off' setting after the panel is reopened", async () => {
+    await chrome.storage.local.set({ uppercaseFirstLetterSetting: false });
+
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+
+    expect(getCapitalizeSwitch(container).getAttribute("aria-checked")).toBe("false");
+  });
+
+  it("leaves the apply-notes switch untouched", async () => {
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+
+    await act(async () => {
+      fireEvent.click(getCapitalizeSwitch(container));
+    });
+
+    expect(await chrome.storage.local.get("applyNotesSetting")).toEqual({});
+  });
+});
+
+/**
  * Applying an entry (issue #86): the ▶️ button must never look like it did nothing. The chrome
  * fake has no `chrome.tabs`, so each test installs its own stub.
  */

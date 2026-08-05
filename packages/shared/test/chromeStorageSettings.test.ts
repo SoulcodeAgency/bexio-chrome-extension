@@ -19,6 +19,23 @@ describe("chromeStorageSettings", () => {
     });
   });
 
+  describe("loadUppercaseFirstLetterSetting", () => {
+    it("returns true when nothing is stored (default)", async () => {
+      expect(await settings.loadUppercaseFirstLetterSetting()).toBe(true);
+    });
+
+    it("round-trips a saved value", async () => {
+      await settings.saveUppercaseFirstLetterSetting(false);
+      expect(await settings.loadUppercaseFirstLetterSetting()).toBe(false);
+    });
+
+    it("writes under the 'uppercaseFirstLetterSetting' storage key", async () => {
+      await settings.saveUppercaseFirstLetterSetting(false);
+      const raw = await chrome.storage.local.get("uppercaseFirstLetterSetting");
+      expect(raw).toEqual({ uppercaseFirstLetterSetting: false });
+    });
+  });
+
   describe("loadRemovePopoversSetting", () => {
     it("returns false when nothing is stored (default)", async () => {
       expect(await settings.loadRemovePopoversSetting()).toBe(false);

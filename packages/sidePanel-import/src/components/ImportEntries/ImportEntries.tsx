@@ -7,7 +7,12 @@ import { sendToBexioTab } from "~/utils/sendToBexioTab";
 import { Button, Alert, Collapse, CollapseProps, Switch, Tooltip } from "antd";
 import { TemplateContext, TemplateContextType } from "~/TemplateContext";
 import { chromeStorage } from "@bexio-chrome-extension/shared";
-import { loadApplyNotesSetting, saveApplyNotesSetting } from "@bexio-chrome-extension/shared/chromeStorageSettings";
+import {
+  loadApplyNotesSetting,
+  loadUppercaseFirstLetterSetting,
+  saveApplyNotesSetting,
+  saveUppercaseFirstLetterSetting,
+} from "@bexio-chrome-extension/shared/chromeStorageSettings";
 import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
 import { autoMapTemplatesV3 } from "./AutoMapTemplatesV3";
 import { frozenCellProps, getFrozenColumns } from "./frozenColumns";
@@ -21,6 +26,7 @@ export type EntryStatus = { [key: string]: boolean };
 
 function ImportEntries() {
   const [applyNotesSetting, setApplyNotesSetting] = useState(true);
+  const [uppercaseFirstLetterSetting, setUppercaseFirstLetterSetting] = useState(true);
   const [parseStatus, setParseStatus] = useState("");
   const [importHeader, setImportHeader] = useState<ImportRow>([]);
   const [importFooter, setImportFooter] = useState<ImportRow>([]);
@@ -120,6 +126,11 @@ function ImportEntries() {
   function switchApplyNotesSetting() {
     saveApplyNotesSetting(!applyNotesSetting);
     setApplyNotesSetting(!applyNotesSetting);
+  }
+
+  function switchUppercaseFirstLetterSetting() {
+    saveUppercaseFirstLetterSetting(!uppercaseFirstLetterSetting);
+    setUppercaseFirstLetterSetting(!uppercaseFirstLetterSetting);
   }
 
   function clearTextarea() {
@@ -254,6 +265,10 @@ function ImportEntries() {
     loadApplyNotesSetting().then((data) => {
       setApplyNotesSetting(data ?? true);
     });
+
+    loadUppercaseFirstLetterSetting().then((data) => {
+      setUppercaseFirstLetterSetting(data ?? true);
+    });
   }, []);
 
   function onChangeTemplate(templateId: string, index: number) {
@@ -312,7 +327,7 @@ function ImportEntries() {
   const importDataHTML = importData.length ? (
     <div className="content">
       {/* One row of controls above the table. "Delete saved data" is pushed to the far right,
-          away from the two it must not be confused with. */}
+          away from the others it must not be confused with. */}
       <div className="importToolbar">
         <Tooltip title="Based on v2, but further weights exact word matches">
           <Button type="primary" onClick={callAutoMapTemplatesV3}>
@@ -327,6 +342,16 @@ function ImportEntries() {
             defaultChecked={false}
             onClick={switchApplyNotesSetting}
             checked={applyNotesSetting}
+          />
+        </Tooltip>
+
+        <Tooltip title="If enabled, the first letter of the description is uppercased while the entry is applied to bexio. Only the first letter changes, the rest is left as it is. Has no effect while notes are ignored.">
+          <Switch
+            checkedChildren="Capitalize notes"
+            unCheckedChildren="Don't capitalize"
+            defaultChecked={false}
+            onClick={switchUppercaseFirstLetterSetting}
+            checked={uppercaseFirstLetterSetting}
           />
         </Tooltip>
 

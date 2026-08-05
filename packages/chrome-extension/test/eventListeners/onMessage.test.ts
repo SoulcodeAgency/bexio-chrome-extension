@@ -145,6 +145,49 @@ describe("onMessage listener", () => {
     expect(response).toEqual({ ok: true });
   });
 
+  it("capitalizes the first letter of the notes by default", async () => {
+    const listener = await loadListener();
+
+    await dispatch(listener, {
+      mode: "time+duration",
+      duration: "0:45",
+      date: "03.08.2026",
+      notes: "leister weekly",
+    });
+
+    // uppercaseFirstLetterSetting defaults to true when nothing is stored
+    expect(calls).toContain("description:Leister weekly");
+  });
+
+  it("applies the notes verbatim when the uppercase setting is off", async () => {
+    await chrome.storage.local.set({ uppercaseFirstLetterSetting: false });
+    const listener = await loadListener();
+
+    await dispatch(listener, {
+      mode: "time+duration",
+      duration: "0:45",
+      date: "03.08.2026",
+      notes: "leister weekly",
+    });
+
+    expect(calls).toContain("description:leister weekly");
+  });
+
+  it("writes no description at all when notes are switched off", async () => {
+    await chrome.storage.local.set({ applyNotesSetting: false });
+    const listener = await loadListener();
+
+    const { response } = await dispatch(listener, {
+      mode: "time+duration",
+      duration: "0:45",
+      date: "03.08.2026",
+      notes: "leister weekly",
+    });
+
+    expect(calls).toEqual(["duration:0:45", "date:03.08.2026", "billable:undefined"]);
+    expect(response).toEqual({ ok: true });
+  });
+
   it("answers with { ok: false } when a handler throws", async () => {
     const triggerDuration = await import(
       "@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration"

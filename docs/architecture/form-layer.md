@@ -335,7 +335,14 @@ chrome.tabs.sendMessage(...)` had nothing reliable to resolve with.
 `{ ok: true }` is a **dispatch acknowledgement**, not "the form is filled":
 
 - `mode: "time+duration"` — `triggerDuration` / `triggerDate` / `triggerCheckbox` run synchronously,
-  then the `applyNotesSetting` read is awaited before `triggerDescription`. The response follows.
+  then the two description settings are awaited before `triggerDescription`. The response follows.
+  `applyNotesSetting` decides whether a description is written at all; when it is, and
+  `uppercaseFirstLetterSetting` is on (its default), `request.notes` is passed through
+  `capitalizeFirstLetter` first — the first non-whitespace character is uppercased, nothing else
+  changes. Both settings are read here rather than in the side panel, so a switch flipped in the
+  panel takes effect on the next applied entry and `ExchangeRequestData` stays unchanged. The
+  message therefore always carries the raw ManicTime text, which is also what the panel's table
+  shows.
 - `mode: "template"` — `fillForm` is called but deliberately **not** awaited. Its `waitFor*` helpers
   have no timeout (see Known issues), so awaiting it could hold the message channel open forever and
   hang the side panel. A `fillForm` failure therefore still surfaces as an unhandled rejection in the

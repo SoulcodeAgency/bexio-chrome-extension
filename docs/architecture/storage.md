@@ -14,6 +14,7 @@ All storage access goes through the primitives in `packages/shared/chromeStorage
 |-----|------|-----------------------|--------------|
 | `"entries"` | `TemplateEntry[]` | `[]` (via `loadTemplates`) | `chromeStorageTemplateEntries.ts` |
 | `"applyNotesSetting"` | `boolean` | `true` | `chromeStorageSettings.ts` |
+| `"uppercaseFirstLetterSetting"` | `boolean` | `true` | `chromeStorageSettings.ts` |
 | `"removePopoversSetting"` | `boolean` | `false` | `chromeStorageSettings.ts` |
 | `"activeTabId"` | `string \| undefined` | `undefined` | `chromeStorageSettings.ts` |
 | `"importData"` | `ImportData[]` (i.e. `string[][]`) | `[]` | `chromeStorageImportData.ts` |
@@ -136,8 +137,8 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
 
 | Actor | Reads | Writes |
 |-------|-------|--------|
-| **Side panel app** (`packages/sidePanel-import`) | `loadTemplates` (`TemplateProvider.tsx`), `loadApplyNotesSetting`, `loadActiveTabId`, plus raw `chromeStorage.load` for the import-buffer keys | `saveApplyNotesSetting`, `saveActiveTabId`, `deleteTemplate` (`TemplateEntries.tsx`), `updateTemplate` (`TemplateModal.tsx`), plus raw `chromeStorage.save` for the import-buffer keys |
-| **Content script** (`packages/chrome-extension`) | `loadTemplates` (`apps/bexioTimetrackingTemplates/index.ts`, `utils/fillForm.ts`), `loadApplyNotesSetting` (`eventListeners/onMessage.ts`), `loadRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`, `utils/convertPopover.ts`) | `saveTemplates` (`utils/readFormData.ts`), `deleteTemplate` (`utils/confirmTemplateDeletion.ts`), `saveRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`) |
+| **Side panel app** (`packages/sidePanel-import`) | `loadTemplates` (`TemplateProvider.tsx`), `loadApplyNotesSetting`, `loadUppercaseFirstLetterSetting`, `loadActiveTabId`, plus raw `chromeStorage.load` for the import-buffer keys | `saveApplyNotesSetting`, `saveUppercaseFirstLetterSetting`, `saveActiveTabId`, `deleteTemplate` (`TemplateEntries.tsx`), `updateTemplate` (`TemplateModal.tsx`), plus raw `chromeStorage.save` for the import-buffer keys |
+| **Content script** (`packages/chrome-extension`) | `loadTemplates` (`apps/bexioTimetrackingTemplates/index.ts`, `utils/fillForm.ts`), `loadApplyNotesSetting` + `loadUppercaseFirstLetterSetting` (`eventListeners/onMessage.ts`), `loadRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`, `utils/convertPopover.ts`) | `saveTemplates` (`utils/readFormData.ts`), `deleteTemplate` (`utils/confirmTemplateDeletion.ts`), `saveRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`) |
 | **Service worker** (`public/service_worker.js`) | — | — |
 
 **There is no canonical writer.** Both UI contexts write `chrome.storage.local`
