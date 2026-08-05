@@ -76,6 +76,27 @@ tr:nth-child(even) {
   margin-right: 10px;
 }
 
+.importToolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Pushed to the far right of the toolbar row. */
+.importToolbar__end {
+  margin-left: auto;
+}
+
+/* The gap already spaces the row; the shared button margin would double it. */
+.importToolbar button {
+  margin-right: 0;
+}
+
+.importHelp {
+  margin-top: 10px;
+}
+
 select {
   padding: 5px;
 }

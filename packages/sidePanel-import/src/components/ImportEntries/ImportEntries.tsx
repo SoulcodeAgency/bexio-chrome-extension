@@ -311,23 +311,29 @@ function ImportEntries() {
 
   const importDataHTML = importData.length ? (
     <div className="content">
-      <Tooltip title="Based on v2, but further weights exact word matches">
-        <Button type="primary" onClick={callAutoMapTemplatesV3}>
-          Auto map templates
-        </Button>
-      </Tooltip>
+      {/* One row of controls above the table. "Delete saved data" is pushed to the far right,
+          away from the two it must not be confused with. */}
+      <div className="importToolbar">
+        <Tooltip title="Based on v2, but further weights exact word matches">
+          <Button type="primary" onClick={callAutoMapTemplatesV3}>
+            Auto map templates
+          </Button>
+        </Tooltip>
 
-      <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
-        <Switch
-          checkedChildren="Apply notes"
-          unCheckedChildren="Ignore notes"
-          defaultChecked={false}
-          onClick={switchApplyNotesSetting}
-          checked={applyNotesSetting}
-        />
-      </Tooltip>
-      <br />
-      <br />
+        <Tooltip title="If enabled, Notes will be handled too when applying time entries. Content is taken from the 'Notes' column or the last 'Tag' column which contains content.">
+          <Switch
+            checkedChildren="Apply notes"
+            unCheckedChildren="Ignore notes"
+            defaultChecked={false}
+            onClick={switchApplyNotesSetting}
+            checked={applyNotesSetting}
+          />
+        </Tooltip>
+
+        <Button danger onClick={removeImportData} className="importToolbar__end">
+          Delete saved data
+        </Button>
+      </div>
       {/* The only thing that scrolls sideways: the panel itself never needs a horizontal
           scrollbar, and the pinned columns stick to this box's left edge. Its height is capped
           so that it scrolls vertically too — which is what keeps the header row sticky, since a
@@ -402,15 +408,7 @@ function ImportEntries() {
           </tbody>
         </table>
       </div>
-      <br />
-      <br />
-      <div>
-        <Button danger onClick={removeImportData}>
-          Delete saved data
-        </Button>
-
-        <br />
-        <br />
+      <div className="importHelp">
         {/* Collapsed by default — the help is long enough to push the table itself off screen. */}
         <Collapse
           size="small"

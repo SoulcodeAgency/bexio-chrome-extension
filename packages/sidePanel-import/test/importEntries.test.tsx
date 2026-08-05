@@ -158,6 +158,23 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
   });
 
   /**
+   * "Delete saved data" shares the toolbar row with the auto-map button instead of sitting on
+   * its own line below the table — one row of controls above the table, not two blocks around it.
+   */
+  it("puts the delete button on the toolbar row above the table", async () => {
+    const { container } = await renderImportEntries();
+
+    pasteIntoTextarea(container, TSV);
+
+    const autoMapButton = screen.getByRole("button", { name: "Auto map templates" });
+    const deleteButton = screen.getByRole("button", { name: "Delete saved data" });
+    const table = container.querySelector(".importDataTableWrapper") as HTMLElement;
+
+    expect(deleteButton.parentElement).toBe(autoMapButton.parentElement);
+    expect(deleteButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  /**
    * The usage help is long enough to push the table off screen, so it is collapsed by default
    * and only costs its header row until the user asks for it.
    */
