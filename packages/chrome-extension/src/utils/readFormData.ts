@@ -1,31 +1,13 @@
 import { chromeStorageTemplateEntries } from "@bexio-chrome-extension/shared";
 import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
-import { billableCheckbox } from "../selectors/billableCheckbox";
-import { contactField } from "../selectors/contactField";
-import { workField, statusField, contactPersonField, projectField, packageField } from "../selectors/selectors";
 import generateHash from "./generateHash";
-import readTextFromSelect2 from "./readTextFromSelect2";
-import trimAll from "./trimAll";
+import { readCurrentFormValues, suggestTemplateName } from "./readCurrentFormValues";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 // Read form data
 async function readFormData() {
-  // TODO: Probably extract the form data reading into a own helper function.
-  const work = await readTextFromSelect2(workField);
-  const status = await readTextFromSelect2(statusField);
-
-  // Contact is a bit special, it will show a string which is not directly searchable, thats why we limit it
-  let contact = contactField.value;
-  let words = contact.split(" ");
-  contact = words.slice(0, 2).join(" ");
-
-  const contactPerson = await readTextFromSelect2(contactPersonField);
-  const project = await readTextFromSelect2(projectField);
-
-  const packageValue = await readTextFromSelect2(packageField);
-  const billable = billableCheckbox.checked;
-
-  const templateName = trimAll(packageValue) || trimAll(project) || trimAll(contact) || trimAll(work) || "New Template";
+  const values = await readCurrentFormValues();
+  const templateName = suggestTemplateName(values);
 
   let formEntry: TemplateEntry;
 
@@ -33,7 +15,6 @@ async function readFormData() {
   let notReadyToSave = true;
   do {
     // Note: make sure a generated id is not part of the base entry to create the hash
-    // TODO: this line is probably fine outside of the do loop as well
     // The cast is deliberate and must stay a cast rather than becoming real fields:
     //   - `id` must NOT exist yet, because the hash below is computed over this object
     //     (see the note above); adding it would change every generated template id.
@@ -43,13 +24,13 @@ async function readFormData() {
     //     TemplateEntry declares it required, which is part of why this cast is needed;
     //     AutoMapTemplatesV3 reads it defensively (`entry.keywords ? … : …`).
     formEntry = {
-      work,
-      status,
-      contact,
-      project,
-      package: packageValue,
-      billable,
-      contactPerson,
+      work: values.work,
+      status: values.status,
+      contact: values.contact,
+      project: values.project,
+      package: values.package,
+      billable: values.billable,
+      contactPerson: values.contactPerson,
       templateName,
     } as TemplateEntry;
 
@@ -62,7 +43,6 @@ async function readFormData() {
       return;
     }
 
-    // TODO: extract hash logic into helper function
     // Create the entry and a hash for saving it
     const jsonString = JSON.stringify(formEntry);
     const hash = await generateHash(jsonString);
@@ -86,7 +66,6 @@ async function readFormData() {
   } while (notReadyToSave);
 
   if (allEntries === undefined) throw new Error("No template entries found");
-  // TODO: verify if this is correct, or would break an empty entries list (basically a new user)
 
   // Push the new entry to the array and save it
   allEntries.push(formEntry);
