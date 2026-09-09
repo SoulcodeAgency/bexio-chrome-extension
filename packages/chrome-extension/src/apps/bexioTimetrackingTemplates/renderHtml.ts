@@ -1,4 +1,3 @@
-import confirmActiveTemplateDeletion from "../../utils/confirmTemplateDeletion";
 import fillForm from "../../utils/fillForm";
 import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "../../utils/packageInfo";
@@ -7,6 +6,7 @@ import { updateActiveTemplate } from "../../utils/updateActiveTemplate";
 import { showPanelToast } from "./panelToast";
 import { setupTemplateFilter } from "./filter";
 import { setupInlineAddForm } from "./inlineAddForm";
+import { setupManageMode } from "./manageMode";
 import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
@@ -86,7 +86,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
                 <button id="templateFilterReset" class="template-search-filter-clear-button" type="button">&times;</button>
               </div>
               <button type="button" id="AddNewTemplate" class="btn btn-info">+ Add</button>
-              <button type="button" id="DeleteTemplate" class="btn">Delete</button>
+              <button type="button" id="ManageTemplates" class="btn">Manage</button>
             </div>
         </div>
         <div id="SoulcodeExtensionAddForm" hidden>
@@ -130,15 +130,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     attachTemplateTooltip(chip.querySelector<HTMLButtonElement>("button.template-button")!, entry, panel);
   });
 
-  // ── Delete mode (legacy — replaced by manage mode in a later change) ──
-  const deleteTemplateButton = document.getElementById("DeleteTemplate")!;
-  let deleteMode = false;
-  const disableDeleteMode = () => {
-    deleteMode = false;
-    deleteTemplateButton.classList.remove("btn-danger");
-  };
-
-  // ── Apply / update / delete-mode click handling (delegated) ──
+  // ── Apply / update click handling (delegated) ──
   entriesContainer.addEventListener("click", (e) => {
     const updateButton = (e.target as HTMLElement).closest<HTMLButtonElement>(".template-chip-update");
     if (updateButton) {
@@ -159,31 +151,12 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     if (!applyButton) return;
     e.preventDefault();
     hideTemplateTooltip();
-    if (deleteMode) {
-      confirmActiveTemplateDeletion(applyButton.id);
-      disableDeleteMode();
-      return;
-    }
+    if (panel.classList.contains("manage-mode")) return; // apply is inert while managing
     fillForm(applyButton.id);
     setActiveChip(panel, applyButton);
   });
 
   setupInlineAddForm(panel);
-
-  deleteTemplateButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    const activeButton = document.querySelector(".template-button--active") ?? undefined;
-    if (activeButton) {
-      confirmActiveTemplateDeletion();
-    } else if (deleteMode) {
-      disableDeleteMode();
-      alert("Delete mode deactivated.");
-    } else {
-      deleteMode = true;
-      deleteTemplateButton.classList.add("btn-danger");
-      alert("Select a template to delete.");
-    }
-  });
 
   document.getElementById("closeModal")?.addEventListener("click", (e) => {
     e.preventDefault();
@@ -191,6 +164,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
   });
 
   setupTemplateFilter(panel);
+  setupManageMode(panel, templateEntries ?? []);
 }
 
 export default renderHtml;

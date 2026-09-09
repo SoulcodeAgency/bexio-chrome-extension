@@ -174,6 +174,6 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
 
     expect(entriesContainer().querySelectorAll("button")).toHaveLength(0);
     expect(document.getElementById("SoulcodeExtensionTemplates")).not.toBeNull();
-    expect(document.getElementById("DeleteTemplate")).not.toBeNull();
+    expect(document.getElementById("ManageTemplates")).not.toBeNull();
   });
 });
