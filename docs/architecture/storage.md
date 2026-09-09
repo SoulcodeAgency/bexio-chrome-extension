@@ -162,15 +162,23 @@ still holds an in-memory snapshot that never learns about the panel's writes.
 
 `chromeStorage.remove` / `chromeStorage.update` (behind `deleteTemplate` /
 `updateTemplate`) and `restoreTemplate` at least re-read immediately before
-writing, so their window is narrow. The remaining lossy path is
-`createTemplateFromForm.ts`, which saves an array it snapshotted earlier:
+writing, so their window is narrow — narrow, not closed: `restoreTemplate`'s id
+check only makes a re-appeared id a no-op, it is not a compare-and-swap, so a
+side-panel write that lands between its load and its save is still overwritten.
+The remaining lossy path is `createTemplateFromForm.ts`, which saves an array it
+snapshotted earlier:
 
 1. Read the form fields (`readCurrentFormValues`) into the entry, with the name
    the user typed into the inline add form.
 2. `generateHash(JSON.stringify(entry))` → `entry.id`.
 3. `loadTemplates()` — takes a snapshot of the _entire_ array.
-4. If the hash already exists: return `{ ok: false, reason: "duplicate" }` (the
-   add form shows an inline error; no dialog).
+4. If an entry with the same **content** (name plus every form field) exists:
+   return `{ ok: false, reason: "duplicate" }` (the add form shows an inline
+   error; no dialog). The comparison is by content, not by matching the fresh
+   hash against stored ids: `updateActiveTemplate` rewrites a template's fields
+   while keeping its id, so a stored id can be the hash of content that no longer
+   exists. Ids are salted afterwards if the new hash collides with one of those
+   stale ids, since two entries sharing an id would break every lookup.
 5. `allEntries.push(entry)` — mutates the snapshot.
 6. `saveTemplates(allEntries)` — writes the snapshot back over the whole key;
    the add form then re-renders via `initializeExtension()`.

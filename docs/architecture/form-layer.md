@@ -411,14 +411,25 @@ builds and saves the entry, dialog-free:
 
 1. SHA-256 hashes the JSON of the entry (excluding `id`) via `generateHash` —
    the object-literal key order is load-bearing for hash stability.
-2. Returns `{ ok: false, reason: "duplicate" }` when the hash already exists.
+2. Returns `{ ok: false, reason: "duplicate" }` when an entry with the same
+   **content** (name plus every form field) already exists — not when the hash
+   matches a stored id, which `updateActiveTemplate` breaks by design; see
+   `docs/architecture/storage.md`.
 3. Saves via `chromeStorageTemplateEntries.saveTemplates(allEntries)`.
 
 The inline add form (`apps/bexioTimetrackingTemplates/inlineAddForm.ts`) wires
 these to the panel and calls `initializeExtension()` after a save to refresh
 the chip list; `updateActiveTemplate.ts` reuses `readCurrentFormValues` to
 overwrite an existing template's fields (keeping `id`, `templateName`,
-`keywords`).
+`keywords`) and **returns the written entry**.
+
+That return value matters: the update path is the one mutation that does not
+re-render, so `renderHtml` uses it to refresh the entry object the chip was
+built from, in place. The tooltip closure holds that same object and would
+otherwise keep previewing pre-update values. For the same reason the `↻` button
+is `disabled` while `fillForm` is still running — the loader overlay is
+dismissable (#73) and never blocked the keyboard, so a click during the fill
+would write a half-filled form over a good template.
 
 **Note on `readTextFromSelect2`:** it uses `selector.closest(".input")`, which
 works because the focusser input is nested inside a `<div class="input">` that
@@ -442,6 +453,18 @@ great-grandparent: the header (`Templates`, version and build date in the `h2`
 `#SoulcodeExtensionLoader`. All of that is **static** markup and is still
 inserted with `insertAdjacentHTML`. Behaviour is delegated to sibling modules:
 `filter.ts`, `inlineAddForm.ts`, `manageMode.ts`, `tooltip.ts`, `panelToast.ts`.
+
+Those modules do **not** look their elements up themselves. `renderHtml` calls
+`resolvePanelElements(panel)` (`panelElements.ts`) once, immediately after the
+static markup is inserted and **before the first chip exists**, and passes the
+resulting `PanelElements` down. That ordering is a boundary, not a style choice:
+chips carry `id = entry.id` from untrusted storage and are inserted _ahead_ of
+the static elements in document order, so a later `getElementById("closeModal")`
+or `querySelector("#templateFilterEmpty")` would resolve to a template chip whose
+free-form legacy name happens to match — handing the loader's dismiss control,
+the empty state or the toast to stored data. `panelToast.ts` holds its toast as
+an element reference for the same reason (and so a timer only ever removes the
+node it created, across re-renders and across test files).
 
 **The per-template chips are built as DOM nodes, never as HTML strings.**
 `createTemplateChip(entry)` does `document.createElement`, producing a

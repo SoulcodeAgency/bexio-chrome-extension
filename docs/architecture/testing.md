@@ -352,11 +352,16 @@ are manual-only._
    Tätigkeit/Projekt/Arbeitspaket/Kontakt/Status/Abrechenbar.
 5. Filter: Keyword eines Templates tippen → nur dieses bleibt; "nomatch" →
    Leerzustand; Esc leert; bei genau einem Treffer wendet Enter es an.
+   Gegenprobe: Filterfeld leeren und Enter drücken → es darf **nichts**
+   passieren (auch nicht, wenn nur ein einziges Template existiert).
 6. Chip anklicken (grün) → Formular wird mit den Template-Werten befüllt.
+   Während des Befüllens ist ↻ ausgegraut und nicht klickbar.
 7. Update: Chip anklicken (grün) → Formular ändern → ↻ klicken → "Updated ✓",
-   Side Panel zeigt die neuen Werte.
+   Side Panel zeigt die neuen Werte. Danach denselben Chip hovern → die Vorschau
+   zeigt die **neuen** Werte.
 8. Löschen: "Manage" → Chips werden rot mit × → × klicken → Chip weg, Toast mit
-   "Undo" (5 s) → Undo stellt wieder her → "Done" beendet den Modus.
+   "Undo" (5 s) → "Done" beendet den Modus, der Toast bleibt aber stehen →
+   Undo stellt das Template so wieder her, wie es zuletzt gespeichert war.
 
 ### 5.2 — `monitoring/list` + project/package tabs: Text-mode toggle
 
