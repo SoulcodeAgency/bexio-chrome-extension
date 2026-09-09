@@ -30,8 +30,6 @@ export type TemplateEntry = {
   [key: string]: any;
 };
 
-export type ImportData = string[];
-
 export type ExchangeMode = "template" | "time+duration";
 
 export type EntryExchangeData = {
