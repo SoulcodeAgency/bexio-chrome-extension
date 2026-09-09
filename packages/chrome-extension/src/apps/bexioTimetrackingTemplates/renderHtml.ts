@@ -1,68 +1,103 @@
-import confirmActiveTemplateDeletion from "../../utils/confirmTemplateDeletion";
 import fillForm from "../../utils/fillForm";
 import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "../../utils/packageInfo";
-import readFormData from "../../utils/readFormData";
 import { toggleDisplayLoader } from "../../utils/loader";
+import { updateActiveTemplate } from "../../utils/updateActiveTemplate";
+import { showPanelToast } from "./panelToast";
+import { setupTemplateFilter } from "./filter";
+import { setupInlineAddForm } from "./inlineAddForm";
+import { setupManageMode } from "./manageMode";
+import { resolvePanelElements } from "./panelElements";
+import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 /**
- * Builds one template button as a DOM node.
+ * Builds one template chip as DOM nodes.
  *
- * The id and the display name are **never** interpolated into an HTML string: both come
- * from untrusted storage — the name is suggested from bexio field values (project /
- * package / contact names any co-worker in the org can author), typed into the `prompt()`
- * in `readFormData`, or typed into the side panel's template modal, and for pre-v0.5.x
- * entries the free-form name *is* the `id`. Parsing that as HTML would let stored markup
- * inject elements into the live bexio page (and break out of the `id` attribute via `"`).
- * `textContent` + the `id` property setter cannot be escaped out of, which is the same
- * "sanitise before HTML" rule the tooltip feature follows (see `convertPopover.ts`).
+ * The id, the display name and the keywords are **never** interpolated into an
+ * HTML string: they come from untrusted storage (bexio field values, the add
+ * form, the side panel's template modal; for pre-v0.5.x entries the free-form
+ * name *is* the id). `textContent`, the `id` property setter, `setAttribute`
+ * and `dataset` assignments cannot be escaped out of — the same "sanitise
+ * before HTML" rule the tooltip feature follows (see `convertPopover.ts`).
  */
-function createTemplateButton(entry: TemplateEntry): HTMLButtonElement {
+function createTemplateChip(entry: TemplateEntry): HTMLDivElement {
+  const name = getTemplateName(entry);
+
+  const chip = document.createElement("div");
+  chip.className = "template-chip";
+  chip.dataset.filter = `${name} ${entry.keywords ?? ""}`.toLowerCase();
+
   const button = document.createElement("button");
   button.type = "button";
   button.id = entry.id;
-  button.className = "entry btn btn-info template-button";
-  button.setAttribute("style", "width: 100%; margin-bottom: 2px; text-align: left;");
-  button.textContent = getTemplateName(entry);
-  return button;
+  button.className = "entry template-button";
+  button.setAttribute("aria-pressed", "false");
+  button.textContent = name;
+  chip.appendChild(button);
+
+  const updateButton = document.createElement("button");
+  updateButton.type = "button";
+  updateButton.className = "template-chip-update";
+  updateButton.title = "Overwrite this template with the current form values";
+  updateButton.textContent = "↻";
+  updateButton.hidden = true; // shown for the active chip only (setActiveChip)
+  chip.appendChild(updateButton);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "template-chip-delete";
+  deleteButton.setAttribute("aria-label", `Delete template ${name}`);
+  deleteButton.textContent = "×";
+  chip.appendChild(deleteButton);
+
+  return chip;
 }
 
-// Renders all the html code for placing buttons to interact with
+function setActiveChip(panel: HTMLElement, button: HTMLButtonElement): void {
+  panel.querySelectorAll<HTMLButtonElement>("button.template-button").forEach((other) => {
+    other.classList.remove("template-button--active");
+    other.setAttribute("aria-pressed", "false");
+  });
+  panel.querySelectorAll<HTMLButtonElement>(".template-chip-update").forEach((update) => (update.hidden = true));
+  button.classList.add("template-button--active");
+  button.setAttribute("aria-pressed", "true");
+  const update = button.parentElement?.querySelector<HTMLButtonElement>(".template-chip-update");
+  if (update) update.hidden = false;
+}
+
+// Renders the whole template panel into the monitoring/edit page.
 async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
-  // Remove the templates HTML, if it already exists
-  const templates = document.getElementById("SoulcodeExtensionTemplates");
-  if (templates) {
-    templates.remove();
-  }
+  // Remove the panel if it already exists (re-render after storage changes)
+  document.getElementById("SoulcodeExtensionTemplates")?.remove();
 
   const templatePlacement = document.getElementById("pr_package")?.parentNode?.parentNode?.parentNode as HTMLElement;
-  // The container is static markup; the entry buttons themselves are appended as DOM
-  // nodes further down, so nothing template-derived is ever parsed as HTML.
-  const htmlTemplateButtons = `<div id="bexioTimetrackingTemplates-entries" style="column-count: 2; column-fill: balance;"></div>`;
-  const htmlActions = `<div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
-            <div class="template-search-filter">
-              <input type="search" id="templateFilter" class="search-input" placeholder="Filter templates">
-              <button id="templateFilterReset"  class="template-search-filter-clear-button" type="button">&times;</button>
-            </div>
-            <button type="button" id="AddNewTemplate" class="btn btn-info">Add</button>
-            <button type="button" id="DeleteTemplate" class="btn">Delete</button>
-        </div>`;
 
-  // Place the html into the DOM
+  // Static markup only — template-derived strings are appended as DOM nodes below.
   const logoPath = chrome.runtime.getURL("assets/logo_orig.png");
   templatePlacement.insertAdjacentHTML(
     "beforeend",
     `<div id="SoulcodeExtensionTemplates" class="row-fluid">
         <hr>
         <div class="bx-formular-header" style="display: flex; justify-content: space-between">
-            <h2 title="Last update: ${DATE}">
-            Templates
-            <span style="font-size: 0.9rem">(v${VERSION})</span>
-            </h2>
-            ${htmlActions}
+            <h2 title="Soulcode extension v${VERSION} — last update ${DATE}">Templates</h2>
+            <div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
+              <div class="template-search-filter">
+                <input type="search" id="templateFilter" class="search-input" placeholder="Filter templates">
+                <button id="templateFilterReset" class="template-search-filter-clear-button" type="button">&times;</button>
+              </div>
+              <button type="button" id="AddNewTemplate" class="btn btn-info">+ Add</button>
+              <button type="button" id="ManageTemplates" class="btn">Manage</button>
+            </div>
         </div>
-        ${htmlTemplateButtons}
+        <div id="SoulcodeExtensionAddForm" hidden>
+          <label for="templateNameInput">Name</label>
+          <input type="text" id="templateNameInput">
+          <button type="button" id="templateNameSave" class="btn btn-info">Save</button>
+          <button type="button" id="templateNameCancel" class="btn">Cancel</button>
+          <span id="templateNameError" hidden></span>
+        </div>
+        <div id="bexioTimetrackingTemplates-entries"><div id="templateFilterEmpty" hidden></div></div>
         <div id="SoulcodeExtensionLoader" style="position: fixed;
         top: 0;
         left: 0;
@@ -86,113 +121,79 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     </div>`,
   );
 
-  // Add the template buttons into the (now existing) container. Done after the
-  // insertAdjacentHTML above so the buttons are real nodes rather than parsed markup.
-  const entriesContainer = document.getElementById("bexioTimetrackingTemplates-entries");
-  if (entriesContainer && templateEntries) {
-    templateEntries.forEach((entry) => entriesContainer.appendChild(createTemplateButton(entry)));
-  }
+  const panel = document.getElementById("SoulcodeExtensionTemplates")!;
+  // Resolved before any chip exists — a template id may be an arbitrary string and
+  // would otherwise shadow these lookups. See panelElements.ts.
+  const elements = resolvePanelElements(panel);
+  const { entriesContainer, emptyState } = elements;
 
-  // Track delete mode
-  // `!` because this element is part of the markup rendered a few lines above, so it
-  // is always present by the time we get here. Asserted once at the declaration
-  // rather than at each of the four uses below.
-  const deleteTemplateButton = document.getElementById("DeleteTemplate")!;
-  let deleteMode = false;
+  // Keeps each chip's entry reachable by id. These are the *same objects* the
+  // tooltip closures hold, so refreshing one after an update refreshes the preview
+  // too; storage — not this map — stays the source of truth for reads and writes.
+  const renderedEntries = new Map<string, TemplateEntry>();
 
-  const disableDeleteMode = () => {
-    deleteMode = false; // Reset delete mode
-    deleteTemplateButton.classList.remove("btn-danger");
-  };
-  const enableDeleteMode = () => {
-    deleteMode = true;
-    activateDeleteButton();
-  };
-  const activateDeleteButton = () => {
-    deleteTemplateButton.classList.add("btn-danger");
-  };
-
-  // Attach functionality to the buttons
-  const domButtons = document.getElementById("bexioTimetrackingTemplates-entries")?.querySelectorAll("button.entry");
-  domButtons &&
-    domButtons.forEach((button) =>
-      button.addEventListener("click", function (e) {
-        e.preventDefault();
-        console.log("deleteMode", deleteMode);
-        if (deleteMode) {
-          // Handle delete action
-          confirmActiveTemplateDeletion(button.id);
-          disableDeleteMode();
-        } else {
-          // Handle fill form action
-          fillForm(button.id);
-
-          // Handle active template button
-          const parent = (e.target as HTMLElement).parentNode as HTMLElement;
-          const siblings = parent.querySelectorAll(".template-button");
-
-          siblings.forEach((sibling) => {
-            sibling.classList.remove("template-button--active");
-            activateDeleteButton();
-          });
-
-          (e.target as HTMLElement).classList.add("template-button--active");
-        }
-      }),
-    );
-
-  // Special action buttons
-  document.getElementById("AddNewTemplate")?.addEventListener("click", function (e) {
-    e.preventDefault();
-    readFormData();
+  (templateEntries ?? []).forEach((entry) => {
+    const chip = createTemplateChip(entry);
+    entriesContainer.insertBefore(chip, emptyState);
+    renderedEntries.set(entry.id, entry);
+    attachTemplateTooltip(chip.querySelector<HTMLButtonElement>("button.template-button")!, entry, panel);
   });
 
-  deleteTemplateButton.addEventListener("click", function (e) {
-    e.preventDefault();
-    const activeButton = document.querySelector(".template-button--active") ?? undefined;
-    if (activeButton) {
-      // Confirm deletion of current active template
-      confirmActiveTemplateDeletion();
-    } else if (deleteMode) {
-      // Deactivate delete mode
-      disableDeleteMode();
-      alert("Delete mode deactivated.");
-    } else {
-      // Activate delete mode
-      enableDeleteMode();
-      alert("Select a template to delete.");
+  // ── Apply / update click handling (delegated) ──
+  entriesContainer.addEventListener("click", (e) => {
+    const updateButton = (e.target as HTMLElement).closest<HTMLButtonElement>(".template-chip-update");
+    if (updateButton) {
+      e.preventDefault();
+      if (updateButton.disabled) return;
+      const applyButton = updateButton.parentElement?.querySelector<HTMLButtonElement>("button.template-button");
+      if (!applyButton) return;
+      updateButton.disabled = true;
+      void updateActiveTemplate(applyButton.id)
+        .then((updated) => {
+          if (!updated) {
+            showPanelToast(panel, { text: "Could not update — template not found in storage." });
+            return;
+          }
+          // Bring the rendered entry in line with what was just stored, in place:
+          // the tooltip closure holds this very object and would otherwise keep
+          // previewing the values the chip was built with.
+          Object.assign(renderedEntries.get(applyButton.id) ?? {}, updated);
+          updateButton.textContent = "Updated ✓";
+          window.setTimeout(() => (updateButton.textContent = "↻"), 1500);
+        })
+        .catch(() => showPanelToast(panel, { text: "Could not update the template — please try again." }))
+        .finally(() => (updateButton.disabled = false));
+      return;
     }
+    const applyButton = (e.target as HTMLElement).closest<HTMLButtonElement>("button.template-button");
+    if (!applyButton) return;
+    e.preventDefault();
+    hideTemplateTooltip();
+    if (panel.classList.contains("manage-mode")) return; // apply is inert while managing
+
+    setActiveChip(panel, applyButton);
+    // ↻ overwrites the template with whatever the form currently holds, so it must
+    // not be reachable while fillForm is still filling it — the loader overlay can
+    // be dismissed (#73) and never blocked the keyboard anyway, which would leave
+    // a half-filled snapshot on top of a good template.
+    const updateForChip = applyButton.parentElement?.querySelector<HTMLButtonElement>(".template-chip-update");
+    if (updateForChip) updateForChip.disabled = true;
+    void fillForm(applyButton.id)
+      .catch(() => showPanelToast(panel, { text: "Could not apply the template — please try again." }))
+      .finally(() => {
+        if (updateForChip) updateForChip.disabled = false;
+      });
   });
 
-  // Close modal
-  document.getElementById("closeModal")?.addEventListener("click", function (e) {
+  setupInlineAddForm(elements);
+
+  elements.closeLoaderButton.addEventListener("click", (e) => {
     e.preventDefault();
     toggleDisplayLoader(false);
   });
 
-  // Filter templates
-  document.getElementById("templateFilter")?.addEventListener("input", function (e) {
-    const filterValue = (e.target as HTMLInputElement).value.toLowerCase();
-    domButtons &&
-      domButtons.forEach((button) => {
-        const templateName = button.textContent?.toLowerCase() || "";
-        if (templateName.includes(filterValue)) {
-          (button as HTMLElement).style.display = "block";
-        } else {
-          (button as HTMLElement).style.display = "none";
-        }
-      });
-  });
-
-  // Reset filter
-  document.getElementById("templateFilterReset")?.addEventListener("click", function (e) {
-    e.preventDefault();
-    (document.getElementById("templateFilter") as HTMLInputElement).value = "";
-    domButtons &&
-      domButtons.forEach((button) => {
-        (button as HTMLElement).style.display = "block";
-      });
-  });
+  const refreshFilter = setupTemplateFilter(elements);
+  setupManageMode({ elements, onEntriesChanged: refreshFilter });
 }
 
 export default renderHtml;

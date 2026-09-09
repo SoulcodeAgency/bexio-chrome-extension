@@ -7,9 +7,10 @@
  * - the "Text mode" toggle round-trip on monitoring/list (bexioProjectList)
  * - applying a template on monitoring/edit (the fragile fillForm +
  *   synthetic-event path through src/utils/trigger*.ts)
- * - the template filter input
- * - the Add / Delete flows, whose prompt()/confirm()/alert() dialogs block
- *   in-browser automation but are handled here via page.on("dialog")
+ * - the template filter input (names, keywords, empty state, reset)
+ * - the inline Add flow and the manage-mode delete with Undo — both
+ *   dialog-free by design; page.on("dialog") stays wired to prove no
+ *   native prompt()/confirm()/alert() ever opens
  *
  * The fixtures are static HTML — bexio's own JavaScript (jQuery, select2,
  * jQuery-UI autocomplete) is stripped by the anonymiser. The template-apply
@@ -233,14 +234,14 @@ test("clicking a template button fills the form via the synthetic-event path", a
 });
 
 // ---------------------------------------------------------------------------
-// Test 3: template filter hides non-matching buttons, reset restores them
+// Test 3: template filter matches names and keywords, reset restores
 // ---------------------------------------------------------------------------
-test("template filter hides non-matching template buttons and reset restores them", async () => {
+test("template filter matches names and keywords; reset restores", async () => {
   test.skip(!serviceWorker, "could not resolve the extension service worker — cannot seed chrome.storage");
 
   await seedTemplates([
     { ...TEMPLATE, id: "e2ealpha", templateName: "Alpha Template" },
-    { ...TEMPLATE, id: "e2ebeta", templateName: "Beta Template" },
+    { ...TEMPLATE, id: "e2ebeta", templateName: "Beta Template", keywords: "zebra" },
   ]);
 
   const page = await context.newPage();
@@ -250,65 +251,81 @@ test("template filter hides non-matching template buttons and reset restores the
   const alpha = page.locator("button#e2ealpha");
   const beta = page.locator("button#e2ebeta");
   await expect(alpha).toBeAttached({ timeout: 10_000 });
-  await expect(beta).toBeAttached();
 
   await page.fill("#templateFilter", "alpha");
-  await expect(beta).toHaveCSS("display", "none");
-  await expect(alpha).toHaveCSS("display", "block");
+  await expect(beta).toBeHidden();
+  await expect(alpha).toBeVisible();
 
+  // keyword match: "zebra" is in beta's keywords, not its name
+  await page.fill("#templateFilter", "zebra");
+  await expect(alpha).toBeHidden();
+  await expect(beta).toBeVisible();
+
+  // no match → empty state with the query
+  await page.fill("#templateFilter", "nomatch");
+  await expect(page.locator("#templateFilterEmpty")).toBeVisible();
+  await expect(page.locator("#templateFilterEmpty")).toHaveText('No templates match "nomatch"');
+
+  await page.fill("#templateFilter", "zebra");
   await page.click("#templateFilterReset");
   await expect(page.locator("#templateFilter")).toHaveValue("");
-  await expect(alpha).toHaveCSS("display", "block");
-  await expect(beta).toHaveCSS("display", "block");
+  await expect(alpha).toBeVisible();
+  await expect(beta).toBeVisible();
 
   await page.close();
 });
 
 // ---------------------------------------------------------------------------
-// Test 4: Add / Delete flows via native dialogs (prompt / alert / confirm)
+// Test 4: inline Add + manage-mode delete with Undo — no native dialogs
 // ---------------------------------------------------------------------------
-test("Add saves a template via prompt() and Delete removes it via confirm()", async () => {
+test("inline Add saves a template; manage mode deletes it with Undo — no native dialogs", async () => {
   test.skip(!serviceWorker, "could not resolve the extension service worker — cannot seed chrome.storage");
 
   await seedTemplates([]);
 
   const page = await context.newPage();
-
-  const dialogMessages: string[] = [];
+  const dialogs: string[] = [];
   page.on("dialog", (dialog) => {
-    dialogMessages.push(`${dialog.type()}: ${dialog.message()}`);
-    if (dialog.type() === "prompt") {
-      // readFormData.ts: prompt("Name of the template:", <suggestion>)
-      void dialog.accept("My E2E Template");
-    } else {
-      // alert ("Select a template to delete.") and confirm ("Are you sure ...")
-      void dialog.accept();
-    }
+    dialogs.push(`${dialog.type()}: ${dialog.message()}`);
+    void dialog.dismiss();
   });
 
   await serveFixture(page, "https://office.bexio.com/index.php/monitoring/edit", "monitoring-edit");
   await page.goto("https://office.bexio.com/index.php/monitoring/edit");
-
   await expect(page.locator("#SoulcodeExtensionTemplates")).toBeAttached({ timeout: 10_000 });
-  await expect(page.locator("button.template-button")).toHaveCount(0);
 
-  // Add: reads the (empty) form, prompts for a name, saves, re-renders.
+  // Add via the inline form. The form is shown first and the suggested name filled
+  // in afterwards (so a failing form read cannot leave "+ Add" looking dead), so
+  // wait for that suggestion before typing over it.
   await page.click("#AddNewTemplate");
+  await expect(page.locator("#SoulcodeExtensionAddForm")).toBeVisible();
+  await expect(page.locator("#templateNameInput")).not.toHaveValue("");
+  await page.fill("#templateNameInput", "My E2E Template");
+  await page.click("#templateNameSave");
   const newButton = page.locator("button.template-button", { hasText: "My E2E Template" });
   await expect(newButton).toBeAttached({ timeout: 10_000 });
-  expect(dialogMessages.some((m) => m.startsWith("prompt: Name of the template:"))).toBe(true);
 
-  // Delete: first click arms delete mode (alert), clicking the template then
-  // asks for confirmation (confirm) and removes it.
-  await page.click("#DeleteTemplate");
-  await expect(page.locator("#DeleteTemplate")).toHaveClass(/btn-danger/);
-  await newButton.click();
+  // Delete via manage mode
+  await page.click("#ManageTemplates");
+  await expect(page.locator("#SoulcodeExtensionTemplates")).toHaveClass(/manage-mode/);
+  await page.click(".template-chip-delete");
   await expect(page.locator("button.template-button")).toHaveCount(0, { timeout: 10_000 });
+  const toast = page.locator("#SoulcodeExtensionToast");
+  await expect(toast).toContainText('Deleted "My E2E Template"');
+  // The empty state has to catch up even though the delete does not re-render.
+  await expect(page.locator("#templateFilterEmpty")).toBeHidden(); // nothing searched → stays silent
 
-  expect(dialogMessages.some((m) => m.startsWith("alert: Select a template to delete."))).toBe(true);
-  expect(dialogMessages.some((m) => m.startsWith("confirm: Are you sure you want to delete the active template"))).toBe(
-    true,
-  );
+  // Leaving manage mode must not cancel the undo window.
+  await page.click("#ManageTemplates");
+  await expect(toast).toBeVisible();
+
+  // Undo restores it (re-render leaves manage mode)
+  await toast.locator("button").click();
+  await expect(page.locator("button.template-button", { hasText: "My E2E Template" })).toBeAttached({
+    timeout: 10_000,
+  });
+
+  expect(dialogs, "the template area must not open native dialogs").toEqual([]);
 
   await page.close();
 });

@@ -386,24 +386,50 @@ Pinned in `packages/sidePanel-import/test/sendToBexioTab.test.ts`,
 
 ---
 
-## Read-back path (`readFormData`)
+## Read-back path (`readCurrentFormValues` + `createTemplateFromForm`)
 
-`readFormData()` reads the current form state and saves it as a new template:
+The former `readFormData.ts` was removed with the inline add form; its behaviour
+now lives in three utils:
+
+`readCurrentFormValues()` (`src/utils/readCurrentFormValues.ts`) reads the
+current form state into a `TemplateFormValues` object:
 
 1. `readTextFromSelect2(field)` — takes the focusser `<input>` element, walks
    up to `.closest(".input")`, then queries for `.select2-chosen` to get the
    displayed text.
 2. `contactField.value` — reads the autocomplete input's current value; takes
    only the first two space-separated words (bexio adds extra context).
-3. `trimAll(packageValue) || trimAll(project) || trimAll(contact) || trimAll(work) || "New Template"`
-   — constructs a suggested template name. `trimAll` strips _all_ whitespace, so
-   the suggestion is the first non-empty field with its spaces removed
-   (`"Acme - Back Office"` → `"Acme-BackOffice"`). Each link is pinned in
-   `test/utils/readFormData.test.ts`.
-4. Calls `prompt()` so the user can confirm or rename the template.
-5. SHA-256 hashes the JSON of the entry (excluding `id`) via `generateHash`.
-6. Saves via `chromeStorageTemplateEntries.saveTemplates(allEntries)`.
-7. Calls `initializeExtension()` to refresh the template button list.
+
+`suggestTemplateName(values)` (same module) constructs the suggested template
+name: `trimAll(package) || trimAll(project) || trimAll(contact) || trimAll(work) || "New Template"`.
+`trimAll` strips _all_ whitespace, so the suggestion is the first non-empty
+field with its spaces removed (`"Acme - Back Office"` → `"Acme-BackOffice"`).
+Each link is pinned in `test/utils/readCurrentFormValues.test.ts`.
+
+`createTemplateFromForm(templateName)` (`src/utils/createTemplateFromForm.ts`)
+builds and saves the entry, dialog-free:
+
+1. SHA-256 hashes the JSON of the entry (excluding `id`) via `generateHash` —
+   the object-literal key order is load-bearing for hash stability.
+2. Returns `{ ok: false, reason: "duplicate" }` when an entry with the same
+   **content** (name plus every form field) already exists — not when the hash
+   matches a stored id, which `updateActiveTemplate` breaks by design; see
+   `docs/architecture/storage.md`.
+3. Saves via `chromeStorageTemplateEntries.saveTemplates(allEntries)`.
+
+The inline add form (`apps/bexioTimetrackingTemplates/inlineAddForm.ts`) wires
+these to the panel and calls `initializeExtension()` after a save to refresh
+the chip list; `updateActiveTemplate.ts` reuses `readCurrentFormValues` to
+overwrite an existing template's fields (keeping `id`, `templateName`,
+`keywords`) and **returns the written entry**.
+
+That return value matters: the update path is the one mutation that does not
+re-render, so `renderHtml` uses it to refresh the entry object the chip was
+built from, in place. The tooltip closure holds that same object and would
+otherwise keep previewing pre-update values. For the same reason the `↻` button
+is `disabled` while `fillForm` is still running — the loader overlay is
+dismissable (#73) and never blocked the keyboard, so a click during the fill
+would write a half-filled form over a good template.
 
 **Note on `readTextFromSelect2`:** it uses `selector.closest(".input")`, which
 works because the focusser input is nested inside a `<div class="input">` that
@@ -418,25 +444,45 @@ Source: `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/renderHtm
 
 `renderHtml(templateEntries)` removes any previous `#SoulcodeExtensionTemplates`
 block and injects a fresh one at the end of `#pr_package`'s
-great-grandparent: the header (`Templates (vX.Y.Z)`), the actions row
-(`#templateFilter`, `#templateFilterReset`, `#AddNewTemplate`, `#DeleteTemplate`),
-the empty entries container `#bexioTimetrackingTemplates-entries`, and the
-full-viewport loader overlay `#SoulcodeExtensionLoader`. All of that is **static**
-markup and is still inserted with `insertAdjacentHTML`.
+great-grandparent: the header (`Templates`, version and build date in the `h2`
+`title` attribute), the actions row (`#templateFilter`, `#templateFilterReset`,
+`#AddNewTemplate`, `#ManageTemplates`), the hidden inline add form
+(`#SoulcodeExtensionAddForm`), the entries container
+`#bexioTimetrackingTemplates-entries` (a two-column CSS grid holding only the
+`#templateFilterEmpty` empty-state div), and the full-viewport loader overlay
+`#SoulcodeExtensionLoader`. All of that is **static** markup and is still
+inserted with `insertAdjacentHTML`. Behaviour is delegated to sibling modules:
+`filter.ts`, `inlineAddForm.ts`, `manageMode.ts`, `tooltip.ts`, `panelToast.ts`.
 
-**The per-template buttons are built as DOM nodes, never as HTML strings.**
-`createTemplateButton(entry)` does `document.createElement("button")`, sets
-`type`, `id` (from `entry.id`), `className`
-(`entry btn btn-info template-button`) and the inline style, and puts the display
-name in via `textContent` (`getTemplateName(entry)`). The buttons are appended to
-`#bexioTimetrackingTemplates-entries` _after_ the static block has been inserted.
+Those modules do **not** look their elements up themselves. `renderHtml` calls
+`resolvePanelElements(panel)` (`panelElements.ts`) once, immediately after the
+static markup is inserted and **before the first chip exists**, and passes the
+resulting `PanelElements` down. That ordering is a boundary, not a style choice:
+chips carry `id = entry.id` from untrusted storage and are inserted _ahead_ of
+the static elements in document order, so a later `getElementById("closeModal")`
+or `querySelector("#templateFilterEmpty")` would resolve to a template chip whose
+free-form legacy name happens to match — handing the loader's dismiss control,
+the empty state or the toast to stored data. `panelToast.ts` holds its toast as
+an element reference for the same reason (and so a timer only ever removes the
+node it created, across re-renders and across test files).
+
+**The per-template chips are built as DOM nodes, never as HTML strings.**
+`createTemplateChip(entry)` does `document.createElement`, producing a
+`div.template-chip` (with `data-filter` set via `dataset`) that wraps the apply
+button (`button.entry.template-button`, `id` from `entry.id`, `aria-pressed`),
+the hidden `↻` update button (`.template-chip-update`) and the `×` delete cross
+(`.template-chip-delete`). The display name goes in via `textContent`
+(`getTemplateName(entry)`). The chips are inserted into
+`#bexioTimetrackingTemplates-entries` _after_ the static block has been
+inserted.
 
 This is deliberate and must stay that way (#85). Template names and ids are
 untrusted:
 
 - the name is _suggested_ from bexio field values — project, package and contact
-  names that any co-worker in the same bexio org can author (`readFormData`),
-- it can be typed freely into `prompt()` in `readFormData` or into the side
+  names that any co-worker in the same bexio org can author
+  (`suggestTemplateName`),
+- it can be typed freely into the panel's inline add form or into the side
   panel's template modal, and is stored verbatim in `chrome.storage.local`,
 - for entries created before v0.5.x the free-form name **is** the `id`
   (see `getTemplateName` and `docs/architecture/storage.md`).
@@ -449,20 +495,22 @@ HTML" rule the tooltip feature follows (`convertPopover.ts`, see
 `docs/architecture/tooltip-replacement.md`), and the reason
 `selectors/projectTable_TextCell.ts` documents it on the reader side.
 
-Consumers of the rendered buttons that must keep working when this changes:
+Consumers of the rendered chips that must keep working when this changes:
 
-| Consumer                                      | How it finds the buttons                                                   |
-| --------------------------------------------- | -------------------------------------------------------------------------- |
-| click handler wiring in `renderHtml`          | `#bexioTimetrackingTemplates-entries` → `querySelectorAll("button.entry")` |
-| active-template highlight                     | `.template-button` / `.template-button--active`                            |
-| `confirmTemplateDeletion.ts`                  | `document.getElementById(buttonId)` and `.template-button--active`         |
-| filter / reset inputs                         | the same `domButtons` NodeList, matching on `button.textContent`           |
-| CSS (`public/bexioTimetrackingTemplates.css`) | `.template-button`, `#bexioTimetrackingTemplates-entries`                  |
-| e2e specs                                     | `button#<id>`, `button.template-button`                                    |
+| Consumer                                      | How it finds the chips                                                                    |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| delegated click handler in `renderHtml`       | `closest("button.template-button")` / `closest(".template-chip-update")` on the container |
+| active-template highlight (`setActiveChip`)   | `.template-button` / `.template-button--active` / `aria-pressed`                          |
+| `manageMode.ts` (delete + undo)               | `closest(".template-chip-delete")` → `.template-chip` → `button.template-button`          |
+| `filter.ts`                                   | `.template-chip` elements, matching on `chip.dataset.filter`                              |
+| CSS (`public/bexioTimetrackingTemplates.css`) | `.template-chip`, `.template-button`, `#bexioTimetrackingTemplates-entries`               |
+| e2e specs                                     | `button#<id>`, `button.template-button`, `.template-chip-delete`, `#ManageTemplates`      |
 
 Pinned in `test/apps/bexioTimetrackingTemplates.test.ts` (rendering, the legacy
 `id`-as-name fallback, the click → `fillForm` path, and the two injection cases:
-a name containing `<img src=x onerror=…>` and an id containing `"`).
+a name containing `<img src=x onerror=…>` and an id containing `"`), plus the
+per-module suites `…tooltip.test.ts`, `…filter.test.ts`, `…addForm.test.ts`,
+`…manageMode.test.ts`, `…panelToast.test.ts`.
 
 ---
 
@@ -488,7 +536,7 @@ The selectors and assumptions most likely to break when bexio changes its markup
 | Assumption                   | Selector / pattern                                                             | Breaks if...                                                                                                                            | Test that catches it                                                                                                                                             |
 | ---------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | select2 container IDs        | `#s2id_monitoring_*`                                                           | bexio renames the underlying `<select>` IDs                                                                                             | `test/selectors/formSelectors.test.ts`                                                                                                                           |
-| select2-chosen text read     | `.closest(".input") .select2-chosen`                                           | bexio restructures the select2 widget HTML                                                                                              | `test/utils/readFormData.test.ts` (readTextFromSelect2 tests)                                                                                                    |
+| select2-chosen text read     | `.closest(".input") .select2-chosen`                                           | bexio restructures the select2 widget HTML                                                                                              | `test/utils/readTextFromSelect2.test.ts`                                                                                                                         |
 | Contact autocomplete         | `#autocomplete_monitoring_contact_id`                                          | bexio renames or replaces the autocomplete field                                                                                        | `test/selectors/formSelectors.test.ts`                                                                                                                           |
 | Save button selector         | `#MonitoringForm .getElementsByClassName("save")[0]`                           | bexio removes the `save` class from the submit button                                                                                   | `test/utils/fillForm.test.ts` (save-button focus assertion)                                                                                                      |
 | TinyMCE iframe               | `#monitoring_text_ifr` + `#tinymce` body                                       | bexio upgrades TinyMCE or changes the iframe id                                                                                         | `test/selectors/formSelectors.test.ts` (getDescriptionField throw) + `test/utils/triggerDescription.test.ts` (success path, against the captured iframe fixture) |

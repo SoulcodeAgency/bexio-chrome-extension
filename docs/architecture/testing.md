@@ -23,7 +23,7 @@ The Playwright layer is not part of `npm test` and requires a built `unpacked/` 
 `npx playwright install chromium`. CI runs it as its own step (see Section 7). It has two specs:
 `extension-smoke.spec.ts` (do the content scripts inject, does the side panel mount) and
 `extension-behaviour.spec.ts` (issue #66: text-mode toggle round-trip, template apply, template
-filter, the Add/Delete dialog flows).
+filter, the inline Add and manage-mode Delete/Undo flows).
 
 ---
 
@@ -254,9 +254,9 @@ There are two specs, sharing the launch/fixture helpers in `e2e/support.ts`:
   on `monitoring/list`.
 - `e2e/extension-behaviour.spec.ts` — behaviour-level (issue #66): the
   text-mode toggle round-trip (convert → revert), applying a template through
-  the real `fillForm` synthetic-event path, the template filter, and the
-  Add/Delete flows whose `prompt()`/`confirm()`/`alert()` dialogs are handled
-  via `page.on("dialog")`.
+  the real `fillForm` synthetic-event path, the keyword-aware template filter,
+  and the inline Add + manage-mode Delete/Undo flows — dialog-free by design;
+  `page.on("dialog")` stays wired to prove no native dialog ever opens.
 
 Both use `chromium.launchPersistentContext` with `--load-extension=<unpacked>`
 flags because Chrome extensions can only be loaded into a persistent context,
@@ -334,21 +334,34 @@ and remains out of scope.
 
 ### 5.1 — `monitoring/edit`: Templates block
 
-_Automated (on fixtures): items 2–6 — injection (smoke spec), filter, Add
-(prompt), template apply, Delete (confirm) — in `extension-behaviour.spec.ts`.
-The live-bexio run additionally exercises the real select2/AJAX widgets._
+_Automated (on fixtures): items 2–8 — injection (smoke spec), keyword filter,
+inline Add, template apply, manage-mode Delete + Undo — in
+`extension-behaviour.spec.ts`. The live-bexio run additionally exercises the
+real select2/AJAX widgets. The tooltip (item 4) and the update button (item 7)
+are manual-only._
 
 1. Navigate to `https://office.bexio.com/index.php/monitoring/edit`
    (or open an existing time entry).
 2. Confirm the **Templates** block appears below the form (an `#SoulcodeExtensionTemplates`
-   section with a filter input and template buttons if any are saved).
-3. Type in the filter input — confirm the button list filters live.
-4. Fill in a few form fields, then click **Add** in the Templates block.
-   Confirm a new template button appears with the form's values.
-5. Click a template button — confirm the form fields are populated with
-   that template's values.
-6. Click **Delete** on one template — confirm a browser `confirm()` dialog
-   appears, confirm it, and confirm the button disappears.
+   section with a filter input and template chips if any are saved).
+3. Add: "+ Add" klicken → Inline-Feld erscheint mit vorgeschlagenem Namen →
+   Enter speichert, Chip erscheint (kein `prompt()`-Dialog).
+   Danach Duplikat: gleiche Formularwerte nochmals speichern →
+   Inline-Fehlermeldung, kein Dialog.
+4. Tooltip: Chip ~0,5 s hovern → Vorschau mit
+   Tätigkeit/Projekt/Arbeitspaket/Kontakt/Status/Abrechenbar.
+5. Filter: Keyword eines Templates tippen → nur dieses bleibt; "nomatch" →
+   Leerzustand; Esc leert; bei genau einem Treffer wendet Enter es an.
+   Gegenprobe: Filterfeld leeren und Enter drücken → es darf **nichts**
+   passieren (auch nicht, wenn nur ein einziges Template existiert).
+6. Chip anklicken (grün) → Formular wird mit den Template-Werten befüllt.
+   Während des Befüllens ist ↻ ausgegraut und nicht klickbar.
+7. Update: Chip anklicken (grün) → Formular ändern → ↻ klicken → "Updated ✓",
+   Side Panel zeigt die neuen Werte. Danach denselben Chip hovern → die Vorschau
+   zeigt die **neuen** Werte.
+8. Löschen: "Manage" → Chips werden rot mit × → × klicken → Chip weg, Toast mit
+   "Undo" (5 s) → "Done" beendet den Modus, der Toast bleibt aber stehen →
+   Undo stellt das Template so wieder her, wie es zuletzt gespeichert war.
 
 ### 5.2 — `monitoring/list` + project/package tabs: Text-mode toggle
 
