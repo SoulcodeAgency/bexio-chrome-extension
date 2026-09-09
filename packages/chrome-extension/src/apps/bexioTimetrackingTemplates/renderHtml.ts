@@ -3,6 +3,8 @@ import fillForm from "../../utils/fillForm";
 import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "../../utils/packageInfo";
 import { toggleDisplayLoader } from "../../utils/loader";
+import { updateActiveTemplate } from "../../utils/updateActiveTemplate";
+import { showPanelToast } from "./panelToast";
 import { setupTemplateFilter } from "./filter";
 import { setupInlineAddForm } from "./inlineAddForm";
 import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
@@ -136,8 +138,23 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     deleteTemplateButton.classList.remove("btn-danger");
   };
 
-  // ── Apply / delete-mode click handling (delegated) ──
+  // ── Apply / update / delete-mode click handling (delegated) ──
   entriesContainer.addEventListener("click", (e) => {
+    const updateButton = (e.target as HTMLElement).closest<HTMLButtonElement>(".template-chip-update");
+    if (updateButton) {
+      e.preventDefault();
+      const applyButton = updateButton.parentElement?.querySelector<HTMLButtonElement>("button.template-button");
+      if (!applyButton) return;
+      void updateActiveTemplate(applyButton.id).then((updated) => {
+        if (!updated) {
+          showPanelToast(panel, { text: "Could not update — template not found in storage." });
+          return;
+        }
+        updateButton.textContent = "Updated ✓";
+        window.setTimeout(() => (updateButton.textContent = "↻"), 1500);
+      });
+      return;
+    }
     const applyButton = (e.target as HTMLElement).closest<HTMLButtonElement>("button.template-button");
     if (!applyButton) return;
     e.preventDefault();

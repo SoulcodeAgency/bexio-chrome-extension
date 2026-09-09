@@ -129,6 +129,45 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
     expect(second.parentElement!.querySelector<HTMLButtonElement>(".template-chip-update")!.hidden).toBe(true);
   });
 
+  it("↻ on the active chip overwrites the template from the form and flashes 'Updated ✓'", async () => {
+    document.body.innerHTML = "";
+    loadFixture("monitoring-edit-filled"); // this test needs form values, not the empty fixture
+    const entry = template({ work: "Old Work" });
+    await chrome.storage.local.set({ entries: [entry] });
+    const renderHtml = await importRenderHtml();
+    await renderHtml([entry]);
+
+    (document.getElementById("tmpl1") as HTMLButtonElement).click(); // activate
+    const update = document.querySelector<HTMLButtonElement>(".template-chip-update")!;
+    expect(update.hidden).toBe(false);
+    update.click();
+
+    await vi.waitFor(async () => {
+      const stored = (await chrome.storage.local.get("entries")).entries as TemplateEntry[];
+      expect(stored[0].work).toBe("Work"); // fixture value replaced "Old Work"
+      expect(stored[0].id).toBe("tmpl1");
+      expect(stored[0].templateName).toBe("Project Falcon");
+    });
+    expect(update.textContent).toBe("Updated ✓");
+  });
+
+  it("↻ shows an error toast when the template is missing from storage", async () => {
+    document.body.innerHTML = "";
+    loadFixture("monitoring-edit-filled");
+    const entry = template();
+    await chrome.storage.local.set({ entries: [] }); // rendered, but not in storage
+    const renderHtml = await importRenderHtml();
+    await renderHtml([entry]);
+
+    (document.getElementById("tmpl1") as HTMLButtonElement).click();
+    document.querySelector<HTMLButtonElement>(".template-chip-update")!.click();
+
+    await vi.waitFor(() => {
+      const toast = document.getElementById("SoulcodeExtensionToast");
+      expect(toast?.textContent).toBe("Could not update — template not found in storage.");
+    });
+  });
+
   it("renders an empty entries container when there are no templates", async () => {
     const renderHtml = await importRenderHtml();
     await renderHtml([]);
