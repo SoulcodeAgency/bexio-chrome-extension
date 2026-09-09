@@ -17,14 +17,22 @@ import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
  *
  * `fillForm` is deliberately **not** awaited: its `waitFor*` helpers poll without a timeout, so
  * awaiting it could keep the message channel open forever and leave the side panel hanging with
- * no feedback. Every other branch is cheap and is awaited.
+ * no feedback.
+ *
+ * Every `trigger*` call **is** awaited (#124). They are all `async`, so a missing form field
+ * surfaces as a rejected promise, not as a synchronous throw — unawaited, those rejections escaped
+ * this function's promise chain and the listener below answered `{ ok: true }` for an entry that
+ * was never applied. The three cheap field writes go through `Promise.all` rather than one `await`
+ * each so that all three are still attempted when one of them fails, as they were before.
  */
 export async function handleExchangeRequest(request: ExchangeRequestData): Promise<void> {
   // Time + Duration + Description
   if (request.mode === "time+duration") {
-    triggerDuration(request.duration);
-    triggerDate(request.date);
-    triggerCheckbox(billableCheckbox, request.billable);
+    await Promise.all([
+      triggerDuration(request.duration),
+      triggerDate(request.date),
+      triggerCheckbox(billableCheckbox, request.billable),
+    ]);
 
     // Check if we should apply some notes
     const applyNotesSetting = await loadApplyNotesSetting();
@@ -32,7 +40,7 @@ export async function handleExchangeRequest(request: ExchangeRequestData): Promi
       // Both description settings are read here, right before the single write, so a
       // switch flipped in the side panel takes effect on the very next applied entry.
       const uppercaseFirstLetterSetting = await loadUppercaseFirstLetterSetting();
-      triggerDescription(uppercaseFirstLetterSetting ? capitalizeFirstLetter(request.notes) : request.notes);
+      await triggerDescription(uppercaseFirstLetterSetting ? capitalizeFirstLetter(request.notes) : request.notes);
     }
   }
   // Template
