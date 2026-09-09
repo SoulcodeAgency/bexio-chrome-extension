@@ -15,7 +15,7 @@
 - **Worktree setup first:** run `npm run npm:ciProject` in the worktree before anything else (fresh checkouts silently borrow the main checkout's `node_modules` otherwise).
 - Plain TypeScript, strict mode, no framework in `packages/chrome-extension`. All three packages must pass `npm run typecheck`.
 - **Security rule (pinned by tests):** every template-derived string (names, ids, keywords, field values) is rendered via `textContent` / property setters / `setAttribute` — never interpolated into an HTML string. See the comment block in `renderHtml.ts`.
-- **Hash stability:** a new template's `id` is the SHA-256 of `JSON.stringify` over the entry object *without* `id`, with the exact key order `work, status, contact, project, package, billable, contactPerson, templateName`. Do not reorder keys — identical form values must keep producing identical ids across versions.
+- **Hash stability:** a new template's `id` is the SHA-256 of `JSON.stringify` over the entry object _without_ `id`, with the exact key order `work, status, contact, project, package, billable, contactPerson, templateName`. Do not reorder keys — identical form values must keep producing identical ids across versions.
 - **Module-load quirk:** `src/selectors/*` run `document.querySelector` at import time. In tests, load the fixture **before** importing the module under test and call `vi.resetModules()` in `beforeEach` (see `docs/architecture/form-layer.md`).
 - Unit tests: `npx vitest run --project chrome-extension <filename-substring>` from the repo root (project `shared` for the shared package). Full suites: `npm run test:fast`, `npm test`.
 - In unit tests, seed storage explicitly in `beforeEach` (`await chrome.storage.local.set({ entries: [...] })`) — don't rely on implicit fake resets.
@@ -29,16 +29,16 @@
 
 **Created:**
 
-| File | Responsibility |
-| --- | --- |
-| `packages/chrome-extension/src/utils/readCurrentFormValues.ts` | Read the bexio form into a `TemplateFormValues` object; suggest a template name |
-| `packages/chrome-extension/src/utils/createTemplateFromForm.ts` | Build entry + hash id + duplicate check + save (no dialogs) |
-| `packages/chrome-extension/src/utils/updateActiveTemplate.ts` | Overwrite a stored template's fields from the form, keeping `id`/`templateName`/`keywords` |
-| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/tooltip.ts` | Field-preview tooltip (singleton) |
-| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/filter.ts` | Filter behaviour (keywords, Enter, Esc, empty state) |
-| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/panelToast.ts` | In-panel toast (undo + errors) |
-| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/inlineAddForm.ts` | Inline add form (replaces `prompt()`) |
-| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/manageMode.ts` | Manage mode: toggle, delete, undo |
+| File                                                                             | Responsibility                                                                             |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `packages/chrome-extension/src/utils/readCurrentFormValues.ts`                   | Read the bexio form into a `TemplateFormValues` object; suggest a template name            |
+| `packages/chrome-extension/src/utils/createTemplateFromForm.ts`                  | Build entry + hash id + duplicate check + save (no dialogs)                                |
+| `packages/chrome-extension/src/utils/updateActiveTemplate.ts`                    | Overwrite a stored template's fields from the form, keeping `id`/`templateName`/`keywords` |
+| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/tooltip.ts`       | Field-preview tooltip (singleton)                                                          |
+| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/filter.ts`        | Filter behaviour (keywords, Enter, Esc, empty state)                                       |
+| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/panelToast.ts`    | In-panel toast (undo + errors)                                                             |
+| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/inlineAddForm.ts` | Inline add form (replaces `prompt()`)                                                      |
+| `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/manageMode.ts`    | Manage mode: toggle, delete, undo                                                          |
 
 **Modified:** `renderHtml.ts` (orchestrator + chips), `public/bexioTimetrackingTemplates.css`, `packages/shared/chromeStorageTemplateEntries.ts` (+`restoreTemplate`), `e2e/extension-behaviour.spec.ts`, architecture docs.
 
@@ -75,11 +75,13 @@
 Pure refactor — `readFormData` behaviour is unchanged (its existing tests keep passing).
 
 **Files:**
+
 - Create: `packages/chrome-extension/src/utils/readCurrentFormValues.ts`
 - Modify: `packages/chrome-extension/src/utils/readFormData.ts`
 - Test: `packages/chrome-extension/test/utils/readCurrentFormValues.test.ts`
 
 **Interfaces:**
+
 - Consumes: `readTextFromSelect2(field)`, selectors (`workField`, `statusField`, `contactPersonField`, `projectField`, `packageField`, `contactField`, `billableCheckbox`), `trimAll`.
 - Produces:
   - `type TemplateFormValues = { work: string; status: string; contact: string; contactPerson: string; project: string; package: string; billable: boolean }`
@@ -259,11 +261,13 @@ git commit -m "refactor: extract form reading into readCurrentFormValues"
 ### Task 2: `createTemplateFromForm` (dialog-free save path)
 
 **Files:**
+
 - Create: `packages/chrome-extension/src/utils/createTemplateFromForm.ts`
 - Modify: `packages/chrome-extension/src/utils/readFormData.ts` (use the new util inside its loop)
 - Test: `packages/chrome-extension/test/utils/createTemplateFromForm.test.ts`
 
 **Interfaces:**
+
 - Consumes: `readCurrentFormValues()` (Task 1), `generateHash(s: string): Promise<string>`, `chromeStorageTemplateEntries.loadTemplates/saveTemplates`.
 - Produces:
   - `type CreateTemplateResult = { ok: true; entry: TemplateEntry } | { ok: false; reason: "duplicate" }`
@@ -430,10 +434,12 @@ git commit -m "refactor: extract dialog-free template creation into createTempla
 ### Task 3: `restoreTemplate` in the shared storage helpers
 
 **Files:**
+
 - Modify: `packages/shared/chromeStorageTemplateEntries.ts`
 - Test: `packages/shared/test/chromeStorageTemplateEntries.test.ts` (extend)
 
 **Interfaces:**
+
 - Produces: `restoreTemplate(entry: TemplateEntry): Promise<boolean>` — `true` = re-inserted, `false` = an entry with that id already exists (no-op).
 
 - [ ] **Step 1: Write the failing tests** (append to the existing describe file, reusing its entry factory if one exists; otherwise inline a minimal `TemplateEntry` literal like the `sample()` factory in `packages/shared/test/confirmTemplateDeletion.test.ts`)
@@ -505,11 +511,13 @@ git commit -m "feat: add restoreTemplate storage helper for delete undo"
 Rewrites the panel structure. The old Add (prompt) and Delete (delete mode) flows stay functional in this task — they are replaced in Tasks 8 and 10.
 
 **Files:**
+
 - Modify: `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/renderHtml.ts` (full rewrite below)
 - Modify: `packages/chrome-extension/public/bexioTimetrackingTemplates.css` (full rewrite below)
 - Test: `packages/chrome-extension/test/apps/bexioTimetrackingTemplates.test.ts` (update assertions)
 
 **Interfaces:**
+
 - Consumes: `getTemplateName(entry)`, `fillForm(id)`, `confirmActiveTemplateDeletion(id?)`, `readFormData()`, `VERSION`, `DATE`.
 - Produces (relied on by Tasks 5–10 and e2e):
   - The DOM contract from "File Structure" above (chip wrapper `.template-chip` with `data-filter`; apply button `button.entry.template-button#<id>` with `aria-pressed`; `.template-chip-update` (hidden); `.template-chip-delete`; `#templateFilterEmpty`).
@@ -1039,11 +1047,13 @@ git commit -m "feat: rework template panel into chips with grid layout and heade
 ### Task 5: Field-preview tooltip
 
 **Files:**
+
 - Create: `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/tooltip.ts`
 - Modify: `renderHtml.ts` (wire per chip + hide on click)
 - Test: `packages/chrome-extension/test/apps/bexioTimetrackingTemplates.tooltip.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `attachTemplateTooltip(chipButton: HTMLButtonElement, entry: TemplateEntry, panel: HTMLElement): void`
   - `hideTemplateTooltip(): void`
@@ -1088,9 +1098,8 @@ describe("template tooltip", () => {
   afterEach(() => vi.useRealTimers());
 
   const render = async (entries: TemplateEntry[]) => {
-    const { default: renderHtml } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/renderHtml"
-    );
+    const { default: renderHtml } =
+      await import("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/renderHtml");
     await renderHtml(entries);
   };
 
@@ -1254,11 +1263,13 @@ git commit -m "feat: add field-preview tooltip to template chips"
 ### Task 6: Filter v2 (keywords, Enter, Esc, empty state)
 
 **Files:**
+
 - Create: `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/filter.ts`
 - Modify: `renderHtml.ts` (replace the interim filter listeners with `setupTemplateFilter(panel)`)
 - Test: `packages/chrome-extension/test/apps/bexioTimetrackingTemplates.filter.test.ts`
 
 **Interfaces:**
+
 - Produces: `setupTemplateFilter(panel: HTMLElement): void` — queries `#templateFilter`, `#templateFilterReset`, `#templateFilterEmpty` and `.template-chip[data-filter]` inside `panel`.
 
 - [ ] **Step 1: Write the failing tests** (same mock/fixture boilerplate as the tooltip test file; `render` helper identical)
@@ -1404,10 +1415,12 @@ git commit -m "feat: keyword-aware template filter with keyboard support and emp
 ### Task 7: `panelToast`
 
 **Files:**
+
 - Create: `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/panelToast.ts`
 - Test: `packages/chrome-extension/test/apps/bexioTimetrackingTemplates.panelToast.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `type PanelToastOptions = { text: string; actionLabel?: string; onAction?: () => void; durationMs?: number }`
   - `showPanelToast(panel: HTMLElement, options: PanelToastOptions): void`
@@ -1532,12 +1545,14 @@ git commit -m "feat: add in-panel toast for undo and error feedback"
 ### Task 8: Inline add form (replaces `prompt()`)
 
 **Files:**
+
 - Create: `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/inlineAddForm.ts`
 - Modify: `renderHtml.ts` (add the form markup; wire `setupInlineAddForm`; drop `readFormData`)
 - Delete: `packages/chrome-extension/src/utils/readFormData.ts`, `packages/chrome-extension/test/utils/readFormData.test.ts`
 - Test: `packages/chrome-extension/test/apps/bexioTimetrackingTemplates.addForm.test.ts`
 
 **Interfaces:**
+
 - Consumes: `readCurrentFormValues`/`suggestTemplateName` (Task 1), `createTemplateFromForm` (Task 2), `initializeExtension` from `./index` (same import cycle `readFormData` had — it is safe).
 - Produces: `setupInlineAddForm(panel: HTMLElement): void` — queries `#AddNewTemplate`, `#SoulcodeExtensionAddForm`, `#templateNameInput`, `#templateNameSave`, `#templateNameCancel`, `#templateNameError`.
 
@@ -1546,7 +1561,9 @@ git commit -m "feat: add in-panel toast for undo and error feedback"
 ```ts
 const openForm = async () => {
   (document.getElementById("AddNewTemplate") as HTMLButtonElement).click();
-  await vi.waitFor(() => expect((document.getElementById("SoulcodeExtensionAddForm") as HTMLElement).hidden).toBe(false));
+  await vi.waitFor(() =>
+    expect((document.getElementById("SoulcodeExtensionAddForm") as HTMLElement).hidden).toBe(false),
+  );
 };
 const nameInput = () => document.getElementById("templateNameInput") as HTMLInputElement;
 const errorEl = () => document.getElementById("templateNameError") as HTMLElement;
@@ -1559,9 +1576,8 @@ it("opens with the suggested name pre-filled ('Misc' from the filled fixture's p
 });
 
 it("saves a template and re-renders; no prompt() involved", async () => {
-  const { initializeExtension } = await import(
-    "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index"
-  );
+  const { initializeExtension } =
+    await import("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index");
   await render([]);
   await openForm();
   nameInput().value = "My Inline Template";
@@ -1585,7 +1601,9 @@ it("shows an inline error on empty name and on duplicate", async () => {
 
   nameInput().value = "Twice";
   save();
-  await vi.waitFor(async () => expect(((await chrome.storage.local.get("entries")).entries as unknown[]).length).toBe(1));
+  await vi.waitFor(async () =>
+    expect(((await chrome.storage.local.get("entries")).entries as unknown[]).length).toBe(1),
+  );
   await openForm(); // re-open (save closed it)
   nameInput().value = "Twice"; // same name + same form values → same hash
   save();
@@ -1689,12 +1707,13 @@ export function setupInlineAddForm(panel: HTMLElement): void {
 ```
 
 In `renderHtml.ts`:
+
 - Add the form markup directly after the closing `</div>` of `.bx-formular-header` (before the entries container):
 
 ```html
 <div id="SoulcodeExtensionAddForm" hidden>
   <label for="templateNameInput">Name</label>
-  <input type="text" id="templateNameInput">
+  <input type="text" id="templateNameInput" />
   <button type="button" id="templateNameSave" class="btn btn-info">Save</button>
   <button type="button" id="templateNameCancel" class="btn">Cancel</button>
   <span id="templateNameError" hidden></span>
@@ -1727,11 +1746,13 @@ git commit -m "feat: replace prompt-based template add with inline form"
 ### Task 9: Update action on the active chip
 
 **Files:**
+
 - Create: `packages/chrome-extension/src/utils/updateActiveTemplate.ts`
 - Modify: `renderHtml.ts` (wire the `↻` button)
 - Test: `packages/chrome-extension/test/utils/updateActiveTemplate.test.ts` and extend `test/apps/bexioTimetrackingTemplates.test.ts`
 
 **Interfaces:**
+
 - Consumes: `readCurrentFormValues` (Task 1), `chromeStorageTemplateEntries.loadTemplates/updateTemplate`, `showPanelToast` (Task 7).
 - Produces: `updateActiveTemplate(templateId: string): Promise<boolean>` — `false` when the id is not in storage (nothing written).
 
@@ -1745,9 +1766,8 @@ it("overwrites the stored fields with the form values, keeping id, templateName 
   const existing = template({ id: "keep-me", templateName: "Keep Name", keywords: "kw stays", work: "Old" });
   await chrome.storage.local.set({ entries: [existing] });
 
-  const { updateActiveTemplate } = await import(
-    "@bexio-chrome-extension/chrome-extension/src/utils/updateActiveTemplate"
-  );
+  const { updateActiveTemplate } =
+    await import("@bexio-chrome-extension/chrome-extension/src/utils/updateActiveTemplate");
   expect(await updateActiveTemplate("keep-me")).toBe(true);
 
   const stored = (await chrome.storage.local.get("entries")).entries as TemplateEntry[];
@@ -1762,9 +1782,8 @@ it("overwrites the stored fields with the form values, keeping id, templateName 
 it("returns false and writes nothing for an unknown id", async () => {
   loadFixture("monitoring-edit-filled");
   await chrome.storage.local.set({ entries: [template({ id: "other" })] });
-  const { updateActiveTemplate } = await import(
-    "@bexio-chrome-extension/chrome-extension/src/utils/updateActiveTemplate"
-  );
+  const { updateActiveTemplate } =
+    await import("@bexio-chrome-extension/chrome-extension/src/utils/updateActiveTemplate");
   expect(await updateActiveTemplate("missing")).toBe(false);
   const stored = (await chrome.storage.local.get("entries")).entries as TemplateEntry[];
   expect(stored.map((e) => e.id)).toEqual(["other"]);
@@ -1886,12 +1905,14 @@ git commit -m "feat: add update action that overwrites the active template from 
 ### Task 10: Manage mode with undo (removes the old delete flow)
 
 **Files:**
+
 - Create: `packages/chrome-extension/src/apps/bexioTimetrackingTemplates/manageMode.ts`
 - Modify: `renderHtml.ts` (Manage button replaces Delete; remove delete-mode code)
 - Delete: `packages/chrome-extension/src/utils/confirmTemplateDeletion.ts`
 - Test: `packages/chrome-extension/test/apps/bexioTimetrackingTemplates.manageMode.test.ts`
 
 **Interfaces:**
+
 - Consumes: `chromeStorageTemplateEntries.deleteTemplate/restoreTemplate` (Task 3), `showPanelToast`/`hidePanelToast` (Task 7), `hideTemplateTooltip` (Task 5), `initializeExtension` from `./index`.
 - Produces: `setupManageMode(panel: HTMLElement, templateEntries: TemplateEntry[]): void` — queries `#ManageTemplates`, `#bexioTimetrackingTemplates-entries`, `#AddNewTemplate`, `#SoulcodeExtensionAddForm`; toggles the `manage-mode` class on `panel`.
 
@@ -1933,9 +1954,8 @@ it("clicking × in manage mode deletes from storage, removes the chip and offers
 });
 
 it("Undo restores the entry and re-renders", async () => {
-  const { initializeExtension } = await import(
-    "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index"
-  );
+  const { initializeExtension } =
+    await import("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index");
   const entry = template();
   await chrome.storage.local.set({ entries: [entry] });
   await render([entry]);
@@ -2047,6 +2067,7 @@ async function undoDelete(entry: TemplateEntry | undefined, panel: HTMLElement):
 ```
 
 In `renderHtml.ts`:
+
 - In the header markup, replace `<button type="button" id="DeleteTemplate" class="btn">Delete</button>` with `<button type="button" id="ManageTemplates" class="btn">Manage</button>`.
 - Delete the whole legacy delete-mode block (the `deleteTemplateButton` const, `deleteMode` flag, `disableDeleteMode`, the `#DeleteTemplate` click listener) and the `confirmActiveTemplateDeletion` import.
 - In the delegated apply handler, replace the `deleteMode` branch with a manage-mode guard as the first check after `closest`:
@@ -2076,9 +2097,11 @@ git commit -m "feat: replace hidden delete mode with manage mode and undo toast"
 ### Task 11: E2E update + full build
 
 **Files:**
+
 - Modify: `e2e/extension-behaviour.spec.ts` (tests 3 and 4)
 
 **Interfaces:**
+
 - Consumes: the DOM contract (`#ManageTemplates`, `.template-chip`, `.template-chip-delete`, `#SoulcodeExtensionAddForm`, `#templateNameInput`, `#templateNameSave`, `#SoulcodeExtensionToast`, `manage-mode` class). Test 2 ("clicking a template button fills the form") must keep passing unchanged — `button#<id>`, `.template-button--active` and the loader behaviour are intact by design.
 
 - [ ] **Step 1: Rewrite test 3 (filter)**
@@ -2194,6 +2217,7 @@ git commit -m "test: update e2e specs for inline add, keyword filter and manage-
 ### Task 12: Docs, full verification, dev-build handover
 
 **Files:**
+
 - Modify: `docs/architecture/testing.md` (manual walkthrough), `docs/architecture/storage.md` (restoreTemplate), `docs/architecture/form-layer.md` (read-back path references)
 
 - [ ] **Step 1: Update the architecture docs**

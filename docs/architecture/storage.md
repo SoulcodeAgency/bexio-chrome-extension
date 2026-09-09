@@ -41,6 +41,7 @@ Template entries are stored as a flat array under the single key `"entries"`. Ev
 - `saveTemplates(entries)` — replaces the whole array.
 - `deleteTemplate(id)` — delegates to `chromeStorage.remove(id)`, which filters the array by `entry.id !== id`.
 - `updateTemplate(entry)` — delegates to `chromeStorage.update(entry)`, which replaces the matching element by `id` (shallow merge).
+- `restoreTemplate(entry)` — re-inserts a deleted entry for undo (manage-mode delete in the injected panel); no-op returning `false` when the id already exists (defensive against concurrent side-panel writes).
 
 ---
 
@@ -135,19 +136,20 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
 
 ## Who reads / writes what
 
-| Actor                                            | Reads                                                                                                                                                                                                                                                                          | Writes                                                                                                                                                                                                                    |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Side panel app** (`packages/sidePanel-import`) | `loadTemplates` (`TemplateProvider.tsx`), `loadApplyNotesSetting`, `loadUppercaseFirstLetterSetting`, `loadActiveTabId`, plus raw `chromeStorage.load` for the import-buffer keys                                                                                              | `saveApplyNotesSetting`, `saveUppercaseFirstLetterSetting`, `saveActiveTabId`, `deleteTemplate` (`TemplateEntries.tsx`), `updateTemplate` (`TemplateModal.tsx`), plus raw `chromeStorage.save` for the import-buffer keys |
-| **Content script** (`packages/chrome-extension`) | `loadTemplates` (`apps/bexioTimetrackingTemplates/index.ts`, `utils/fillForm.ts`), `loadApplyNotesSetting` + `loadUppercaseFirstLetterSetting` (`eventListeners/onMessage.ts`), `loadRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`, `utils/convertPopover.ts`) | `saveTemplates` (`utils/readFormData.ts`), `deleteTemplate` (`utils/confirmTemplateDeletion.ts`), `saveRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`)                                                     |
-| **Service worker** (`public/service_worker.js`)  | —                                                                                                                                                                                                                                                                              | —                                                                                                                                                                                                                         |
+| Actor                                            | Reads                                                                                                                                                                                                                                                                          | Writes                                                                                                                                                                                                                                                               |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Side panel app** (`packages/sidePanel-import`) | `loadTemplates` (`TemplateProvider.tsx`), `loadApplyNotesSetting`, `loadUppercaseFirstLetterSetting`, `loadActiveTabId`, plus raw `chromeStorage.load` for the import-buffer keys                                                                                              | `saveApplyNotesSetting`, `saveUppercaseFirstLetterSetting`, `saveActiveTabId`, `deleteTemplate` (`TemplateEntries.tsx`), `updateTemplate` (`TemplateModal.tsx`), plus raw `chromeStorage.save` for the import-buffer keys                                            |
+| **Content script** (`packages/chrome-extension`) | `loadTemplates` (`apps/bexioTimetrackingTemplates/index.ts`, `utils/fillForm.ts`), `loadApplyNotesSetting` + `loadUppercaseFirstLetterSetting` (`eventListeners/onMessage.ts`), `loadRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`, `utils/convertPopover.ts`) | `saveTemplates` (`utils/createTemplateFromForm.ts`), `updateTemplate` (`utils/updateActiveTemplate.ts`), `deleteTemplate` + `restoreTemplate` (`apps/bexioTimetrackingTemplates/manageMode.ts`), `saveRemovePopoversSetting` (`apps/bexioProjectList/renderHtml.ts`) |
+| **Service worker** (`public/service_worker.js`)  | —                                                                                                                                                                                                                                                                              | —                                                                                                                                                                                                                                                                    |
 
 **There is no canonical writer.** Both UI contexts write `chrome.storage.local`
 directly, and both write the `"entries"` key. The content script does _not_
-delegate template mutations to the side panel — the "Add" button in the injected
-Templates block writes the template itself (`readFormData.ts`), and the "Delete"
-button calls `deleteTemplate` itself (`confirmTemplateDeletion.ts`). The service
-worker never touches storage at all; it only opens the bexio tab on toolbar-icon
-click and enables the side panel per tab.
+delegate template mutations to the side panel — the inline add form in the
+injected Templates block writes the template itself (`createTemplateFromForm.ts`
+via `inlineAddForm.ts`), the `↻` update button overwrites it
+(`updateActiveTemplate.ts`), and manage mode deletes/restores it
+(`manageMode.ts`). The service worker never touches storage at all; it only
+opens the bexio tab on toolbar-icon click and enables the side panel per tab.
 
 ### Two-writer race on the `"entries"` key
 
@@ -159,32 +161,35 @@ The content script has no such listener at all, so an open `monitoring/edit` tab
 still holds an in-memory snapshot that never learns about the panel's writes.
 
 `chromeStorage.remove` / `chromeStorage.update` (behind `deleteTemplate` /
-`updateTemplate`) at least re-read immediately before writing, so their window is
-narrow. The lossy path is `readFormData.ts:41-111`, which saves an array it
-snapshotted earlier:
+`updateTemplate`) and `restoreTemplate` at least re-read immediately before
+writing, so their window is narrow. The remaining lossy path is
+`createTemplateFromForm.ts`, which saves an array it snapshotted earlier:
 
-1. Read the form fields and derive a suggested `templateName`.
-2. `prompt("Name of the template:", …)` — a **blocking, unbounded** dialog. Cancel → `alert` + return.
-3. `generateHash(JSON.stringify(formEntry))` → `formEntry.id`.
-4. `loadTemplates()` — takes a snapshot of the _entire_ array.
-5. If the hash already exists: `confirm("… Try again?")` — another unbounded dialog. Yes → back to step 2 (which re-runs step 4, so the stale snapshot is discarded). No → return.
-6. `allEntries.push(formEntry)` — mutates the snapshot.
-7. `saveTemplates(allEntries)` — writes the snapshot back over the whole key, then `initializeExtension()` re-renders.
+1. Read the form fields (`readCurrentFormValues`) into the entry, with the name
+   the user typed into the inline add form.
+2. `generateHash(JSON.stringify(entry))` → `entry.id`.
+3. `loadTemplates()` — takes a snapshot of the _entire_ array.
+4. If the hash already exists: return `{ ok: false, reason: "duplicate" }` (the
+   add form shows an inline error; no dialog).
+5. `allEntries.push(entry)` — mutates the snapshot.
+6. `saveTemplates(allEntries)` — writes the snapshot back over the whole key;
+   the add form then re-renders via `initializeExtension()`.
 
-The window between the snapshot (step 4) and the write (step 7) is short on the
-happy path — there is no dialog inside it — but it is real, and step 7 is an
-unconditional overwrite. **Anything the side panel writes to `"entries"` between
-steps 4 and 7 is silently lost**: a template renamed in the `TemplateModal`, or
-one deleted from the side panel's template list, reappears/reverts as soon as the
-bexio tab saves. The reverse also holds — a side-panel `deleteTemplate` that
-lands just after step 4 is undone by step 7.
+The window between the snapshot (step 3) and the write (step 6) is short —
+since the inline add form replaced the old `prompt()`/`confirm()` flow there is
+no unbounded dialog inside it — but it is real, and step 6 is an unconditional
+overwrite. **Anything the side panel writes to `"entries"` between steps 3 and
+6 is silently lost**: a template renamed in the `TemplateModal`, or one deleted
+from the side panel's template list, reappears/reverts as soon as the bexio tab
+saves. The reverse also holds — a side-panel `deleteTemplate` that lands just
+after step 3 is undone by step 6.
 
 ### The side panel's `chrome.storage.onChanged` subscription
 
 `TemplateProvider.tsx` subscribes to `chrome.storage.onChanged` and calls
 `reloadData()` whenever the `local` area reports a change to `"entries"`. Chrome
 fires that event in every extension context, so a template saved on the bexio
-page (`readFormData.ts`) reaches the open side panel without it being closed and
+page (`createTemplateFromForm.ts`) reaches the open side panel without it being closed and
 reopened — which is what "Auto map templates" needs to be able to match a
 freshly created template. Changes to other keys (the import buffer, the settings
 keys) are ignored.
