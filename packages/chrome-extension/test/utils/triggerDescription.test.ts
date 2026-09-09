@@ -90,10 +90,10 @@ describe("triggerDescription", () => {
       await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDescription");
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    // KNOWN ISSUE: the `if (descriptionField)` guard in triggerDescription is dead code —
-    // getDescriptionField throws instead of returning a falsy value, so the call rejects
-    // rather than silently no-op'ing. onMessage calls triggerDescription without awaiting
-    // or catching it, so this surfaces as an unhandled rejection.
+    // Rejecting is the contract: getDescriptionField throws when the iframe body is missing, and
+    // onMessage awaits this call, so the failure reaches the side panel as { ok: false } instead
+    // of an unhandled rejection behind a false success (#124). The dead `if (descriptionField)`
+    // guard that used to sit here is gone — it could never see a falsy value.
     await expect(triggerDescription("anything")).rejects.toThrow("Description field not found");
     expect(consoleError).toHaveBeenCalled();
   });

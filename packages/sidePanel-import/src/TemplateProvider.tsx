@@ -2,7 +2,7 @@ import { TemplateContext } from "./TemplateContext";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { chromeStorageTemplateEntries, sortTemplates } from "@bexio-chrome-extension/shared";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
-import { developmentEnv } from "./utils/development";
+import { getStorageApi } from "./utils/getStorageApi";
 
 /**
  * The `chrome.storage.local` key the templates are stored under — kept in sync with
@@ -10,17 +10,9 @@ import { developmentEnv } from "./utils/development";
  */
 const TEMPLATE_ENTRIES_KEY = "entries";
 
-/**
- * `chrome.storage.onChanged` is missing when the app runs outside the extension (the standalone
- * Vite dev server) and the test fake throws on unimplemented members, so the lookup is guarded
- * the same way `sendToBexioTab` guards `chrome.tabs`.
- */
+/** Undefined outside the extension, where there is no storage to subscribe to. */
 function getStorageOnChanged(): typeof chrome.storage.onChanged | undefined {
-  try {
-    return typeof chrome !== "undefined" && chrome.storage?.onChanged ? chrome.storage.onChanged : undefined;
-  } catch {
-    return undefined;
-  }
+  return getStorageApi()?.onChanged;
 }
 
 function TemplateProvider({ children }: { children: ReactNode }) {
@@ -31,10 +23,13 @@ function TemplateProvider({ children }: { children: ReactNode }) {
     return await response.json();
   }
 
+  // Keyed on the presence of chrome.storage, not on the build mode: a development *build* of
+  // the extension still has to show the user's own templates. Only the standalone Vite dev
+  // server, which has no extension APIs, falls back to the bundled sample file.
   const reloadData = useCallback(async () => {
-    const templateEntries = developmentEnv
-      ? await getDevTemplates()
-      : await chromeStorageTemplateEntries.loadTemplates();
+    const templateEntries = getStorageApi()
+      ? await chromeStorageTemplateEntries.loadTemplates()
+      : await getDevTemplates();
     setTemplates(sortTemplates(templateEntries));
   }, []);
 

@@ -50,10 +50,11 @@ describe("ImportEntries — applying an entry from a short row", () => {
   beforeEach(async () => {
     document.body.innerHTML = "";
     sentMessages.length = 0;
-    // chrome.tabs is not part of the shared chrome fake (it throws on unknown
-    // members), so add just what applyImportEntry touches.
+    // Just what applyImportEntry touches. The tab reports the time tracking form as its
+    // URL so `openBexioTimeTrackingPage` returns without navigating — this test is about
+    // the missing Notes cell, not about the navigation.
     (globalThis.chrome as unknown as Record<string, unknown>).tabs = {
-      query: async () => [{ id: 1 }],
+      query: async () => [{ id: 1, url: "https://office.bexio.com/index.php/monitoring/edit" }],
       sendMessage: async (_tabId: number, data: unknown) => {
         sentMessages.push(data);
       },
