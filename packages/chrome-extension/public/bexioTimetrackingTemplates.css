@@ -1,18 +1,122 @@
 :root {
   --soulcodeGreen: #33b7a3;
   --soulcodeBlue: #3276b4;
+  --soulcodeDanger: #cf4a4a;
 }
 
-.template-button {
-  background-color: var(--soulcodeBlue) !important;
+#SoulcodeExtensionTemplates {
+  position: relative; /* anchors the tooltip and the toast */
 }
 
-.template-button--active {
-  font-weight: bold !important;
-  box-shadow: inset rgba(0, 0, 0, 0.5) 0 0 2px 2px !important;
-  background-color: var(--soulcodeGreen) !important;
+#bexioTimetrackingTemplates-entries {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
 }
 
+/* ── Chips ── */
+.template-chip {
+  position: relative;
+  display: flex;
+}
+
+.template-chip[hidden] {
+  display: none;
+}
+
+button.template-button {
+  flex: 1;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #c6d9ea;
+  background: #eef4fa;
+  color: #1d5c98;
+  border-radius: 4px;
+  padding: 6px 28px 6px 10px; /* right padding leaves room for the corner buttons */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+button.template-button:hover {
+  background: #e1edf8;
+  border-color: #9cc0de;
+}
+
+button.template-button:focus-visible {
+  outline: 2px solid var(--soulcodeBlue);
+  outline-offset: 1px;
+}
+
+button.template-button.template-button--active {
+  background: var(--soulcodeGreen);
+  border-color: #2aa392;
+  color: #fff;
+  font-weight: 600;
+}
+
+button.template-button.template-button--active::before {
+  content: "✓ ";
+  font-weight: 700;
+}
+
+/* ── Corner buttons inside a chip ── */
+.template-chip-update {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 5px;
+  cursor: pointer;
+}
+
+.template-chip-update:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.template-chip-delete {
+  display: none; /* manage mode only (see .manage-mode below) */
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  line-height: 14px;
+  text-align: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--soulcodeDanger);
+  color: #fff;
+  font-size: 11px;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* ── Manage mode ── */
+.manage-mode .template-chip-delete {
+  display: block;
+}
+
+.manage-mode .template-chip-update {
+  display: none;
+}
+
+.manage-mode button.template-button {
+  border-style: dashed;
+  border-color: #d9a0a0;
+  background: #fdf7f7;
+  color: #7a3030;
+}
+
+/* ── Filter ── */
 .template-search-filter {
   position: relative;
   width: 150px;
@@ -41,13 +145,106 @@
     cursor: pointer;
     transition: 0.1s;
   }
+
+  button.template-search-filter-clear-button[hidden] {
+    display: none;
+  }
 }
 
-/* Super  special button styling for active delete action */
-.bx-formular-header:has(.btn-danger) + #bexioTimetrackingTemplates-entries:not(:has(.template-button--active)) {
-  & button:focus,
-  & button:hover {
-    background-color: red !important;
-    text-decoration: line-through;
-  }
+#templateFilterEmpty {
+  grid-column: 1 / -1;
+  color: #8a95a0;
+  font-size: 12.5px;
+  padding: 8px 4px;
+}
+
+#templateFilterEmpty[hidden] {
+  display: none;
+}
+
+/* ── Inline add form ── */
+#SoulcodeExtensionAddForm {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: #f2f7fb;
+  border: 1px solid #cfe0ee;
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+#SoulcodeExtensionAddForm[hidden] {
+  display: none;
+}
+
+#SoulcodeExtensionAddForm input {
+  flex: 1;
+  margin: 0;
+}
+
+#templateNameError {
+  color: var(--soulcodeDanger);
+  font-size: 12px;
+}
+
+/* ── Toast (undo / errors) ── */
+#SoulcodeExtensionToast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  background: #2c3540;
+  color: #f0f4f7;
+  border-radius: 4px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+}
+
+#SoulcodeExtensionToast button {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: #7fd0c2;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+/* ── Tooltip (field preview) ── */
+#SoulcodeTemplateTooltip {
+  position: absolute;
+  z-index: 30;
+  width: 250px;
+  background: #ffffff;
+  border: 1px solid #c3cdd6;
+  border-radius: 5px;
+  box-shadow: 0 6px 18px rgba(20, 40, 60, 0.18);
+  padding: 10px 12px;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+#SoulcodeTemplateTooltip .tooltip-name {
+  font-weight: 600;
+  color: #1d5c98;
+  margin-bottom: 6px;
+}
+
+#SoulcodeTemplateTooltip dl {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 2px 8px;
+  margin: 0;
+}
+
+#SoulcodeTemplateTooltip dt {
+  color: #8a95a0;
+}
+
+#SoulcodeTemplateTooltip dd {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

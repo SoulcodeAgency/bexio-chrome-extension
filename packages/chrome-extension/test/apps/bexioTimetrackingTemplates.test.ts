@@ -41,16 +41,30 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
     loadFixture("monitoring-edit");
   });
 
-  it("renders one button per template with the name as text and the id as the element id", async () => {
+  it("renders one chip per template: apply button with name/id inside a .template-chip wrapper", async () => {
     const renderHtml = await importRenderHtml();
     await renderHtml([template(), template({ id: "tmpl2", templateName: "Globex GmbH" })]);
 
+    const chips = entriesContainer().querySelectorAll("div.template-chip");
+    expect(chips).toHaveLength(2);
     const buttons = entriesContainer().querySelectorAll("button.entry");
-    expect(buttons).toHaveLength(2);
     expect(Array.from(buttons).map((b) => b.id)).toEqual(["tmpl1", "tmpl2"]);
     expect(Array.from(buttons).map((b) => b.textContent)).toEqual(["Project Falcon", "Globex GmbH"]);
-    expect(buttons[0].className).toBe("entry btn btn-info template-button");
-    expect((buttons[0] as HTMLButtonElement).type).toBe("button");
+    expect(buttons[0].className).toBe("entry template-button");
+    expect(buttons[0].getAttribute("aria-pressed")).toBe("false");
+    // each chip carries a hidden update button and a delete cross
+    expect(chips[0].querySelector<HTMLButtonElement>(".template-chip-update")!.hidden).toBe(true);
+    expect(chips[0].querySelector(".template-chip-delete")).not.toBeNull();
+    // filter metadata: lowercased name + keywords
+    expect((chips[0] as HTMLElement).dataset.filter).toBe("project falcon ");
+  });
+
+  it("puts the version into the heading tooltip, not the heading text", async () => {
+    const renderHtml = await importRenderHtml();
+    await renderHtml([]);
+    const heading = document.querySelector("#SoulcodeExtensionTemplates h2")!;
+    expect(heading.textContent!.trim()).toBe("Templates");
+    expect(heading.getAttribute("title")).toMatch(/v\d+\.\d+\.\d+/);
   });
 
   it("falls back to the id as the display name for legacy (pre-v0.5.x) entries", async () => {
@@ -62,16 +76,16 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
     expect(entriesContainer().querySelector("button.entry")!.textContent).toBe("LegacyName");
   });
 
-  // Regression: template names come from bexio field values, the prompt() in
-  // readFormData and the side panel's modal — none of them sanitised. They must
-  // never be parsed as HTML (#85).
+  // Regression: template names come from bexio field values, the add form and
+  // the side panel's modal — none of them sanitised. They must never be parsed
+  // as HTML (#85).
   it("does not parse markup in a template name — it is rendered as literal text", async () => {
     const evil = '<img src=x onerror="alert(1)"><button id="fake">pwned</button>';
     const renderHtml = await importRenderHtml();
     await renderHtml([template({ templateName: evil })]);
 
     const container = entriesContainer();
-    expect(container.querySelectorAll("button")).toHaveLength(1);
+    expect(container.querySelectorAll("button.entry")).toHaveLength(1);
     expect(container.querySelector("img")).toBeNull();
     expect(document.getElementById("fake")).toBeNull();
     expect(container.querySelector("button.entry")!.textContent).toBe(evil);
@@ -83,29 +97,36 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
     await renderHtml([template({ id: evilId, templateName: "Innocent" })]);
 
     const container = entriesContainer();
-    const buttons = container.querySelectorAll("button");
+    const buttons = container.querySelectorAll("button.entry");
     expect(buttons).toHaveLength(1);
     const button = buttons[0];
     // The whole string stayed inside the id attribute; no extra attributes appeared.
     expect(button.getAttribute("id")).toBe(evilId);
     expect(button.getAttribute("onclick")).toBeNull();
     expect(button.getAttribute("data-x")).toBeNull();
-    expect(button.attributes.length).toBe(4); // type, id, class, style
+    expect(button.attributes.length).toBe(4); // type, id, class, aria-pressed
     // The delete flow looks the button up by id — that still works.
     expect(document.getElementById(evilId)).toBe(button);
   });
 
-  it("keeps the click handler wired: clicking a button fills the form and marks it active", async () => {
+  it("marks the clicked chip active: class, aria-pressed and visible update button", async () => {
     const renderHtml = await importRenderHtml();
     const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
     await renderHtml([template(), template({ id: "tmpl2", templateName: "Globex GmbH" })]);
 
-    const button = document.getElementById("tmpl1") as HTMLButtonElement;
-    button.click();
+    const first = document.getElementById("tmpl1") as HTMLButtonElement;
+    const second = document.getElementById("tmpl2") as HTMLButtonElement;
+    second.click();
+    first.click();
 
-    expect(vi.mocked(fillForm)).toHaveBeenCalledWith("tmpl1");
-    expect(button.classList.contains("template-button--active")).toBe(true);
-    expect(document.getElementById("DeleteTemplate")!.classList.contains("btn-danger")).toBe(true);
+    expect(vi.mocked(fillForm)).toHaveBeenLastCalledWith("tmpl1");
+    expect(first.classList.contains("template-button--active")).toBe(true);
+    expect(first.getAttribute("aria-pressed")).toBe("true");
+    expect(first.parentElement!.querySelector<HTMLButtonElement>(".template-chip-update")!.hidden).toBe(false);
+    // the previously active chip is fully reset
+    expect(second.classList.contains("template-button--active")).toBe(false);
+    expect(second.getAttribute("aria-pressed")).toBe("false");
+    expect(second.parentElement!.querySelector<HTMLButtonElement>(".template-chip-update")!.hidden).toBe(true);
   });
 
   it("renders an empty entries container when there are no templates", async () => {
@@ -114,5 +135,6 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
 
     expect(entriesContainer().querySelectorAll("button")).toHaveLength(0);
     expect(document.getElementById("SoulcodeExtensionTemplates")).not.toBeNull();
+    expect(document.getElementById("DeleteTemplate")).not.toBeNull();
   });
 });
