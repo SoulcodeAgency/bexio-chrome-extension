@@ -498,7 +498,7 @@ function ImportEntries() {
       <Alert
         showIcon
         type="info"
-        message="Before you can apply the imported data, you need to add some data above and maybe also save it for later use."
+        title="Before you can apply the imported data, you need to add some data above and maybe also save it for later use."
       />
     </div>
   );
