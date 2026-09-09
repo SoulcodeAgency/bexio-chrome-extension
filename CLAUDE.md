@@ -45,11 +45,20 @@ Loading locally: build, then in Chrome → Extensions → Load unpacked → sele
 
 Whenever a change needs to be verified by the user in a real browser, **build a dev release first and hand over the absolute Windows path**. Never ask for a manual test without one.
 
-```powershell
+```bash
 npm run build:devRelease               # bumps package.json, then builds unpacked/
 npm run version:updateManifest         # stamps that version into public/manifest.json
 npm run build:project -- -Development  # full rebuild, so unpacked/ carries the stamped manifest
 ```
+
+**Run the third line from bash, not PowerShell.** `npm run <script> -- -Flag` silently loses every
+flag when PowerShell invokes it: PowerShell treats the `--` as its own end-of-parameters marker, so
+npm never forwards anything and `Build.ps1` runs with all switches at their defaults — a production
+build where a dev build was intended, and `-IgnoreExtension`/`-IgnoreSidePanel` are dropped the same
+way. Nothing fails; the only tell is Vite printing `building client environment for production...`.
+Verified on PowerShell 7.6.4 (2026-08-14). The first line is safe anywhere — `build:devRelease`
+chains the flag through npm's own shell, not through PowerShell. From a PowerShell terminal, use
+`powershell -File Build.ps1 -Development` for the third step instead.
 
 Path to hand over, for the main checkout:
 
@@ -62,6 +71,8 @@ E:\git\soulcode\bexio-chrome-extension\unpacked
 **Why the last two steps are not optional.** `build:devRelease` bumps `package.json` but does **not** stamp the manifest, and the manifest is copied into `unpacked/` *during* the build. Running only `build:devRelease` — or running `version:updateManifest` after it without rebuilding — leaves `unpacked/manifest.json` on the previous version. Chrome then shows a stale version for the very build that is meant to prove the change, which defeats the point of the bump. Stamp first, then re-emit.
 
 **The last step must be a full build — never `-IgnoreSidePanel`.** `packages/chrome-extension/vite.config.js` sets `outDir: "../../unpacked"` with `emptyOutDir: true`, so the extension build **empties the whole `unpacked/` folder**; Build.ps1 then rebuilds the side panel into `unpacked/sidePanel-import/`. In a full build the order saves you. An extension-only build does not merely skip the side panel — it *deletes* the one already there, and nothing fails: Chrome loads the folder, the injected template UI still works, and only opening the side panel reveals `ERR_FILE_NOT_FOUND`. The same applies to `-IgnoreExtension` in reverse. `Build.ps1` now prints a warning when `unpacked/sidePanel-import/index.html` is missing after a build, but do not rely on spotting it — just build both.
+
+**To hand over a build whose console warnings can be read, set `NODE_ENV=development`.** `-Development` only turns off minification; which React build gets bundled follows `NODE_ENV` when Vite resolves react-dom's export conditions. Without it you get `react-dom.production`, which logs no `validateDOMNesting`, no hydration errors and none of antd's deprecation warnings — a clean console that proves nothing. Check with `grep -o "react-dom.development\|react-dom.production" unpacked/sidePanel-import/assets/index-*.js`. (This is also why the build smoke test produces a DEV bundle: Vitest sets `NODE_ENV=test`, which the child process inherits.)
 
 Build in the checkout that actually holds the code under test. A worktree has its own `unpacked/`, so handing over the main checkout's path after building in a worktree ships the wrong build.
 
@@ -77,7 +88,7 @@ Run `npm run createRelease` (`CreateRelease.ps1`); see `RELEASE.md`. It bumps th
   - `monitoring/edit*` → `src/apps/bexioTimetrackingTemplates/index.ts` — the template save/apply UI injected into the time-entry form.
   - `monitoring/list`, `pr_project/listMonitoring/*`, `pr_project/showPackage/*`, `kb_invoice/show/id/*` → `src/apps/bexioProjectList/index.ts` — the tooltip→text replacement (`convertPopover`), driven by `MutationObserver`s because bexio re-renders tables.
 - **Service worker** (`public/service_worker.js`, plain JS): opens the bexio time tracking tab on toolbar-icon click, and enables/configures the side panel (`/sidePanel-import/index.html`) only on `office.bexio.com/index.php/monitoring*` tabs.
-- **Side panel ↔ content script messaging**: the React app sends `chrome.tabs.sendMessage` payloads typed as `ExchangeRequestData` (`packages/shared/types.ts`: `mode: "template" | "time+duration" | "reload"`) through the single helper `packages/sidePanel-import/src/utils/sendToBexioTab.ts`, which reports "no tab" / "no content script" failures to the user via an antd `message` toast. The content script handles them in `src/eventListeners/onMessage.ts` — a sync dispatcher that returns `true` and always answers with an `ExchangeResponse` (`{ ok: true }` / `{ ok: false, error }`) — calling `fillForm` (apply a template), `triggerDuration`/`triggerDate`/`triggerDescription`/`triggerCheckbox` (apply a ManicTime entry), or re-initializing the page UI. The contract is documented in `docs/architecture/form-layer.md` ("Messaging contract").
+- **Side panel ↔ content script messaging**: the React app sends `chrome.tabs.sendMessage` payloads typed as `ExchangeRequestData` (`packages/shared/types.ts`: `mode: "template" | "time+duration" | "reload"`) through the single helper `packages/sidePanel-import/src/utils/sendToBexioTab.ts`, which reports "no tab" / "no content script" failures to the user via an antd `message` toast. Toasts go through `src/utils/messageApi.ts`' `getMessageApi()`, never through antd's static `message.*`: the static API renders into its own React root and cannot see the `ConfigProvider` theme (antd warns about it). `main.tsx` wraps the app in antd's `<App>` and `MessageApiBridge` publishes that context instance to the module-level holder, which is what lets non-component code like `sendToBexioTab` use it; it falls back to the static API when no bridge is mounted. The content script handles them in `src/eventListeners/onMessage.ts` — a sync dispatcher that returns `true` and always answers with an `ExchangeResponse` (`{ ok: true }` / `{ ok: false, error }`) — calling `fillForm` (apply a template), `triggerDuration`/`triggerDate`/`triggerDescription`/`triggerCheckbox` (apply a ManicTime entry), or re-initializing the page UI. The contract is documented in `docs/architecture/form-layer.md` ("Messaging contract").
 - **Manipulating bexio's form** is fiddly: the page uses jQuery/select2 widgets, so `src/utils/trigger*.ts` and `src/utils/waitFor*.ts` simulate input events and poll for async-loaded options; `src/selectors/` centralizes the DOM selectors. When bexio markup changes, those two folders are where breakage lives.
 - **Persistence**: everything is `chrome.storage.local` via `packages/shared/chromeStorage*.ts` — `chromeStorageTemplateEntries` (templates), `chromeStorageImportData` (ManicTime import buffer), `chromeStorageSettings` (UI prefs like active tab, "apply notes", "capitalize notes"). Templates are `TemplateEntry` objects (`types.ts`). Both the side panel and the content script write the `"entries"` key, so `TemplateProvider.tsx` subscribes to `chrome.storage.onChanged` and re-reads when it changes — that is what makes a template saved on the bexio page show up in an already-open side panel (and matchable by "Auto map templates"). The 🔄 button in the panel header is the manual version of the same reload. See `docs/architecture/storage.md`.
 - **ManicTime import flow** lives in `packages/sidePanel-import/src/components/ImportEntries/` — clipboard CSV is parsed (`utils/csvParser.ts`), entries are auto-matched to templates (`AutoMapTemplatesV3.ts`, also checks template `keywords`), and applying an entry posts an `EntryExchangeData` (and optionally a `TemplateExchangeData`) message to the content script.
