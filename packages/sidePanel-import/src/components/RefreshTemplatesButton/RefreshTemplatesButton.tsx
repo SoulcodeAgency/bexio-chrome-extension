@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
-import { Button, Tooltip, message } from "antd";
+import { Button, Tooltip } from "antd";
 import { TemplateContext, TemplateContextType } from "~/TemplateContext";
+import { getMessageApi } from "~/utils/messageApi";
 import { REFRESH_TEMPLATES_LABEL, REFRESH_TEMPLATES_TOOLTIP } from "./labels";
 
 /**
@@ -20,10 +21,10 @@ function RefreshTemplatesButton() {
     try {
       await reloadData();
       // Without this the click looks like a no-op whenever the list did not actually change.
-      message.success("Templates reloaded");
+      getMessageApi().success("Templates reloaded");
     } catch (error) {
       console.warn("RefreshTemplatesButton: reload failed:", error);
-      message.error("Could not reload the templates.");
+      getMessageApi().error("Could not reload the templates.");
     } finally {
       setReloading(false);
     }

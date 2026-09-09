@@ -1,6 +1,6 @@
-import { message } from "antd";
 import { ExchangeRequestData, ExchangeResponse } from "@bexio-chrome-extension/shared/types";
 import { getTabsApi } from "~/utils/getTabsApi";
+import { getMessageApi } from "~/utils/messageApi";
 
 /**
  * Single entry point for every side-panel → content-script message.
@@ -35,6 +35,7 @@ function describeError(error: unknown): string {
 
 function fail(text: string, level: "error" | "warning" = "error"): SendToBexioTabResult {
   console.warn("sendToBexioTab:", text);
+  const message = getMessageApi();
   if (level === "warning") {
     message.warning(text);
   } else {

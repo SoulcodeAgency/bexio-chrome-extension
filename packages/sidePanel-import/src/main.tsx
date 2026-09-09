@@ -3,7 +3,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.scss";
 import * as packageInfo from "../../../package.json";
-import { ConfigProvider, theme } from "antd";
+import { App as AntdApp, ConfigProvider, theme } from "antd";
+import MessageApiBridge from "./components/MessageApiBridge";
 const copyrightSymbol = "\u00A9";
 const currentYear = new Date().getFullYear();
 
@@ -24,7 +25,12 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           },
         }}
       >
-        <App />
+        {/* antd's `App` provides the message/notification/modal instances that can see this
+            ConfigProvider's theme; the bridge hands the message one to non-component callers. */}
+        <AntdApp>
+          <MessageApiBridge />
+          <App />
+        </AntdApp>
       </ConfigProvider>
       <div>
         {copyrightSymbol} {currentYear} {" - "}
