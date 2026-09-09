@@ -24,25 +24,25 @@ vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/fillForm", () => ({
 }));
 
 vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration", () => ({
-  default: vi.fn((value: string) => {
+  default: vi.fn(async (value: string) => {
     calls.push(`duration:${value}`);
   }),
 }));
 
 vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/triggerDate", () => ({
-  default: vi.fn((value: string) => {
+  default: vi.fn(async (value: string) => {
     calls.push(`date:${value}`);
   }),
 }));
 
 vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/triggerDescription", () => ({
-  default: vi.fn((value: string) => {
+  default: vi.fn(async (value: string) => {
     calls.push(`description:${value}`);
   }),
 }));
 
 vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox", () => ({
-  default: vi.fn((_el: unknown, value?: boolean) => {
+  default: vi.fn(async (_el: unknown, value?: boolean) => {
     calls.push(`billable:${String(value)}`);
   }),
 }));
@@ -184,11 +184,11 @@ describe("onMessage listener", () => {
     expect(response).toEqual({ ok: true });
   });
 
-  it("answers with { ok: false } when a handler throws", async () => {
+  it("answers with { ok: false } when a cheap trigger rejects", async () => {
     const triggerDuration = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration");
-    vi.mocked(triggerDuration.default).mockImplementationOnce(() => {
-      throw new Error("duration field is gone");
-    });
+    // The real trigger* modules are `async`, so a missing form field surfaces as a rejected
+    // promise, never as a synchronous throw. Mock the way the real thing fails.
+    vi.mocked(triggerDuration.default).mockRejectedValueOnce(new Error("duration field is gone"));
     const listener = await loadListener();
 
     const { response } = await dispatch(listener, {
@@ -199,5 +199,57 @@ describe("onMessage listener", () => {
     });
 
     expect(response).toEqual({ ok: false, error: "duration field is gone" });
+  });
+
+  it("answers with { ok: false } when triggerDate rejects", async () => {
+    const triggerDate = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDate");
+    vi.mocked(triggerDate.default).mockRejectedValueOnce(new Error("date field is gone"));
+    const listener = await loadListener();
+
+    const { response } = await dispatch(listener, {
+      mode: "time+duration",
+      duration: "1:30",
+      date: "01.07.2026",
+      notes: undefined,
+    });
+
+    expect(response).toEqual({ ok: false, error: "date field is gone" });
+  });
+
+  it("answers with { ok: false } when triggerCheckbox rejects", async () => {
+    const triggerCheckbox = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox");
+    vi.mocked(triggerCheckbox.default).mockRejectedValueOnce(new Error("billable checkbox is gone"));
+    const listener = await loadListener();
+
+    const { response } = await dispatch(listener, {
+      mode: "time+duration",
+      duration: "1:30",
+      date: "01.07.2026",
+      billable: true,
+      notes: undefined,
+    });
+
+    expect(response).toEqual({ ok: false, error: "billable checkbox is gone" });
+  });
+
+  /**
+   * Issue #124. `triggerDescription` rejects when TinyMCE's iframe body is not in the DOM yet
+   * (`getDescriptionField` throws rather than returning a falsy value). While the call was not
+   * awaited, that rejection never joined the dispatcher's promise chain: the side panel was told
+   * `{ ok: true }` and the note silently never reached the editor.
+   */
+  it("answers with { ok: false } when triggerDescription rejects", async () => {
+    const triggerDescription = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDescription");
+    vi.mocked(triggerDescription.default).mockRejectedValueOnce(new Error("Description field not found"));
+    const listener = await loadListener();
+
+    const { response } = await dispatch(listener, {
+      mode: "time+duration",
+      duration: "1:30",
+      date: "01.07.2026",
+      notes: "Did stuff",
+    });
+
+    expect(response).toEqual({ ok: false, error: "Description field not found" });
   });
 });

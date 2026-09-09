@@ -334,8 +334,9 @@ chrome.tabs.sendMessage(...)` had nothing reliable to resolve with.
 
 `{ ok: true }` is a **dispatch acknowledgement**, not "the form is filled":
 
-- `mode: "time+duration"` — `triggerDuration` / `triggerDate` / `triggerCheckbox` run synchronously,
-  then the two description settings are awaited before `triggerDescription`. The response follows.
+- `mode: "time+duration"` — `triggerDuration` / `triggerDate` / `triggerCheckbox` are started
+  together in a `Promise.all` (all three are attempted even if one fails), then the two description
+  settings are awaited before the awaited `triggerDescription`. The response follows.
   `applyNotesSetting` decides whether a description is written at all; when it is, and
   `uppercaseFirstLetterSetting` is on (its default), `request.notes` is passed through
   `capitalizeFirstLetter` first — the first non-whitespace character is uppercased, nothing else
@@ -508,13 +509,26 @@ The selectors and assumptions most likely to break when bexio changes its markup
   changed and the hidden `<textarea id="monitoring_text">` — the field bexio
   actually submits — is left as it was. Pinned in
   `test/utils/triggerDescription.test.ts`.
+  Whether that loses data on save is **an open question, not an established bug**
+  (#124): bexio's form is a plain `method="POST"` form with a
+  `<button type="submit">`, and TinyMCE 3 — which is what the captured fixture
+  shows bexio running — hooks form submit to run `triggerSave()`, which
+  serialises the _live_ iframe body into the textarea at that moment. On that
+  reading the direct DOM write does reach the server, and only TinyMCE's own
+  bookkeeping (dirty flag, undo stack) misses it. Confirm in a real browser
+  before "fixing" this: apply an entry with notes, do not click into the editor,
+  save, reopen the entry. Note that a content script cannot call the page's
+  `tinyMCE` API directly (isolated world), so the DOM write is not merely
+  laziness.
 
-- **`triggerDescription`'s `if (descriptionField)` guard is dead code.**
-  `getDescriptionField()` _throws_ when the iframe body is missing instead of
-  returning a falsy value, so the guard never sees `undefined` and the call
-  rejects rather than silently no-op'ing. `onMessage` neither awaits nor catches
-  it, so on a page without the TinyMCE iframe this surfaces as an unhandled
-  rejection. Pinned in `test/utils/triggerDescription.test.ts`.
+- ~~**`triggerDescription`'s `if (descriptionField)` guard is dead code.**~~
+  Resolved in #124: the guard is gone (`getDescriptionField()` throws instead of
+  returning a falsy value, so it could never fire), and `onMessage` now awaits
+  every `trigger*` call. A missing TinyMCE iframe therefore answers the side
+  panel with `{ ok: false, error: "Description field not found" }` instead of
+  logging an unhandled rejection behind a `{ ok: true }`. Pinned in
+  `test/utils/triggerDescription.test.ts` and
+  `test/eventListeners/onMessage.test.ts`.
 
 - ~~**None of the `waitFor*` helpers have a timeout.**~~ Resolved in #83: they
   now reject with a `WaitForTimeoutError` after `POLL_TIMEOUT_MS` (20 s), so
