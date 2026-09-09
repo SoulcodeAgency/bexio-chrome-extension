@@ -81,6 +81,12 @@ button.template-button.template-button--active::before {
   background: rgba(255, 255, 255, 0.45);
 }
 
+/* Disabled while the template is still being applied, and while a save is in flight */
+.template-chip-update[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .template-chip-delete {
   display: none; /* manage mode only (see .manage-mode below) */
   position: absolute;

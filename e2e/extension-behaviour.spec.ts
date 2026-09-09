@@ -294,9 +294,12 @@ test("inline Add saves a template; manage mode deletes it with Undo — no nativ
   await page.goto("https://office.bexio.com/index.php/monitoring/edit");
   await expect(page.locator("#SoulcodeExtensionTemplates")).toBeAttached({ timeout: 10_000 });
 
-  // Add via the inline form
+  // Add via the inline form. The form is shown first and the suggested name filled
+  // in afterwards (so a failing form read cannot leave "+ Add" looking dead), so
+  // wait for that suggestion before typing over it.
   await page.click("#AddNewTemplate");
   await expect(page.locator("#SoulcodeExtensionAddForm")).toBeVisible();
+  await expect(page.locator("#templateNameInput")).not.toHaveValue("");
   await page.fill("#templateNameInput", "My E2E Template");
   await page.click("#templateNameSave");
   const newButton = page.locator("button.template-button", { hasText: "My E2E Template" });
@@ -309,6 +312,12 @@ test("inline Add saves a template; manage mode deletes it with Undo — no nativ
   await expect(page.locator("button.template-button")).toHaveCount(0, { timeout: 10_000 });
   const toast = page.locator("#SoulcodeExtensionToast");
   await expect(toast).toContainText('Deleted "My E2E Template"');
+  // The empty state has to catch up even though the delete does not re-render.
+  await expect(page.locator("#templateFilterEmpty")).toBeHidden(); // nothing searched → stays silent
+
+  // Leaving manage mode must not cancel the undo window.
+  await page.click("#ManageTemplates");
+  await expect(toast).toBeVisible();
 
   // Undo restores it (re-render leaves manage mode)
   await toast.locator("button").click();

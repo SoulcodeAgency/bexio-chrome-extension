@@ -140,6 +140,11 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
     (document.getElementById("tmpl1") as HTMLButtonElement).click(); // activate
     const update = document.querySelector<HTMLButtonElement>(".template-chip-update")!;
     expect(update.hidden).toBe(false);
+    // ↻ overwrites the template with the current form, so it stays inert until
+    // fillForm has finished filling that form — otherwise a click lands a
+    // half-filled snapshot on top of a good template.
+    expect(update.disabled).toBe(true);
+    await vi.waitFor(() => expect(update.disabled).toBe(false));
     update.click();
 
     await vi.waitFor(async () => {
@@ -160,7 +165,9 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
     await renderHtml([entry]);
 
     (document.getElementById("tmpl1") as HTMLButtonElement).click();
-    document.querySelector<HTMLButtonElement>(".template-chip-update")!.click();
+    const update = document.querySelector<HTMLButtonElement>(".template-chip-update")!;
+    await vi.waitFor(() => expect(update.disabled).toBe(false));
+    update.click();
 
     await vi.waitFor(() => {
       const toast = document.getElementById("SoulcodeExtensionToast");

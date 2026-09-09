@@ -87,7 +87,7 @@ describe("manage mode", () => {
     expect(vi.mocked(initializeExtension)).toHaveBeenCalled();
   });
 
-  it("apply-clicks are inert in manage mode; leaving the mode hides the toast", async () => {
+  it("apply-clicks are inert in manage mode, and the undo toast survives leaving the mode", async () => {
     const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
     const entries = [template(), template({ id: "tmpl2", templateName: "Globex GmbH" })];
     await chrome.storage.local.set({ entries });
@@ -99,7 +99,55 @@ describe("manage mode", () => {
 
     deleteCross("tmpl1").click();
     await vi.waitFor(() => expect(document.getElementById("SoulcodeExtensionToast")).not.toBeNull());
-    manageButton().click(); // Done → undo window ends
-    expect(document.getElementById("SoulcodeExtensionToast")).toBeNull();
+
+    // "Done" is the natural gesture right after deleting, so it must not cancel
+    // the undo window — that made the toast useless for the very mis-click it
+    // exists to catch.
+    manageButton().click();
+    expect(document.getElementById("SoulcodeExtensionToast")).not.toBeNull();
+  });
+
+  // Regression: deleting removes a chip without re-rendering, so anything derived
+  // from the chip list has to be re-synced — otherwise the grid just goes blank
+  // with no explanation of where the templates went.
+  it("re-syncs the filter's empty state after a delete", async () => {
+    const entries = [template(), template({ id: "tmpl2", templateName: "Globex GmbH" })];
+    await chrome.storage.local.set({ entries });
+    await render(entries);
+
+    const filterInput = document.getElementById("templateFilter") as HTMLInputElement;
+    filterInput.value = "falcon";
+    filterInput.dispatchEvent(new Event("input", { bubbles: true }));
+    const emptyState = document.getElementById("templateFilterEmpty") as HTMLElement;
+    expect(emptyState.hidden).toBe(true);
+
+    manageButton().click();
+    deleteCross("tmpl1").click();
+
+    await vi.waitFor(() => {
+      expect(document.getElementById("tmpl1")).toBeNull();
+      expect(emptyState.hidden).toBe(false);
+    });
+    expect(emptyState.textContent).toBe('No templates match "falcon"');
+  });
+
+  // Regression: the entry handed to Undo must come from storage at delete time,
+  // not from a snapshot taken when the panel was rendered — the ↻ update writes
+  // new values under the same id without re-rendering.
+  it("undo restores the values that were in storage when the delete happened", async () => {
+    const rendered = template({ work: "Stale Work" });
+    await chrome.storage.local.set({ entries: [{ ...rendered, work: "Updated Work" }] });
+    await render([rendered]);
+
+    manageButton().click();
+    deleteCross("tmpl1").click();
+    await vi.waitFor(() => expect(document.getElementById("SoulcodeExtensionToast")).not.toBeNull());
+    document.getElementById("SoulcodeExtensionToast")!.querySelector("button")!.click();
+
+    await vi.waitFor(async () => {
+      const stored = (await chrome.storage.local.get("entries")).entries as TemplateEntry[];
+      expect(stored).toHaveLength(1);
+      expect(stored[0].work).toBe("Updated Work");
+    });
   });
 });

@@ -20,9 +20,14 @@ export async function updateTemplate(updatedEntry: TemplateEntry): Promise<any> 
 }
 
 /**
- * Re-inserts a previously deleted entry (undo). Defensive against concurrent
- * writers (the side panel writes the same `entries` key): if an entry with the
- * same id is already present, nothing is written and `false` is returned.
+ * Re-inserts a previously deleted entry (undo). If an entry with the same id is
+ * already present — it was re-added through the side panel meanwhile — nothing is
+ * written and `false` is returned.
+ *
+ * That id check is the only concurrency guarantee here. Like every writer of the
+ * `entries` key this is a read-modify-write over the whole array, not a
+ * compare-and-swap: a side-panel write landing between the load and the save is
+ * still overwritten. See `docs/architecture/storage.md`.
  */
 export async function restoreTemplate(entry: TemplateEntry): Promise<boolean> {
   const entries = await loadTemplates();

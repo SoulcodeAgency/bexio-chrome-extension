@@ -40,6 +40,50 @@ describe("template tooltip", () => {
     await renderHtml(entries);
   };
 
+  // Regression: fillForm applies an entry without `billable` as billable
+  // (`billable = true` default), so a plain truthiness test here would promise
+  // "Nein" and then tick the box.
+  it("previews a missing billable flag the way applying it behaves: Ja", async () => {
+    const legacy = template();
+    delete (legacy as Partial<TemplateEntry>).billable;
+    await render([legacy]);
+
+    hover(document.getElementById("tmpl1")!);
+    vi.advanceTimersByTime(350);
+
+    const values = Array.from(tooltip()!.querySelectorAll("dd")).map((dd) => dd.textContent);
+    expect(values[5]).toBe("Ja");
+  });
+
+  // Regression: the panel does not re-render after ↻, so the chip's entry — the
+  // very object this closure previews — has to be refreshed in place, or the
+  // preview keeps showing what the template held before the update.
+  it("previews the new values after ↻ overwrote the template", async () => {
+    vi.useRealTimers(); // storage round-trips first, timers only for the hover below
+    document.body.innerHTML = "";
+    loadFixture("monitoring-edit-filled");
+    const entry = template({ work: "Stale Work", project: "Stale Project" });
+    await chrome.storage.local.set({ entries: [entry] });
+    await render([entry]);
+
+    (document.getElementById("tmpl1") as HTMLButtonElement).click();
+    const update = document.querySelector<HTMLButtonElement>(".template-chip-update")!;
+    await vi.waitFor(() => expect(update.disabled).toBe(false));
+    update.click();
+    await vi.waitFor(async () => {
+      const stored = (await chrome.storage.local.get("entries")).entries as TemplateEntry[];
+      expect(stored[0].work).toBe("Work");
+    });
+
+    vi.useFakeTimers();
+    hover(document.getElementById("tmpl1")!);
+    vi.advanceTimersByTime(350);
+
+    const values = Array.from(tooltip()!.querySelectorAll("dd")).map((dd) => dd.textContent);
+    expect(values[0]).toBe("Work"); // Tätigkeit — was "Stale Work"
+    expect(values[1]).toBe("Acme - Back Office"); // Projekt — was "Stale Project"
+  });
+
   it("shows the field preview after the hover delay, values as literal text", async () => {
     await render([template()]);
     hover(document.getElementById("tmpl1")!);

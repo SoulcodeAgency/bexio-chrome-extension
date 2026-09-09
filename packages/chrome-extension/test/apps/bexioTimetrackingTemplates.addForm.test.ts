@@ -15,9 +15,12 @@ const render = async (entries: TemplateEntry[]) => {
 
 const openForm = async () => {
   (document.getElementById("AddNewTemplate") as HTMLButtonElement).click();
-  await vi.waitFor(() =>
-    expect((document.getElementById("SoulcodeExtensionAddForm") as HTMLElement).hidden).toBe(false),
-  );
+  await vi.waitFor(() => {
+    expect((document.getElementById("SoulcodeExtensionAddForm") as HTMLElement).hidden).toBe(false);
+    // The form is shown first and the suggested name filled in afterwards, so a
+    // failing read cannot leave "+ Add" looking dead — wait for the suggestion.
+    expect(nameInput().value).not.toBe("");
+  });
 };
 const nameInput = () => document.getElementById("templateNameInput") as HTMLInputElement;
 const errorEl = () => document.getElementById("templateNameError") as HTMLElement;
@@ -67,10 +70,34 @@ describe("inline add form", () => {
       expect(((await chrome.storage.local.get("entries")).entries as unknown[]).length).toBe(1),
     );
     await openForm(); // re-open (save closed it)
-    nameInput().value = "Twice"; // same name + same form values → same hash
+    nameInput().value = "Twice"; // same name + same form values → duplicate
     save();
     await vi.waitFor(() => expect(errorEl().hidden).toBe(false));
-    expect(errorEl().textContent).toBe("A template with identical values already exists.");
+    expect(errorEl().textContent).toBe(
+      "A template with this name and these values already exists — pick a different name.",
+    );
+  });
+
+  // Regression: reading the bexio form can throw (a select2 widget that is not
+  // where readTextFromSelect2 expects it). That must not leave "+ Add" as a
+  // button that does nothing at all — no form, no message.
+  it("still opens the form, with an explanation, when the bexio form cannot be read", async () => {
+    vi.doMock("@bexio-chrome-extension/chrome-extension/src/utils/readCurrentFormValues", () => ({
+      readCurrentFormValues: vi.fn(async () => {
+        throw new Error("select2 markup changed");
+      }),
+      suggestTemplateName: vi.fn(() => "unused"),
+    }));
+    try {
+      await render([]);
+      (document.getElementById("AddNewTemplate") as HTMLButtonElement).click();
+
+      await vi.waitFor(() => expect(errorEl().hidden).toBe(false));
+      expect((document.getElementById("SoulcodeExtensionAddForm") as HTMLElement).hidden).toBe(false);
+      expect(errorEl().textContent).toBe("Could not read the form — type a name yourself.");
+    } finally {
+      vi.doUnmock("@bexio-chrome-extension/chrome-extension/src/utils/readCurrentFormValues");
+    }
   });
 
   it("Escape closes the form without saving", async () => {

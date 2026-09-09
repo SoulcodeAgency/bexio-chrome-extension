@@ -29,7 +29,10 @@ describe("updateActiveTemplate", () => {
 
     const { updateActiveTemplate } =
       await import("@bexio-chrome-extension/chrome-extension/src/utils/updateActiveTemplate");
-    expect(await updateActiveTemplate("keep-me")).toBe(true);
+    // The written entry comes back so the caller can refresh what it rendered
+    // from the old one (the panel does not re-render after an update).
+    const updated = await updateActiveTemplate("keep-me");
+    expect(updated).toMatchObject({ id: "keep-me", templateName: "Keep Name", keywords: "kw stays", work: "Work" });
 
     const stored = (await chrome.storage.local.get("entries")).entries as TemplateEntry[];
     expect(stored).toHaveLength(1);
@@ -40,12 +43,12 @@ describe("updateActiveTemplate", () => {
     expect(stored[0].project).toBe("Acme - Back Office");
   });
 
-  it("returns false and writes nothing for an unknown id", async () => {
+  it("returns undefined and writes nothing for an unknown id", async () => {
     loadFixture("monitoring-edit-filled");
     await chrome.storage.local.set({ entries: [template({ id: "other" })] });
     const { updateActiveTemplate } =
       await import("@bexio-chrome-extension/chrome-extension/src/utils/updateActiveTemplate");
-    expect(await updateActiveTemplate("missing")).toBe(false);
+    expect(await updateActiveTemplate("missing")).toBeUndefined();
     const stored = (await chrome.storage.local.get("entries")).entries as TemplateEntry[];
     expect(stored.map((e) => e.id)).toEqual(["other"]);
   });

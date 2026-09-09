@@ -1,16 +1,17 @@
 import { createTemplateFromForm } from "../../utils/createTemplateFromForm";
 import { readCurrentFormValues, suggestTemplateName } from "../../utils/readCurrentFormValues";
+import { PanelElements } from "./panelElements";
 import { initializeExtension } from "./index";
 
 /** Inline replacement for the old prompt()-based add flow. */
-export function setupInlineAddForm(panel: HTMLElement): void {
-  const addButton = panel.querySelector<HTMLButtonElement>("#AddNewTemplate");
-  const form = panel.querySelector<HTMLElement>("#SoulcodeExtensionAddForm");
-  const input = panel.querySelector<HTMLInputElement>("#templateNameInput");
-  const saveButton = panel.querySelector<HTMLButtonElement>("#templateNameSave");
-  const cancelButton = panel.querySelector<HTMLButtonElement>("#templateNameCancel");
-  const error = panel.querySelector<HTMLElement>("#templateNameError");
-  if (!addButton || !form || !input || !saveButton || !cancelButton || !error) return;
+export function setupInlineAddForm(elements: PanelElements): void {
+  const { addButton, addForm: form, nameInput: input, nameSave: saveButton, nameCancel: cancelButton } = elements;
+  const error = elements.nameError;
+
+  // prompt() was modal, so the old flow could not be re-entered. This one can:
+  // Save-click plus Enter (or a double-click) would otherwise run two saves, and
+  // the loser writes its error into a form the winner has already re-rendered away.
+  let submitting = false;
 
   const close = () => {
     form.hidden = true;
@@ -23,24 +24,32 @@ export function setupInlineAddForm(panel: HTMLElement): void {
   };
 
   const submit = async () => {
+    if (submitting) return;
     const name = input.value.trim();
     if (!name) {
       showError("Please enter a name for the template.");
       return;
     }
-    let result;
+
+    submitting = true;
+    saveButton.disabled = true;
     try {
-      result = await createTemplateFromForm(name);
+      const result = await createTemplateFromForm(name);
+      if (!result.ok) {
+        // Naming the way out matters: the old confirm() at least looped back to
+        // the prompt. The collision is on name *and* values, so a different name
+        // saves fine.
+        showError("A template with this name and these values already exists — pick a different name.");
+        return;
+      }
+      close();
+      await initializeExtension(); // re-renders the panel with the new template
     } catch {
-      showError("Could not save the template — storage error.");
-      return;
+      showError("Could not save the template — please try again.");
+    } finally {
+      submitting = false;
+      saveButton.disabled = false;
     }
-    if (!result.ok) {
-      showError("A template with identical values already exists.");
-      return;
-    }
-    close();
-    await initializeExtension(); // re-renders the panel with the new template
   };
 
   addButton.addEventListener("click", async (e) => {
@@ -49,11 +58,21 @@ export function setupInlineAddForm(panel: HTMLElement): void {
       close();
       return;
     }
-    input.value = suggestTemplateName(await readCurrentFormValues());
+
+    // Open first, then suggest a name. Reading the bexio form can throw when a
+    // select2 widget is not where `readTextFromSelect2` expects it, and doing it
+    // before the form is shown would make "+ Add" a button that does nothing at
+    // all — no form, no message.
     error.hidden = true;
     form.hidden = false;
-    input.select();
     input.focus();
+    try {
+      input.value = suggestTemplateName(await readCurrentFormValues());
+      input.select();
+    } catch {
+      input.value = "";
+      showError("Could not read the form — type a name yourself.");
+    }
   });
 
   cancelButton.addEventListener("click", (e) => {
@@ -67,8 +86,12 @@ export function setupInlineAddForm(panel: HTMLElement): void {
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      e.stopPropagation(); // never let it reach bexio's form submit
       void submit();
     }
-    if (e.key === "Escape") close();
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      close();
+    }
   });
 }

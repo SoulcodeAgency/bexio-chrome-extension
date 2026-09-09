@@ -60,6 +60,18 @@ describe("template filter", () => {
     expect(empty().hidden).toBe(true);
   });
 
+  // "Nothing matches your search" and "you have no templates yet" are different
+  // states: a fresh install must not be greeted with `No templates match ""`.
+  it("stays silent when there are no templates and nothing was searched", async () => {
+    await render([]);
+    expect(empty().hidden).toBe(true);
+
+    // …and still explains itself once something is actually searched.
+    type("anything");
+    expect(empty().hidden).toBe(false);
+    expect(empty().textContent).toBe('No templates match "anything"');
+  });
+
   it("Escape clears the filter", async () => {
     await render([template(), template({ id: "tmpl2", templateName: "Globex GmbH" })]);
     type("falcon");
@@ -82,6 +94,21 @@ describe("template filter", () => {
     key("Enter");
     expect(vi.mocked(fillForm)).toHaveBeenCalledWith("tmpl2");
     expect(document.getElementById("tmpl2")!.classList.contains("template-button--active")).toBe(true);
+  });
+
+  // Regression: the guard used to be "exactly one chip visible", which with an
+  // empty box just means "you own exactly one template" — Enter then applied it
+  // and overwrote a bexio form the user had filled in by hand.
+  it("Enter does nothing on an empty filter, even with a single template", async () => {
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
+    await render([template()]);
+
+    key("Enter");
+    expect(vi.mocked(fillForm)).not.toHaveBeenCalled();
+
+    type("falcon"); // an actual search still applies it
+    key("Enter");
+    expect(vi.mocked(fillForm)).toHaveBeenCalledWith("tmpl1");
   });
 
   it("clear button resets and is only visible while filtering", async () => {

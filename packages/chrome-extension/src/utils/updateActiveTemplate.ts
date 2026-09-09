@@ -9,17 +9,22 @@ import { readCurrentFormValues } from "./readCurrentFormValues";
  * checksum — it is only ever hashed at creation time.
  *
  * Guarded against the update() unknown-id quirk (see chromeStorage.ts): if the
- * id is not in storage, nothing is written and `false` is returned.
+ * id is not in storage, nothing is written and `undefined` is returned.
+ *
+ * Returns the written entry so the caller can refresh what it rendered from the
+ * old one — the panel does not re-render after an update, and a chip's hover
+ * preview would otherwise keep showing the values it was built with.
  */
-export async function updateActiveTemplate(templateId: string): Promise<boolean> {
+export async function updateActiveTemplate(templateId: string): Promise<TemplateEntry | undefined> {
   const entries = await chromeStorageTemplateEntries.loadTemplates();
   const existing = entries.find((entry) => entry.id === templateId);
-  if (!existing) return false;
+  if (!existing) return undefined;
 
   const values = await readCurrentFormValues();
   // The cast pins existing behaviour: the status read back from the bexio form
   // is a free string, while TemplateEntry.status declares the known union —
   // same rule as the entry literal in createTemplateFromForm.ts.
-  await chromeStorageTemplateEntries.updateTemplate({ ...existing, ...values } as TemplateEntry);
-  return true;
+  const updated = { ...existing, ...values } as TemplateEntry;
+  await chromeStorageTemplateEntries.updateTemplate(updated);
+  return updated;
 }

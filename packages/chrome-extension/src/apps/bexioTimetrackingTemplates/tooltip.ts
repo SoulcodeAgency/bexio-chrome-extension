@@ -47,7 +47,10 @@ function showTooltip(chipButton: HTMLButtonElement, entry: TemplateEntry, panel:
     ["Arbeitspaket", entry.package],
     ["Kontakt", entry.contact],
     ["Status", entry.status],
-    ["Abrechenbar", entry.billable ? "Ja" : "Nein"],
+    // `?? true` mirrors fillForm's own default: an entry without the field (legacy
+    // or side-panel-imported) applies as billable, so a plain truthiness test here
+    // would promise "Nein" and then tick the box.
+    ["Abrechenbar", (entry.billable ?? true) ? "Ja" : "Nein"],
   ];
   for (const [label, value] of rows) {
     const dt = document.createElement("dt");

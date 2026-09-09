@@ -7,6 +7,7 @@ import { showPanelToast } from "./panelToast";
 import { setupTemplateFilter } from "./filter";
 import { setupInlineAddForm } from "./inlineAddForm";
 import { setupManageMode } from "./manageMode";
+import { resolvePanelElements } from "./panelElements";
 import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
@@ -121,12 +122,20 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
   );
 
   const panel = document.getElementById("SoulcodeExtensionTemplates")!;
-  const entriesContainer = document.getElementById("bexioTimetrackingTemplates-entries")!;
-  const emptyState = document.getElementById("templateFilterEmpty")!;
+  // Resolved before any chip exists — a template id may be an arbitrary string and
+  // would otherwise shadow these lookups. See panelElements.ts.
+  const elements = resolvePanelElements(panel);
+  const { entriesContainer, emptyState } = elements;
+
+  // Keeps each chip's entry reachable by id. These are the *same objects* the
+  // tooltip closures hold, so refreshing one after an update refreshes the preview
+  // too; storage — not this map — stays the source of truth for reads and writes.
+  const renderedEntries = new Map<string, TemplateEntry>();
 
   (templateEntries ?? []).forEach((entry) => {
     const chip = createTemplateChip(entry);
     entriesContainer.insertBefore(chip, emptyState);
+    renderedEntries.set(entry.id, entry);
     attachTemplateTooltip(chip.querySelector<HTMLButtonElement>("button.template-button")!, entry, panel);
   });
 
@@ -135,16 +144,25 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     const updateButton = (e.target as HTMLElement).closest<HTMLButtonElement>(".template-chip-update");
     if (updateButton) {
       e.preventDefault();
+      if (updateButton.disabled) return;
       const applyButton = updateButton.parentElement?.querySelector<HTMLButtonElement>("button.template-button");
       if (!applyButton) return;
-      void updateActiveTemplate(applyButton.id).then((updated) => {
-        if (!updated) {
-          showPanelToast(panel, { text: "Could not update — template not found in storage." });
-          return;
-        }
-        updateButton.textContent = "Updated ✓";
-        window.setTimeout(() => (updateButton.textContent = "↻"), 1500);
-      });
+      updateButton.disabled = true;
+      void updateActiveTemplate(applyButton.id)
+        .then((updated) => {
+          if (!updated) {
+            showPanelToast(panel, { text: "Could not update — template not found in storage." });
+            return;
+          }
+          // Bring the rendered entry in line with what was just stored, in place:
+          // the tooltip closure holds this very object and would otherwise keep
+          // previewing the values the chip was built with.
+          Object.assign(renderedEntries.get(applyButton.id) ?? {}, updated);
+          updateButton.textContent = "Updated ✓";
+          window.setTimeout(() => (updateButton.textContent = "↻"), 1500);
+        })
+        .catch(() => showPanelToast(panel, { text: "Could not update the template — please try again." }))
+        .finally(() => (updateButton.disabled = false));
       return;
     }
     const applyButton = (e.target as HTMLElement).closest<HTMLButtonElement>("button.template-button");
@@ -152,19 +170,30 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     e.preventDefault();
     hideTemplateTooltip();
     if (panel.classList.contains("manage-mode")) return; // apply is inert while managing
-    fillForm(applyButton.id);
+
     setActiveChip(panel, applyButton);
+    // ↻ overwrites the template with whatever the form currently holds, so it must
+    // not be reachable while fillForm is still filling it — the loader overlay can
+    // be dismissed (#73) and never blocked the keyboard anyway, which would leave
+    // a half-filled snapshot on top of a good template.
+    const updateForChip = applyButton.parentElement?.querySelector<HTMLButtonElement>(".template-chip-update");
+    if (updateForChip) updateForChip.disabled = true;
+    void fillForm(applyButton.id)
+      .catch(() => showPanelToast(panel, { text: "Could not apply the template — please try again." }))
+      .finally(() => {
+        if (updateForChip) updateForChip.disabled = false;
+      });
   });
 
-  setupInlineAddForm(panel);
+  setupInlineAddForm(elements);
 
-  document.getElementById("closeModal")?.addEventListener("click", (e) => {
+  elements.closeLoaderButton.addEventListener("click", (e) => {
     e.preventDefault();
     toggleDisplayLoader(false);
   });
 
-  setupTemplateFilter(panel);
-  setupManageMode(panel, templateEntries ?? []);
+  const refreshFilter = setupTemplateFilter(elements);
+  setupManageMode({ elements, onEntriesChanged: refreshFilter });
 }
 
 export default renderHtml;
