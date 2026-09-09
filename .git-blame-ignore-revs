@@ -1,0 +1,18 @@
+# Revisions that only moved whitespace around. `git blame` skips them, so a line
+# is attributed to the commit that last changed its meaning rather than to a
+# mechanical reformat.
+#
+# GitHub reads this file automatically in its blame view. The command line does
+# not — enable it once per clone with:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Every entry must be a full 40-character SHA that exists on `main`. `git blame`
+# aborts on an unknown revision rather than skipping it, which is why a pull
+# request that adds an entry has to be merged with a merge commit: squash and
+# rebase merges both rewrite the SHA recorded here.
+
+# style: format repo with prettier
+# The first `npm run format` after prettier was pinned in #128 — 108 files, no
+# hand edits. See docs/superpowers/specs/2026-08-05-prettier-format-sweep-design.md
+d2f29cde813c55f5b1400153b3ac8996c22da43a

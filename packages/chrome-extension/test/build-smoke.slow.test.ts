@@ -50,6 +50,8 @@ describe.skipIf(!hasPowerShell())("build smoke test", () => {
     }
 
     // 4) the side panel built
-    expect(existsSync(resolve(UNPACKED, "sidePanel-import", "index.html")), "sidePanel-import/index.html missing").toBe(true);
+    expect(existsSync(resolve(UNPACKED, "sidePanel-import", "index.html")), "sidePanel-import/index.html missing").toBe(
+      true,
+    );
   }, 180_000); // generous timeout for two Vite builds
 });

@@ -8,7 +8,7 @@ async function confirmActiveTemplateDeletion(buttonId?: string) {
   // further down relies on. The initialisers stay `""` so runtime is unchanged.
   let activeTemplateId: string | undefined = "";
   let activeTemplateName: string | undefined = "";
-  
+
   if (buttonId === undefined) {
     const activeButton = document.querySelector(".template-button--active") ?? undefined;
     activeTemplateName = activeButton?.textContent ?? undefined;
@@ -26,7 +26,7 @@ async function confirmActiveTemplateDeletion(buttonId?: string) {
     }
   } else {
     alert(
-      "Sorry - There is no active template to delete or something went wrong! Please select first the template you want to delete. Thanks."
+      "Sorry - There is no active template to delete or something went wrong! Please select first the template you want to delete. Thanks.",
     );
   }
 }

@@ -1,61 +1,46 @@
 {
-    "name": "bexio Time Tracking Templates",
-    "version": "1.8.0",
-    "description": "This extension allows saving and loading of form data within the bexio time tracking page.",
-    "manifest_version": 3,
-    "author": "fabian.gander@soulcode.ch",
-    "action": {
-        "default_title": "bexio Time Tracking Templates"
+  "name": "bexio Time Tracking Templates",
+  "version": "1.8.0",
+  "description": "This extension allows saving and loading of form data within the bexio time tracking page.",
+  "manifest_version": 3,
+  "author": "fabian.gander@soulcode.ch",
+  "action": {
+    "default_title": "bexio Time Tracking Templates"
+  },
+  "permissions": ["storage", "sidePanel"],
+  "host_permissions": ["https://office.bexio.com/*"],
+  "icons": {
+    "16": "assets/logo16.png",
+    "32": "assets/logo32.png",
+    "128": "assets/logo128.png",
+    "192": "assets/logo192.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/logo_orig.png"],
+      "matches": ["https://office.bexio.com/*"]
+    }
+  ],
+  "background": {
+    "service_worker": "public/service_worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://office.bexio.com/index.php/monitoring/edit",
+        "https://office.bexio.com/index.php/monitoring/edit/id/*"
+      ],
+      "js": ["/src/apps/bexioTimetrackingTemplates/index.ts"],
+      "css": ["bexioTimetrackingTemplates.css"]
     },
-    "permissions": [
-        "storage",
-        "sidePanel"
-    ],
-    "host_permissions": [
-        "https://office.bexio.com/*"
-    ],
-    "icons": {
-        "16": "assets/logo16.png",
-        "32": "assets/logo32.png",
-        "128": "assets/logo128.png",
-        "192": "assets/logo192.png"
-    },
-    "web_accessible_resources": [
-        {
-            "resources": [
-                "assets/logo_orig.png"
-            ],
-            "matches": [
-                "https://office.bexio.com/*"
-            ]
-        }
-    ],
-    "background": {
-        "service_worker": "public/service_worker.js"
-    },
-    "content_scripts": [
-        {
-            "matches": [
-                "https://office.bexio.com/index.php/monitoring/edit",
-                "https://office.bexio.com/index.php/monitoring/edit/id/*"
-            ],
-            "js": [
-                "/src/apps/bexioTimetrackingTemplates/index.ts"
-            ],
-            "css": [
-                "bexioTimetrackingTemplates.css"
-            ]
-        },
-        {
-            "matches": [
-                "https://office.bexio.com/index.php/monitoring/list",
-                "https://office.bexio.com/index.php/pr_project/listMonitoring/*",
-                "https://office.bexio.com/index.php/pr_project/showPackage/*",
-                "https://office.bexio.com/index.php/kb_invoice/show/id/*"
-            ],
-            "js": [
-                "/src/apps/bexioProjectList/index.ts"
-            ]
-        }
-    ]
+    {
+      "matches": [
+        "https://office.bexio.com/index.php/monitoring/list",
+        "https://office.bexio.com/index.php/pr_project/listMonitoring/*",
+        "https://office.bexio.com/index.php/pr_project/showPackage/*",
+        "https://office.bexio.com/index.php/kb_invoice/show/id/*"
+      ],
+      "js": ["/src/apps/bexioProjectList/index.ts"]
+    }
+  ]
 }

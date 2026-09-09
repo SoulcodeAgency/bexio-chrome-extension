@@ -6,52 +6,37 @@ import type { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 // (vi.mock factories are hoisted before module-level code executes)
 const { calls } = vi.hoisted(() => ({ calls: [] as string[] }));
 
-vi.mock(
-  "@bexio-chrome-extension/chrome-extension/src/utils/triggerField",
-  () => ({
-    default: vi.fn(async (sel: string, val: unknown) => {
-      calls.push(`field:${sel}:${String(val)}`);
-    }),
+vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/triggerField", () => ({
+  default: vi.fn(async (sel: string, val: unknown) => {
+    calls.push(`field:${sel}:${String(val)}`);
   }),
-);
+}));
 
-vi.mock(
-  "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField",
-  () => ({
-    default: vi.fn(async (_el: unknown, val: unknown) => {
-      calls.push(`contact:${String(val)}`);
-    }),
+vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField", () => ({
+  default: vi.fn(async (_el: unknown, val: unknown) => {
+    calls.push(`contact:${String(val)}`);
   }),
-);
+}));
 
-vi.mock(
-  "@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox",
-  () => ({
-    default: vi.fn(async (_el: unknown, val: unknown) => {
-      calls.push(`billable:${String(val)}`);
-    }),
+vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/triggerCheckbox", () => ({
+  default: vi.fn(async (_el: unknown, val: unknown) => {
+    calls.push(`billable:${String(val)}`);
   }),
-);
+}));
 
-vi.mock(
-  "@bexio-chrome-extension/chrome-extension/src/utils/loader",
-  () => ({
-    toggleDisplayLoader: vi.fn((show?: boolean) => {
-      calls.push(`loader:${show === false ? "off" : "on"}`);
-    }),
+vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/loader", () => ({
+  toggleDisplayLoader: vi.fn((show?: boolean) => {
+    calls.push(`loader:${show === false ? "off" : "on"}`);
   }),
-);
+}));
 
 // Mocked because the real module re-renders the whole template UI (and calls
 // initializeExtension() at module load, which would need chrome.runtime.getURL).
-vi.mock(
-  "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index",
-  () => ({
-    initializeExtension: vi.fn(async () => {
-      calls.push("reinit");
-    }),
+vi.mock("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index", () => ({
+  initializeExtension: vi.fn(async () => {
+    calls.push("reinit");
   }),
-);
+}));
 
 const template = (over: Partial<TemplateEntry> = {}): TemplateEntry => ({
   templateName: "T",
@@ -77,9 +62,7 @@ describe("fillForm", () => {
   it("applies all template fields in the correct order, toggles the loader, and focuses the save button", async () => {
     await chrome.storage.local.set({ entries: [template()] });
     loadFixture("monitoring-edit");
-    const { default: fillForm } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
-    );
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
     await fillForm("tmpl1");
 
     // The exact call order from fillForm.ts:
@@ -110,9 +93,7 @@ describe("fillForm", () => {
   it("timeEntryBillable overrides the template's billable flag", async () => {
     await chrome.storage.local.set({ entries: [template({ billable: false })] });
     loadFixture("monitoring-edit");
-    const { default: fillForm } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
-    );
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
     await fillForm("tmpl1", true);
     expect(calls).toContain("billable:true");
     expect(calls).not.toContain("billable:false");
@@ -124,9 +105,7 @@ describe("fillForm", () => {
     delete (t as Partial<TemplateEntry>).billable;
     await chrome.storage.local.set({ entries: [t] });
     loadFixture("monitoring-edit");
-    const { default: fillForm } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
-    );
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
     await fillForm("tmpl1");
     // `const { ..., billable = true } = entry` defaults to true when absent
     expect(calls).toContain("billable:true");
@@ -136,9 +115,7 @@ describe("fillForm", () => {
     await chrome.storage.local.set({ entries: [template()] });
     loadFixture("monitoring-edit");
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
-    const { default: fillForm } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
-    );
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
 
     await expect(fillForm("deleted-template")).resolves.toBeUndefined();
 
@@ -154,15 +131,9 @@ describe("fillForm", () => {
     loadFixture("monitoring-edit");
     // Stands in for anything that can throw mid-fill: changed bexio markup, a
     // select2 widget that is gone, a missing save button.
-    const { default: triggerField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerField"
-    );
-    vi.mocked(triggerField).mockRejectedValueOnce(
-      new Error("bexio markup changed")
-    );
-    const { default: fillForm } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
-    );
+    const { default: triggerField } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerField");
+    vi.mocked(triggerField).mockRejectedValueOnce(new Error("bexio markup changed"));
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
 
     await expect(fillForm("tmpl1")).rejects.toThrow("bexio markup changed");
 
@@ -178,18 +149,12 @@ describe("fillForm", () => {
     alertSpy.mockClear();
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const { WaitForTimeoutError } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
-    );
-    const { default: triggerField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerField"
-    );
+    const { WaitForTimeoutError } = await import("@bexio-chrome-extension/chrome-extension/src/utils/pollUntil");
+    const { default: triggerField } = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerField");
     vi.mocked(triggerField).mockRejectedValueOnce(
-      new WaitForTimeoutError('the select2 options of "#s2id_monitoring_client_service_id" to load', 20_000)
+      new WaitForTimeoutError('the select2 options of "#s2id_monitoring_client_service_id" to load', 20_000),
     );
-    const { default: fillForm } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
-    );
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
 
     // Neither caller awaits fillForm, so this must not reject: it would only become an
     // unhandled rejection the user never sees.
@@ -215,9 +180,7 @@ describe("fillForm", () => {
       ],
     });
     loadFixture("monitoring-edit");
-    const { default: fillForm } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
-    );
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
     await fillForm("tmpl1");
     // project and package fall through to `?? null`; work, status, contactPerson and contact default to null
     // (a legacy template without a `work` field leaves the Tätigkeit untouched)

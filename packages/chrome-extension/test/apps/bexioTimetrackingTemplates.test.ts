@@ -5,10 +5,9 @@ import type { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 // Mocked because the real module calls initializeExtension() at import time
 // (see docs/architecture/form-layer.md § "Module-load quirk"), which would
 // re-render the whole template UI while a test is setting it up.
-vi.mock(
-  "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index",
-  () => ({ initializeExtension: vi.fn(async () => {}) })
-);
+vi.mock("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index", () => ({
+  initializeExtension: vi.fn(async () => {}),
+}));
 
 // fillForm drives the real bexio widgets; here we only care that the click
 // handler still reaches it with the clicked button's id.
@@ -31,11 +30,7 @@ const template = (over: Partial<TemplateEntry> = {}): TemplateEntry => ({
 });
 
 const importRenderHtml = async () =>
-  (
-    await import(
-      "@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/renderHtml"
-    )
-  ).default;
+  (await import("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/renderHtml")).default;
 
 const entriesContainer = () => document.getElementById("bexioTimetrackingTemplates-entries")!;
 
@@ -102,9 +97,7 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
 
   it("keeps the click handler wired: clicking a button fills the form and marks it active", async () => {
     const renderHtml = await importRenderHtml();
-    const { default: fillForm } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/fillForm"
-    );
+    const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
     await renderHtml([template(), template({ id: "tmpl2", templateName: "Globex GmbH" })]);
 
     const button = document.getElementById("tmpl1") as HTMLButtonElement;

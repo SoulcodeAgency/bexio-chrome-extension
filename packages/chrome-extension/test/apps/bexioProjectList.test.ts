@@ -21,9 +21,7 @@ describe("bexioProjectList content script", () => {
 
     // index.ts calls initializeExtension() at top level — fire-and-forget; the real
     // renderHtml() is async, so we let microtasks + a tiny tick settle.
-    const mod = await import(
-      "@bexio-chrome-extension/chrome-extension/src/apps/bexioProjectList/index"
-    );
+    const mod = await import("@bexio-chrome-extension/chrome-extension/src/apps/bexioProjectList/index");
     expect(mod).toBeDefined();
     await new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -40,9 +38,8 @@ describe("bexioProjectList content script", () => {
     for (const el of Array.from(document.getElementsByClassName("globalsearch"))) {
       el.remove();
     }
-    const { default: renderHtml } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/apps/bexioProjectList/renderHtml"
-    );
+    const { default: renderHtml } =
+      await import("@bexio-chrome-extension/chrome-extension/src/apps/bexioProjectList/renderHtml");
     // KNOWN ISSUE: renderHtml has no fallback when bexio's .globalsearch is missing —
     // it throws "Cannot read properties of undefined (reading 'insertAdjacentHTML')".
     // Mirrored in docs/architecture/tooltip-replacement.md.

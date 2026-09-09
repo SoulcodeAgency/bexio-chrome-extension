@@ -21,9 +21,9 @@ describe("classifyDependabotUpdate", () => {
   });
 
   it("classifies a grouped update spanning directories", () => {
-    expect(
-      classifyDependabotUpdate("Bump the actions-minor-patch group across 2 directories with 7 updates"),
-    ).toBe("group");
+    expect(classifyDependabotUpdate("Bump the actions-minor-patch group across 2 directories with 7 updates")).toBe(
+      "group",
+    );
   });
 
   // Dependabot *security* updates invent their own group names (npm_and_yarn,
@@ -53,7 +53,9 @@ describe("classifyDependabotUpdate", () => {
   });
 
   it("handles the real titles this repo has seen", () => {
-    expect(classifyDependabotUpdate("chore(deps): bump dompurify from 3.3.1 to 3.4.11 in /packages/chrome-extension")).toBe("minor");
+    expect(
+      classifyDependabotUpdate("chore(deps): bump dompurify from 3.3.1 to 3.4.11 in /packages/chrome-extension"),
+    ).toBe("minor");
     expect(classifyDependabotUpdate("chore(deps-dev): bump vite from 5.4.21 to 6.4.3")).toBe("major");
     expect(classifyDependabotUpdate("chore(deps): bump picomatch from 2.3.1 to 2.3.2")).toBe("patch");
   });

@@ -52,10 +52,7 @@ export type ReloadExtension = {
   mode: "reload";
 };
 
-export type ExchangeRequestData =
-  | TemplateExchangeData
-  | EntryExchangeData
-  | ReloadExtension;
+export type ExchangeRequestData = TemplateExchangeData | EntryExchangeData | ReloadExtension;
 
 /**
  * The answer the content script's `chrome.runtime.onMessage` listener sends back for every

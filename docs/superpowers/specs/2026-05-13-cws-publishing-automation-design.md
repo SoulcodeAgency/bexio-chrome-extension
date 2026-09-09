@@ -31,17 +31,17 @@ PR merged to `main` → GitHub-hosted CI determines that a release is warranted,
 
 ## Decisions taken during brainstorming
 
-| Question | Decision |
-| --- | --- |
-| Removal of local script | **No** — keep `createRelease.ps1` and all its supporting scripts unchanged. The new CI path runs in parallel. |
-| Release-trigger pattern | **`release-please` (Google)** — opens an auto-maintained "Release PR" on `main` from conventional-commit history; merging the Release PR creates the tag + GitHub Release, which fires the publish workflow. |
-| CI runner | `ubuntu-latest` for both workflows. `Build.ps1` is PowerShell-Core-compatible and `pwsh` is preinstalled. |
-| Upload action | `mnao305/chrome-extension-upload@v5` (minimal, well-maintained). |
-| Publish gate | **No gate** — `release.published` directly triggers the upload + publish. The Release PR review itself is the implicit circuit breaker. |
-| Manifest version sync | release-please's `extra-files` with a JSONPath `$.version` updates `packages/chrome-extension/public/manifest.json` in lockstep with `package.json`. |
-| `package.json` "date" field | Not synced by the CI path (cosmetic only). `updateManifest.js`'s local-script behaviour is unchanged. |
-| Tag format | Bare semver (`1.4.0`), no `v` prefix — matches existing tags `1.3.5`, `1.3.6`, etc. |
-| GitHub Release artifact | Yes — the `.zip` is attached to the auto-created Release for archival/rollback. |
+| Question                    | Decision                                                                                                                                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Removal of local script     | **No** — keep `createRelease.ps1` and all its supporting scripts unchanged. The new CI path runs in parallel.                                                                                                |
+| Release-trigger pattern     | **`release-please` (Google)** — opens an auto-maintained "Release PR" on `main` from conventional-commit history; merging the Release PR creates the tag + GitHub Release, which fires the publish workflow. |
+| CI runner                   | `ubuntu-latest` for both workflows. `Build.ps1` is PowerShell-Core-compatible and `pwsh` is preinstalled.                                                                                                    |
+| Upload action               | `mnao305/chrome-extension-upload@v5` (minimal, well-maintained).                                                                                                                                             |
+| Publish gate                | **No gate** — `release.published` directly triggers the upload + publish. The Release PR review itself is the implicit circuit breaker.                                                                      |
+| Manifest version sync       | release-please's `extra-files` with a JSONPath `$.version` updates `packages/chrome-extension/public/manifest.json` in lockstep with `package.json`.                                                         |
+| `package.json` "date" field | Not synced by the CI path (cosmetic only). `updateManifest.js`'s local-script behaviour is unchanged.                                                                                                        |
+| Tag format                  | Bare semver (`1.4.0`), no `v` prefix — matches existing tags `1.3.5`, `1.3.6`, etc.                                                                                                                          |
+| GitHub Release artifact     | Yes — the `.zip` is attached to the auto-created Release for archival/rollback.                                                                                                                              |
 
 ## Architecture
 
@@ -87,7 +87,7 @@ Recommendation in the docs: pick one path per release and stick with it; don't i
 
 ### release-please core concept (one paragraph for the unfamiliar)
 
-release-please does not push commits or tags to `main` directly. It maintains a Pull Request (its own auto-updating branch, `release-please--branches--main`) whose diff contains: the version bump in `package.json`, the version bump in the manifest, an appended section in `CHANGELOG.md`, and an updated `.release-please-manifest.json`. The PR is open as long as there are unreleased commits with `feat:` / `fix:` / `BREAKING CHANGE:` semantics. New commits to `main` cause release-please to *amend* its PR (re-titled with the new computed version if needed, re-generated changelog). When you merge that PR, the merge commit on `main` is what release-please tags and creates a GitHub Release for. The merge is your single review-and-approve moment per release.
+release-please does not push commits or tags to `main` directly. It maintains a Pull Request (its own auto-updating branch, `release-please--branches--main`) whose diff contains: the version bump in `package.json`, the version bump in the manifest, an appended section in `CHANGELOG.md`, and an updated `.release-please-manifest.json`. The PR is open as long as there are unreleased commits with `feat:` / `fix:` / `BREAKING CHANGE:` semantics. New commits to `main` cause release-please to _amend_ its PR (re-titled with the new computed version if needed, re-generated changelog). When you merge that PR, the merge commit on `main` is what release-please tags and creates a GitHub Release for. The merge is your single review-and-approve moment per release.
 
 ### File layout (created or modified by this spec)
 
@@ -116,8 +116,8 @@ on:
     branches: [main]
 
 permissions:
-  contents: write          # to push the Release PR's commits + create the tag
-  pull-requests: write     # to open/update the Release PR
+  contents: write # to push the Release PR's commits + create the tag
+  pull-requests: write # to open/update the Release PR
 
 jobs:
   release-please:
@@ -150,11 +150,11 @@ on:
         default: true
 
 permissions:
-  contents: write           # to upload the zip onto the GitHub Release as an artifact
+  contents: write # to upload the zip onto the GitHub Release as an artifact
 
 concurrency:
   group: chrome-web-store-publish
-  cancel-in-progress: false  # queue subsequent runs rather than killing in-flight ones
+  cancel-in-progress: false # queue subsequent runs rather than killing in-flight ones
 
 jobs:
   publish:
@@ -166,8 +166,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - run: npm ci --workspaces --include-workspace-root
 
@@ -195,7 +195,7 @@ Notes:
 
 - `pwsh -File ./Build.ps1 -CreatePackage` — invokes the existing build script via PowerShell Core (preinstalled on `ubuntu-latest`). The script is already PS-Core compatible.
 - `workflow_dispatch` exists for two reasons: (a) first-ever smoke test before relying on the auto-trigger; (b) manual recovery (re-run for a given tag) if the auto-triggered upload failed.
-- `Build.ps1` is known to swallow sub-build errors in its `catch` blocks (KNOWN ISSUE flagged in the test-harness work). If the build fails silently, the *next* step (the CWS upload) fails loudly because the zip will be missing or invalid. Acceptable trade-off; not worth a `Build.ps1` rework in this spec.
+- `Build.ps1` is known to swallow sub-build errors in its `catch` blocks (KNOWN ISSUE flagged in the test-harness work). If the build fails silently, the _next_ step (the CWS upload) fails loudly because the zip will be missing or invalid. Acceptable trade-off; not worth a `Build.ps1` rework in this spec.
 
 ### `release-please-config.json`
 
@@ -237,13 +237,13 @@ Seeded with the version currently on `main` (`a36d5cc`'s `package.json` says `1.
 
 ### Conventional-commit semantics summary
 
-| Commit prefix examples | Bump |
-| --- | --- |
-| `feat: …`, `feat(scope): …` | minor (e.g. `1.3.5` → `1.4.0`) |
-| `fix: …`, `fix(scope): …` | patch (e.g. `1.3.5` → `1.3.6`) |
-| `feat!: …`, `fix!: …`, footer `BREAKING CHANGE: …` | major (e.g. `1.3.5` → `2.0.0`) |
-| `chore:`, `docs:`, `test:`, `refactor:`, `style:`, `ci:`, `build:`, `perf:` | no release |
-| Anything not starting with a recognized prefix | no release (silent) |
+| Commit prefix examples                                                      | Bump                           |
+| --------------------------------------------------------------------------- | ------------------------------ |
+| `feat: …`, `feat(scope): …`                                                 | minor (e.g. `1.3.5` → `1.4.0`) |
+| `fix: …`, `fix(scope): …`                                                   | patch (e.g. `1.3.5` → `1.3.6`) |
+| `feat!: …`, `fix!: …`, footer `BREAKING CHANGE: …`                          | major (e.g. `1.3.5` → `2.0.0`) |
+| `chore:`, `docs:`, `test:`, `refactor:`, `style:`, `ci:`, `build:`, `perf:` | no release                     |
+| Anything not starting with a recognized prefix                              | no release (silent)            |
 
 Scoped variants (`fix(release):`, `feat(side-panel):`) work identically to their unscoped form. **Non-conventional commits are silently treated as "no release"** — relevant for spotting the "I merged a feature, why didn't the Release PR appear?" failure mode.
 
@@ -253,11 +253,11 @@ Scoped variants (`fix(release):`, `feat(side-panel):`) work identically to their
 
 Four GitHub Actions secrets must be present before the publish workflow can succeed:
 
-| Secret | Source |
-| --- | --- |
-| `CWS_EXTENSION_ID` | already known: `nbmjdligmcfaeebdihmgbdpahdfddlhm` |
-| `CWS_CLIENT_ID` | OAuth client ID from Google Cloud (step 3 below) |
-| `CWS_CLIENT_SECRET` | OAuth client secret from Google Cloud (step 3 below) |
+| Secret              | Source                                                               |
+| ------------------- | -------------------------------------------------------------------- |
+| `CWS_EXTENSION_ID`  | already known: `nbmjdligmcfaeebdihmgbdpahdfddlhm`                    |
+| `CWS_CLIENT_ID`     | OAuth client ID from Google Cloud (step 3 below)                     |
+| `CWS_CLIENT_SECRET` | OAuth client secret from Google Cloud (step 3 below)                 |
 | `CWS_REFRESH_TOKEN` | long-lived refresh token from the one-time OAuth flow (step 4 below) |
 
 Procedure (run once, with the implementation plan; documented in `publishing.md`):
@@ -295,14 +295,14 @@ Reframed at the top: "Two ways to release: the automatic CI path (preferred) and
 
 One-line addition to the "Releases" paragraph: "For the automated CI path (recommended), see `docs/architecture/publishing.md`."
 
-### Modified: `docs/architecture/build-and-release.md` *(from the test-harness PR)*
+### Modified: `docs/architecture/build-and-release.md` _(from the test-harness PR)_
 
-One-paragraph cross-link to `publishing.md` near the top, noting that this file describes the *build* and the local-script release flow; the *automated* release flow has its own doc. No content duplication.
+One-paragraph cross-link to `publishing.md` near the top, noting that this file describes the _build_ and the local-script release flow; the _automated_ release flow has its own doc. No content duplication.
 
 ## Risks & open items
 
-1. **First-run validation depends on the four secrets existing before any release-worthy PR merges.** If a `feat:` PR is merged to `main` before the secrets are set, release-please opens a Release PR happily but the eventual publish workflow fails at the upload step. Mitigation: the implementation plan sequences "configure secrets" *before* "merge anything release-worthy", and `publishing.md` calls this out. Failure mode is loud and recoverable (`workflow_dispatch` retry once secrets are set).
-2. **Branch protection on `main` is absent today and would need to be configured carefully.** Neither flow requires it. If added later: release-please pushes its Release PR commits to its own branch (`release-please--branches--main`), so a "no direct pushes to `main`" rule is fine. A "require status checks" rule that demands `publish-chrome-web-store` pass would be incorrect (that workflow runs *after* merge, not before).
+1. **First-run validation depends on the four secrets existing before any release-worthy PR merges.** If a `feat:` PR is merged to `main` before the secrets are set, release-please opens a Release PR happily but the eventual publish workflow fails at the upload step. Mitigation: the implementation plan sequences "configure secrets" _before_ "merge anything release-worthy", and `publishing.md` calls this out. Failure mode is loud and recoverable (`workflow_dispatch` retry once secrets are set).
+2. **Branch protection on `main` is absent today and would need to be configured carefully.** Neither flow requires it. If added later: release-please pushes its Release PR commits to its own branch (`release-please--branches--main`), so a "no direct pushes to `main`" rule is fine. A "require status checks" rule that demands `publish-chrome-web-store` pass would be incorrect (that workflow runs _after_ merge, not before).
 3. **Conventional-commits discipline is not enforced.** Non-conventional commits silently produce "no release". The team self-polices per the docs. If this proves painful, a follow-up spec can add `commitlint` — explicitly deferred here to avoid friction for external contributors.
 4. **`updateManifest.js` and release-please both write the manifest version.** Different code paths, same destination. Last-write-wins on overlap; no coordination needed.
 5. **CWS review queue is opaque.** `publish: true` returns success once the upload + publish-request lands; the actual transition to live is queued by Google. Usually minutes for an established listing, occasionally hours, very occasionally rejected (e.g. new permissions). Not surfaced in CI — "watch your email + the dev console" remains a thing.

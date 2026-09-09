@@ -1,0 +1,15 @@
+# Prettier's endOfLine default is "lf" and CI runs on Linux. Git for Windows
+# ships core.autocrlf=true in its system config, so without this a fresh Windows
+# clone gets CRLF working files and `npm run format:check` flags every file.
+* text=auto eol=lf
+
+# Binary assets: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

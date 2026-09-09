@@ -16,17 +16,18 @@ For each page below: open it in Chrome, wait until it's fully rendered, open
 DevTools (F12) → Console, run the snippet (it copies the HTML to your clipboard),
 then paste into the given file under `_raw/`.
 
-| Fixture | Page | Console snippet |
-| --- | --- | --- |
-| `monitoring-edit.html` *(top priority)* | `https://office.bexio.com/index.php/monitoring/edit` (new time entry form) | `copy(document.getElementById('MonitoringForm').outerHTML)` |
-| `monitoring-edit.tinymce-iframe.html` *(optional, for the description-field path)* | same page | `copy(document.querySelector('#monitoring_text_ifr').contentWindow.document.documentElement.outerHTML)` |
-| `monitoring-edit-filled.html` *(optional, for `readFormData` tests)* | open an existing entry: `…/monitoring/edit/id/<id>` | `copy(document.getElementById('MonitoringForm').outerHTML)` |
-| `monitoring-list-full.html` | `https://office.bexio.com/index.php/monitoring/list` (have ≥1 row with a description, i.e. a tooltip icon) | `copy(document.body.outerHTML)` — full body so `.globalsearch` is included |
-| `pr_project-listMonitoring.html` | a project → "Times" tab | `copy(document.getElementsByClassName('listBlock')[0].outerHTML)` |
-| `pr_project-showPackage.html` | a work package → time-tracking tab | `copy(document.getElementById('ui-id-5')?.outerHTML ?? document.querySelector('.content').outerHTML)` |
-| `kb_invoice-show-full.html` | an invoice → **Positionen → "Weitere Positionen" → "Zeit/Leistung"** (the "Zeiten importieren" modal must be **open and populated** when you copy) | `copy(document.body.outerHTML)` — full body |
+| Fixture                                                                            | Page                                                                                                                                               | Console snippet                                                                                         |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `monitoring-edit.html` _(top priority)_                                            | `https://office.bexio.com/index.php/monitoring/edit` (new time entry form)                                                                         | `copy(document.getElementById('MonitoringForm').outerHTML)`                                             |
+| `monitoring-edit.tinymce-iframe.html` _(optional, for the description-field path)_ | same page                                                                                                                                          | `copy(document.querySelector('#monitoring_text_ifr').contentWindow.document.documentElement.outerHTML)` |
+| `monitoring-edit-filled.html` _(optional, for `readFormData` tests)_               | open an existing entry: `…/monitoring/edit/id/<id>`                                                                                                | `copy(document.getElementById('MonitoringForm').outerHTML)`                                             |
+| `monitoring-list-full.html`                                                        | `https://office.bexio.com/index.php/monitoring/list` (have ≥1 row with a description, i.e. a tooltip icon)                                         | `copy(document.body.outerHTML)` — full body so `.globalsearch` is included                              |
+| `pr_project-listMonitoring.html`                                                   | a project → "Times" tab                                                                                                                            | `copy(document.getElementsByClassName('listBlock')[0].outerHTML)`                                       |
+| `pr_project-showPackage.html`                                                      | a work package → time-tracking tab                                                                                                                 | `copy(document.getElementById('ui-id-5')?.outerHTML ?? document.querySelector('.content').outerHTML)`   |
+| `kb_invoice-show-full.html`                                                        | an invoice → **Positionen → "Weitere Positionen" → "Zeit/Leistung"** (the "Zeiten importieren" modal must be **open and populated** when you copy) | `copy(document.body.outerHTML)` — full body                                                             |
 
 Notes:
+
 - For the tooltip fixtures (`monitoring-list`, `pr_project-*`, `kb_invoice-*`), make
   sure at least one `<i rel="popover" data-content="…">` icon is present in the
   captured markup — that's what the tooltip-replacement code targets.

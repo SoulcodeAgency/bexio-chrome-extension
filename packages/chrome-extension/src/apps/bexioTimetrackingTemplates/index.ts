@@ -1,7 +1,4 @@
-import {
-  chromeStorageTemplateEntries,
-  sortTemplates,
-} from "@bexio-chrome-extension/shared";
+import { chromeStorageTemplateEntries, sortTemplates } from "@bexio-chrome-extension/shared";
 import renderHtml from "./renderHtml";
 import "../../eventListeners/onMessage";
 

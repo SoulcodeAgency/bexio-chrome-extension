@@ -1,6 +1,6 @@
 import { chromeStorageSettings } from "@bexio-chrome-extension/shared";
 import { getPopoverNodes, getPopoverNodeText } from "../selectors/projectTable_TextCell";
-import DOMPurify from 'dompurify';
+import DOMPurify from "dompurify";
 
 /**
  * Main entry point for the tooltip-replacement feature. Reads `removePopoversSetting`

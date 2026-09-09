@@ -4,11 +4,7 @@
        the other two packages — so tsc is only ever a type checker here. */
     "noEmit": true,
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "isolatedModules": true,
@@ -16,14 +12,8 @@
     "strict": true,
     /* TypeScript 7 no longer pulls in every `node_modules/@types/*` package
        automatically; this code wraps `chrome.storage.local`. */
-    "types": [
-      "chrome"
-    ]
+    "types": ["chrome"]
   },
-  "include": [
-    "*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["*.ts"],
+  "exclude": ["node_modules"]
 }

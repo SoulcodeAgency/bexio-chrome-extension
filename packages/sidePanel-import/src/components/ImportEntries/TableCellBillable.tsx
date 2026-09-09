@@ -10,28 +10,21 @@ type ImportEntriesTableCellProps = {
 };
 
 const TableCellBillable = (props: ImportEntriesTableCellProps) => {
-  const { templates: templateEntries } =
-    useContext<TemplateContextType>(TemplateContext);
+  const { templates: templateEntries } = useContext<TemplateContextType>(TemplateContext);
 
   const fieldIsBillable = props.fieldValue === "Billable";
   const [templateIsBillable, setTemplateIsBillable] = useState<boolean>();
   const matchesTemplateBillable = fieldIsBillable === templateIsBillable;
 
   useEffect(() => {
-    const template = templateEntries.find(
-      (entry) => entry.id === props.templateId
-    );
+    const template = templateEntries.find((entry) => entry.id === props.templateId);
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- established pattern; refactoring to derive during render is out of scope for the dependency upgrade
     setTemplateIsBillable(template?.billable);
   }, [props.templateId, templateEntries]);
 
-  const timeEntryIsBillableOutput = fieldIsBillable
-    ? "✅ Billable"
-    : "◻️ Not billable";
-  const templateIsBillableOutput = templateIsBillable
-    ? "✅ Billable"
-    : "◻️ Not billable";
+  const timeEntryIsBillableOutput = fieldIsBillable ? "✅ Billable" : "◻️ Not billable";
+  const templateIsBillableOutput = templateIsBillable ? "✅ Billable" : "◻️ Not billable";
   const text = (
     <>
       <strong>Time entry: {timeEntryIsBillableOutput}</strong>
@@ -39,8 +32,8 @@ const TableCellBillable = (props: ImportEntriesTableCellProps) => {
       Template: {templateIsBillableOutput}
       <br />
       <br />
-      Time entry's billable flag ({timeEntryIsBillableOutput}) will override the
-      template one ({templateIsBillableOutput}).
+      Time entry's billable flag ({timeEntryIsBillableOutput}) will override the template one (
+      {templateIsBillableOutput}).
     </>
   );
 

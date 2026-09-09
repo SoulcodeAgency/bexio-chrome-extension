@@ -28,7 +28,7 @@ if (fs.existsSync(releasePleaseManifestFile)) {
   // Regex-replace (like the manifest.json update above) to keep the file's formatting intact.
   const updatedReleasePleaseManifest = releasePleaseManifest.replace(
     /("\."\s*:\s*)".*?"/,
-    `$1"${packageJson.version}"`
+    `$1"${packageJson.version}"`,
   );
 
   fs.writeFileSync(releasePleaseManifestFile, updatedReleasePleaseManifest, "utf8");
@@ -46,7 +46,7 @@ const updatedPackageJson = packageJsonContent.replace(
     day: "numeric",
     month: "short",
     year: "numeric",
-  })}"`
+  })}"`,
 );
 
 // Write the updated manifest.json file

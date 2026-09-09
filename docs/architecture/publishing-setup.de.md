@@ -15,10 +15,10 @@ Die Kette:
 1. Der Store hat eine **API** — ZIP hochladen und veröffentlichen per HTTP, ohne Oberfläche.
 2. Jeder Google-API-Zugriff läuft über ein **Cloud-Projekt**. Das ist nur ein Behälter für Kontingente und Aktivierungen. Die CWS-API kostet nichts, es braucht kein Billing.
 3. Im Projekt muss die **CWS-API aktiviert** werden. Solange sie aus ist, antwortet Google mit `403 SERVICE_DISABLED` — das sieht aus wie ein Rechteproblem, ist aber keins.
-4. **Client ID + Client Secret** sind der Ausweis der *Anwendung* ("das Publish-Skript").
-5. Der **Refresh Token** ist die dauerhafte Erlaubnis eines *bestimmten Kontos*, dass diese Anwendung in seinem Namen handelt.
+4. **Client ID + Client Secret** sind der Ausweis der _Anwendung_ ("das Publish-Skript").
+5. Der **Refresh Token** ist die dauerhafte Erlaubnis eines _bestimmten Kontos_, dass diese Anwendung in seinem Namen handelt.
 6. Zur Laufzeit tauscht der Workflow diese drei Werte gegen ein kurzlebiges Zugriffs-Token (rund eine Stunde) und spricht damit die Store-API an.
-7. `CWS_EXTENSION_ID` ist die Adresse: *welche* Extension.
+7. `CWS_EXTENSION_ID` ist die Adresse: _welche_ Extension.
 
 **Warum das an einem persönlichen Konto hängt:** Die Chrome Web Store API unterstützt keine Service-Accounts. Es geht nur über ein echtes Nutzerkonto und dessen Refresh Token. Deshalb ein Funktions-Konto (`dev@soulcode.ch`) und kein persönliches — sonst steht die Pipeline still, sobald diese Person das Unternehmen verlässt.
 
@@ -26,14 +26,14 @@ Die Kette:
 
 ## Was für dieses Repo eingerichtet ist
 
-| | |
-| --- | --- |
-| Google-Konto | `dev@soulcode.ch` |
-| Store-Publisher | Gruppe "Soulcode" |
-| Extension-ID | `nbmjdligmcfaeebdihmgbdpahdfddlhm` |
-| Cloud-Projekt | `soulcode-cws-publisher` (ohne Organisation) |
-| OAuth-Client | "cws-publisher (GitHub Actions)", Typ Desktop app |
-| Consent Screen | User type External, Publishing status **In production** |
+|                 |                                                         |
+| --------------- | ------------------------------------------------------- |
+| Google-Konto    | `dev@soulcode.ch`                                       |
+| Store-Publisher | Gruppe "Soulcode"                                       |
+| Extension-ID    | `nbmjdligmcfaeebdihmgbdpahdfddlhm`                      |
+| Cloud-Projekt   | `soulcode-cws-publisher` (ohne Organisation)            |
+| OAuth-Client    | "cws-publisher (GitHub Actions)", Typ Desktop app       |
+| Consent Screen  | User type External, Publishing status **In production** |
 
 **Alle Werte müssen aus demselben Konto stammen.** Client ID, Client Secret und Refresh Token gehören zu `dev@soulcode.ch`, weil dieses Konto Rechte am Store-Eintrag hat. Ein Token aus einem anderen Konto führt später zu einem Rechtefehler beim Upload.
 
@@ -68,7 +68,7 @@ In der Praxis stört das nicht — im Testlauf vom 27.07.2026 lief der Build-Sch
 
   **Diesen Schritt nicht überspringen.** Im Status "Testing" gibt Google bei User type External nur Refresh Tokens mit **7 Tagen Gültigkeit** aus — die Pipeline würde nach einer Woche mit einem 401 stehenbleiben, ohne erkennbaren Grund.
 
-  Was "In production" bedeutet: Es hebt nur die Beschränkung auf eingetragene Testnutzer auf. Die App ist dadurch **nicht** auffindbar (es gibt kein Verzeichnis für OAuth-Anwendungen), und sie ist ohne Client ID **und** Secret nicht ansprechbar. Selbst wer zustimmen würde, bekäme nur ein Token für sein *eigenes* Konto — und damit keinerlei Zugriff auf den Store-Eintrag, denn die Rechte hängen am Konto, nicht an der App. Umkehrbar über "Back to testing".
+  Was "In production" bedeutet: Es hebt nur die Beschränkung auf eingetragene Testnutzer auf. Die App ist dadurch **nicht** auffindbar (es gibt kein Verzeichnis für OAuth-Anwendungen), und sie ist ohne Client ID **und** Secret nicht ansprechbar. Selbst wer zustimmen würde, bekäme nur ein Token für sein _eigenes_ Konto — und damit keinerlei Zugriff auf den Store-Eintrag, denn die Rechte hängen am Konto, nicht an der App. Umkehrbar über "Back to testing".
 
 - [ ] **6. OAuth-Client erstellen.** Menü **Clients** → **Create client** → Application type **Desktop app**.
 
@@ -93,12 +93,12 @@ In der Praxis stört das nicht — im Testlauf vom 27.07.2026 lief der Build-Sch
 
 - [ ] **8.** Repo → Settings → Secrets and variables → Actions → "New repository secret". Vier Mal, Namen **exakt** so:
 
-| Name | Wert |
-| --- | --- |
-| `CWS_EXTENSION_ID` | `nbmjdligmcfaeebdihmgbdpahdfddlhm` |
-| `CWS_CLIENT_ID` | aus Schritt 6 |
-| `CWS_CLIENT_SECRET` | aus Schritt 6 |
-| `CWS_REFRESH_TOKEN` | aus Schritt 7 |
+| Name                | Wert                               |
+| ------------------- | ---------------------------------- |
+| `CWS_EXTENSION_ID`  | `nbmjdligmcfaeebdihmgbdpahdfddlhm` |
+| `CWS_CLIENT_ID`     | aus Schritt 6                      |
+| `CWS_CLIENT_SECRET` | aus Schritt 6                      |
+| `CWS_REFRESH_TOKEN` | aus Schritt 7                      |
 
 GitHub zeigt Secrets nach dem Speichern nicht mehr an — auch dir nicht. Das ist so gewollt; die Werte liegen ja im Passwort-Manager.
 
@@ -118,7 +118,7 @@ GitHub zeigt Secrets nach dem Speichern nicht mehr an — auch dir nicht. Das is
 
 ## Teil 4 — Zugangsdaten testen
 
-Ein echter Trockenlauf ist nicht möglich, weil der Store **jede hochgeladene Version ablehnt, die nicht höher ist als die veröffentlichte**. Google dazu: *"If you have not increased the version field in your extension's manifest file, this will fail."* Der aktuelle Tag trägt per Definition die veröffentlichte Version.
+Ein echter Trockenlauf ist nicht möglich, weil der Store **jede hochgeladene Version ablehnt, die nicht höher ist als die veröffentlichte**. Google dazu: _"If you have not increased the version field in your extension's manifest file, this will fail."_ Der aktuelle Tag trägt per Definition die veröffentlichte Version.
 
 Der Lauf prüft deshalb nicht den ganzen Weg, aber die Zugangsdaten:
 
@@ -129,7 +129,7 @@ Der Lauf prüft deshalb nicht den ganzen Weg, aber die Zugangsdaten:
 - [ ] **12.** Fehler einordnen:
   - **401 / 403 von Google** → eines der vier Secrets stimmt nicht, oder die API ist im falschen Projekt aktiviert.
   - **`invalid_grant`** → meist ein Leerzeichen oder Zeilenumbruch, der beim Kopieren ins Secret gerutscht ist.
-  - **`PKG_INVALID_VERSION_NUMBER`** → **alles in Ordnung.** Das ist das gewünschte Ergebnis. Der Wortlaut: *"Invalid version number in manifest: 1.3.5. Please make sure the newly uploaded package has a larger version … than the published package: 1.3.5."* Google hat den Eintrag gefunden, die Anmeldung akzeptiert und die veröffentlichte Version verglichen — damit sind Konto, Rechte, API und alle vier Secrets bestätigt.
+  - **`PKG_INVALID_VERSION_NUMBER`** → **alles in Ordnung.** Das ist das gewünschte Ergebnis. Der Wortlaut: _"Invalid version number in manifest: 1.3.5. Please make sure the newly uploaded package has a larger version … than the published package: 1.3.5."_ Google hat den Eintrag gefunden, die Anmeldung akzeptiert und die veröffentlichte Version verglichen — damit sind Konto, Rechte, API und alle vier Secrets bestätigt.
 
 ---
 
@@ -148,7 +148,7 @@ Nur `feat:` und `fix:` lösen einen Release aus. Alles, was bloss den Bau, die T
 
 Das ist keine Theorie: Die Versionen **1.4.0 und 1.5.0 enthalten für Nutzer keinerlei Änderung.** Sie existieren nur, weil ein CI-Fix und ein Encoding-Fix als `fix(test):`, `fix(changelog):` und `fix(ci):` eingecheckt wurden. Jeder davon hat eine Release-PR geöffnet, und deren Merge hat einen Store-Build veröffentlicht, der sich von 1.3.5 in nichts unterscheidet.
 
-Der Scope hilft dabei nicht — `fix(ci):` ist trotzdem ein `fix`. Die Prüffrage lautet: *Was ändert sich für jemanden, der die Extension installiert hat?* Lautet die Antwort "nichts", ist es kein `fix`.
+Der Scope hilft dabei nicht — `fix(ci):` ist trotzdem ein `fix`. Die Prüffrage lautet: _Was ändert sich für jemanden, der die Extension installiert hat?_ Lautet die Antwort "nichts", ist es kein `fix`.
 
 ---
 

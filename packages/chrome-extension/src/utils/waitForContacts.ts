@@ -12,17 +12,17 @@ import pollUntil, { POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from "./pollUntil";
  */
 // Waits until contacts items show up
 async function waitForContacts(timeToWait = POLL_INTERVAL_MS, timeoutMs = POLL_TIMEOUT_MS): Promise<void> {
-    await pollUntil(
-        "the contact autocomplete results (.ac_results) to become visible",
-        () => {
-            const contacts = document.querySelector(".ac_results");
-            if (contacts === null) return false;
-            // Present but hidden counts as "not there yet"
-            return window.getComputedStyle(contacts).display !== "none";
-        },
-        timeToWait,
-        timeoutMs,
-    );
+  await pollUntil(
+    "the contact autocomplete results (.ac_results) to become visible",
+    () => {
+      const contacts = document.querySelector(".ac_results");
+      if (contacts === null) return false;
+      // Present but hidden counts as "not there yet"
+      return window.getComputedStyle(contacts).display !== "none";
+    },
+    timeToWait,
+    timeoutMs,
+  );
 }
 
 export default waitForContacts;

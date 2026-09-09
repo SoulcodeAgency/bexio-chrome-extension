@@ -13,7 +13,7 @@ async function renderHtml() {
   const getButtonContent = (isRemovePopoversSettingEnabled: boolean) =>
     isRemovePopoversSettingEnabled ? "👀 Text mode" : "🙈 Popover mode";
   const button = `<button type='button' id='PopoverTextSwitcher' class='btn btn-info' style='float: left; margin-right: 10px;'>${getButtonContent(
-    isRemovePopoversSettingEnabled
+    isRemovePopoversSettingEnabled,
   )}</button>`;
 
   const globalSearchListElement = document.getElementsByClassName("globalsearch")[0];

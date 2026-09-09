@@ -22,9 +22,8 @@ describe("triggerContactField", () => {
   ])("returns immediately without touching the DOM when value is %s", async (_label, value) => {
     loadFixture("monitoring-edit");
     const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");
-    const { default: triggerContactField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField"
-    );
+    const { default: triggerContactField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField");
 
     const before = contactField.value;
     const onClick = vi.fn();
@@ -45,9 +44,8 @@ describe("triggerContactField", () => {
   it("sets contactField.value to the requested string", async () => {
     loadFixture("monitoring-edit");
     const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");
-    const { default: triggerContactField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField"
-    );
+    const { default: triggerContactField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField");
 
     // Inject visible .ac_results so waitForContacts resolves on first poll
     const acResults = document.createElement("ul");
@@ -69,9 +67,8 @@ describe("triggerContactField", () => {
   it("clicks the contactField three times (to trigger the autocomplete)", async () => {
     loadFixture("monitoring-edit");
     const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");
-    const { default: triggerContactField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField"
-    );
+    const { default: triggerContactField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField");
 
     const onClick = vi.fn();
     contactField.addEventListener("click", onClick);
@@ -93,9 +90,8 @@ describe("triggerContactField", () => {
   it("dispatches a keydown Enter event on contactField after waitForContacts resolves", async () => {
     loadFixture("monitoring-edit");
     const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");
-    const { default: triggerContactField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField"
-    );
+    const { default: triggerContactField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField");
 
     const onKeydown = vi.fn();
     contactField.addEventListener("keydown", onKeydown);
@@ -120,9 +116,8 @@ describe("triggerContactField", () => {
   it("waits ~1000ms after pressing Enter (the delay() call at the end)", async () => {
     loadFixture("monitoring-edit");
     const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");
-    const { default: triggerContactField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField"
-    );
+    const { default: triggerContactField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField");
 
     // Inject visible .ac_results so waitForContacts resolves
     const acResults = document.createElement("ul");
@@ -131,7 +126,9 @@ describe("triggerContactField", () => {
     document.body.appendChild(acResults);
 
     let done = false;
-    const p = triggerContactField(contactField, "Acme AG").then(() => { done = true; });
+    const p = triggerContactField(contactField, "Acme AG").then(() => {
+      done = true;
+    });
 
     // After waitForContacts resolves (0ms advance) + pressEnter fires synchronously,
     // the delay(1000) is pending.
@@ -152,16 +149,16 @@ describe("triggerContactField", () => {
     // fillForm's finally can hide the loader overlay.
     loadFixture("monitoring-edit");
     const { contactField } = await import("@bexio-chrome-extension/chrome-extension/src/selectors/contactField");
-    const { default: triggerContactField } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField"
-    );
-    const { WaitForTimeoutError, POLL_TIMEOUT_MS } = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/pollUntil"
-    );
+    const { default: triggerContactField } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerContactField");
+    const { WaitForTimeoutError, POLL_TIMEOUT_MS } =
+      await import("@bexio-chrome-extension/chrome-extension/src/utils/pollUntil");
 
     let error: unknown;
     // Do NOT inject .ac_results
-    const p = triggerContactField(contactField, "Acme AG").catch((e: unknown) => { error = e; });
+    const p = triggerContactField(contactField, "Acme AG").catch((e: unknown) => {
+      error = e;
+    });
 
     await vi.advanceTimersByTimeAsync(POLL_TIMEOUT_MS - 1000);
     expect(error).toBeUndefined(); // still polling

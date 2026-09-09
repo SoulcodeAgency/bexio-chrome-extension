@@ -8,9 +8,7 @@ export async function loadApplyNotesSetting(): Promise<boolean> {
   const loadedSetting = await load<boolean>(applyNotesKey);
   return loadedSetting ?? true;
 }
-export async function saveApplyNotesSetting(
-  applyNotesSetting: boolean
-): Promise<any> {
+export async function saveApplyNotesSetting(applyNotesSetting: boolean): Promise<any> {
   return save<boolean>(applyNotesSetting, applyNotesKey);
 }
 
@@ -18,9 +16,7 @@ export async function loadUppercaseFirstLetterSetting(): Promise<boolean> {
   const loadedSetting = await load<boolean>(uppercaseFirstLetterKey);
   return loadedSetting ?? true;
 }
-export async function saveUppercaseFirstLetterSetting(
-  uppercaseFirstLetterSetting: boolean
-): Promise<any> {
+export async function saveUppercaseFirstLetterSetting(uppercaseFirstLetterSetting: boolean): Promise<any> {
   return save<boolean>(uppercaseFirstLetterSetting, uppercaseFirstLetterKey);
 }
 
@@ -37,8 +33,6 @@ export async function loadRemovePopoversSetting(): Promise<boolean> {
   const loadedSetting = await load<boolean>(removePopoversKey);
   return loadedSetting ?? false;
 }
-export async function saveRemovePopoversSetting(
-  removePopoversSetting: boolean
-): Promise<any> {
+export async function saveRemovePopoversSetting(removePopoversSetting: boolean): Promise<any> {
   return save<boolean>(removePopoversSetting, removePopoversKey);
 }

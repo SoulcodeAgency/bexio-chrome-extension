@@ -9,21 +9,14 @@ import TemplateModal from "../TemplateModal/TemplateModal";
 import reloadExtension from "~/utils/reloadExtension";
 
 function TemplateEntries() {
-  const { templates: templateEntries, reloadData } =
-    useContext<TemplateContextType>(TemplateContext);
+  const { templates: templateEntries, reloadData } = useContext<TemplateContextType>(TemplateContext);
 
   const [templateId, setTemplateId] = useState("");
 
   async function confirmTemplateDeletion(template: TemplateEntry) {
-    console.log(
-      `Deleting template "${template.templateName}" with id: ${template.id}`
-    );
+    console.log(`Deleting template "${template.templateName}" with id: ${template.id}`);
     if (template.id !== undefined) {
-      if (
-        confirm(
-          `Are you sure you want to delete the template "${template.templateName}"?`
-        )
-      ) {
+      if (confirm(`Are you sure you want to delete the template "${template.templateName}"?`)) {
         deleteTemplate(template.id).then(() => {
           reloadData();
           reloadExtension();
@@ -71,19 +64,12 @@ function TemplateEntries() {
                 <td>
                   <div style={{ display: "flex" }}>
                     <Tooltip title="Delete Template">
-                      <Button
-                        danger
-                        shape="circle"
-                        onClick={() => confirmTemplateDeletion(entry)}
-                      >
+                      <Button danger shape="circle" onClick={() => confirmTemplateDeletion(entry)}>
                         ❌
                       </Button>
                     </Tooltip>
                     <Tooltip title="Edit Template">
-                      <Button
-                        shape="circle"
-                        onClick={() => setTemplateId(entry.id)}
-                      >
+                      <Button shape="circle" onClick={() => setTemplateId(entry.id)}>
                         🔨
                       </Button>
                     </Tooltip>
@@ -94,13 +80,7 @@ function TemplateEntries() {
           </tbody>
         </table>
 
-        {templateId && (
-          <TemplateModal
-            key={templateId}
-            templateId={templateId}
-            closeModal={() => setTemplateId("")}
-          />
-        )}
+        {templateId && <TemplateModal key={templateId} templateId={templateId} closeModal={() => setTemplateId("")} />}
       </div>
     </>
   );

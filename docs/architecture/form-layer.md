@@ -15,18 +15,18 @@ field.
 
 ## Field map
 
-| Bexio label | DOM id / selector | Widget type | Template field |
-|---|---|---|---|
-| Tätigkeit | `#monitoring_client_service_id` / `#s2id_monitoring_client_service_id` | select2 | `work` |
-| Status | `#monitoring_monitoring_status_id` / `#s2id_monitoring_monitoring_status_id` | select2 | `status` |
-| Kontakt | `#monitoring_contact_id` (hidden) + `#autocomplete_monitoring_contact_id` (text) | jQuery-UI autocomplete | `contact` |
-| Kontaktperson | `#monitoring_sub_contact_id` / `#s2id_monitoring_sub_contact_id` | select2 | `contactPerson` |
-| Projekt | `#monitoring_pr_project_id` / `#s2id_monitoring_pr_project_id` | select2 (AJAX options) | `project` |
-| Arbeitspaket | `#monitoring_pr_package_id` / `#s2id_monitoring_pr_package_id` | select2 (AJAX options) | `package` |
-| abrechenbar | `#monitoring_allowable_bill` | checkbox | `billable` |
-| Datum | `#monitoring_date` | jQuery-UI datepicker | `date` |
-| Dauer | `#monitoring_duration` | jQuery-UI timepicker | `duration` |
-| Bemerkungen | `#monitoring_text` + iframe `#monitoring_text_ifr` → `body#tinymce` | TinyMCE | — |
+| Bexio label   | DOM id / selector                                                                | Widget type            | Template field  |
+| ------------- | -------------------------------------------------------------------------------- | ---------------------- | --------------- |
+| Tätigkeit     | `#monitoring_client_service_id` / `#s2id_monitoring_client_service_id`           | select2                | `work`          |
+| Status        | `#monitoring_monitoring_status_id` / `#s2id_monitoring_monitoring_status_id`     | select2                | `status`        |
+| Kontakt       | `#monitoring_contact_id` (hidden) + `#autocomplete_monitoring_contact_id` (text) | jQuery-UI autocomplete | `contact`       |
+| Kontaktperson | `#monitoring_sub_contact_id` / `#s2id_monitoring_sub_contact_id`                 | select2                | `contactPerson` |
+| Projekt       | `#monitoring_pr_project_id` / `#s2id_monitoring_pr_project_id`                   | select2 (AJAX options) | `project`       |
+| Arbeitspaket  | `#monitoring_pr_package_id` / `#s2id_monitoring_pr_package_id`                   | select2 (AJAX options) | `package`       |
+| abrechenbar   | `#monitoring_allowable_bill`                                                     | checkbox               | `billable`      |
+| Datum         | `#monitoring_date`                                                               | jQuery-UI datepicker   | `date`          |
+| Dauer         | `#monitoring_duration`                                                           | jQuery-UI timepicker   | `duration`      |
+| Bemerkungen   | `#monitoring_text` + iframe `#monitoring_text_ifr` → `body#tinymce`              | TinyMCE                | —               |
 
 The select2 containers follow the naming pattern `#s2id_monitoring_<field_id>`,
 and each contains a focusser `<input class="select2-focusser">` plus a hidden
@@ -134,7 +134,7 @@ Select2 loads its option lists via AJAX after the page renders. The
   whose casing differs from the option label (e.g. `work` vs `Work`).
 - **Why:** Kontaktperson and Arbeitspaket are repopulated by AJAX after their
   parent field (Kontakt / Projekt) changes. Until that response arrives the
-  select still holds the *previous* selection's options, and `options.length > 1`
+  select still holds the _previous_ selection's options, and `options.length > 1`
   cannot tell a stale list from a fresh one. That is harmless on a pristine form
   but not when editing an existing entry or applying a second template.
 - **Termination:** the value wait is bounded by `valueWaitBudgetMs`
@@ -169,7 +169,7 @@ Why those numbers:
   a large account over a bad connection, since a false timeout aborts a fill that
   would have succeeded. It is a budget per wait, not for the whole fill.
 
-`triggerContactField`'s trailing `await delay(1000)` is *not* a poll and has no
+`triggerContactField`'s trailing `await delay(1000)` is _not_ a poll and has no
 deadline — it is a fixed wait (see Known issues).
 
 ---
@@ -187,7 +187,7 @@ The function queries the active tab of the last focused window and:
 
 - resolves right away if that tab is already on the plain
   `https://office.bexio.com/index.php/monitoring/edit` URL. `/edit/id/<id>` is
-  deliberately **not** treated as "already there": that form edits an *existing*
+  deliberately **not** treated as "already there": that form edits an _existing_
   time entry, so we navigate to a fresh one instead;
 - otherwise registers a `chrome.tabs.onUpdated` listener, calls
   `chrome.tabs.update(tabId, { url })`, and resolves when **that tab id** reports
@@ -198,7 +198,7 @@ The function queries the active tab of the last focused window and:
 - waits a further 500 ms so bexio can finish rendering, then resolves `true`;
 - rejects if there is no tab, if `chrome.tabs.update` fails, or after
   `NAVIGATION_TIMEOUT_MS` (15 s) — an expired session redirecting to the login
-  page used to leave this promise pending forever *and* leak one permanent
+  page used to leave this promise pending forever _and_ leak one permanent
   `onUpdated` listener per click (#88). A single `finish()` helper is the only
   exit: it clears the timer and removes the listener on success, timeout and
   error alike.
@@ -280,7 +280,7 @@ it surfaces as an unhandled rejection in the console — loud, as intended; see
 **`WaitForTimeoutError` is the one exception (#83).** Since the `waitFor*` helpers
 got deadlines, a bexio AJAX failure, an offline browser or a select2 search with no
 result ends the fill with a `WaitForTimeoutError` instead of hanging forever. That
-error *is* caught: neither caller awaits `fillForm`, so rethrowing would produce an
+error _is_ caught: neither caller awaits `fillForm`, so rethrowing would produce an
 unhandled rejection the user never sees, and the form is left half-filled — which
 needs saying out loud. It is reported the same way as the stale-id case, after the
 `finally` so the `alert()` does not pop up over a still-visible overlay:
@@ -292,7 +292,7 @@ error still propagates untouched. Both paths are pinned in
 template list or the injected buttons on the page — and can be stale when the
 template was deleted in another tab or window. Before the guard existed, `find`
 returned `undefined` and the destructuring threw. The guard skips the whole fill
-block, so the form is left untouched; the feedback then runs *after* the `finally`
+block, so the form is left untouched; the feedback then runs _after_ the `finally`
 so the `alert()` does not pop up over a still-visible overlay. It also calls
 `initializeExtension()` so the stale button disappears from the page list.
 
@@ -303,7 +303,7 @@ and is the same pattern `onMessage.ts` and `confirmTemplateDeletion.ts` already
 use. Tests that import `fillForm` must `vi.mock` that entry module, otherwise its
 top-level `initializeExtension()` call runs on import.
 
-The side panel's own list is *not* refreshed by this — there is no
+The side panel's own list is _not_ refreshed by this — there is no
 content-script → side-panel message channel; it re-reads storage on its own
 `reloadData`. Both behaviours are pinned in `test/utils/fillForm.test.ts`.
 
@@ -360,12 +360,12 @@ it). It returns `{ ok: true, tabId }` or `{ ok: false, error }` and reports each
 with an antd `message` toast — the three paths used to be detached
 `(async () => { ... })()` IIFEs with no `catch`, so a failed apply looked like a dead button (#86).
 
-| Situation | User-visible feedback |
-|---|---|
-| `chrome.tabs` missing (standalone Vite dev server) | error: "Chrome extension APIs are unavailable here…" |
-| `chrome.tabs.query` returns `[]` or a tab without an `id` (e.g. a detached DevTools window is focused) | error: "No active browser tab found…" |
-| `chrome.tabs.sendMessage` rejects with "Receiving end does not exist" | error: "Open the bexio time-tracking page (monitoring/edit) first…" |
-| The content script answers `{ ok: false, error }` | error: "The bexio page could not apply the data: …" |
+| Situation                                                                                              | User-visible feedback                                               |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `chrome.tabs` missing (standalone Vite dev server)                                                     | error: "Chrome extension APIs are unavailable here…"                |
+| `chrome.tabs.query` returns `[]` or a tab without an `id` (e.g. a detached DevTools window is focused) | error: "No active browser tab found…"                               |
+| `chrome.tabs.sendMessage` rejects with "Receiving end does not exist"                                  | error: "Open the bexio time-tracking page (monitoring/edit) first…" |
+| The content script answers `{ ok: false, error }`                                                      | error: "The bexio page could not apply the data: …"                 |
 
 The "receiving end does not exist" case is **normal**, not exotic: the service worker enables the
 side panel on every `office.bexio.com/index.php/monitoring*` tab, but the `onMessage` listener is
@@ -395,7 +395,7 @@ Pinned in `packages/sidePanel-import/test/sendToBexioTab.test.ts`,
 2. `contactField.value` — reads the autocomplete input's current value; takes
    only the first two space-separated words (bexio adds extra context).
 3. `trimAll(packageValue) || trimAll(project) || trimAll(contact) || trimAll(work) || "New Template"`
-   — constructs a suggested template name. `trimAll` strips *all* whitespace, so
+   — constructs a suggested template name. `trimAll` strips _all_ whitespace, so
    the suggestion is the first non-empty field with its spaces removed
    (`"Acme - Back Office"` → `"Acme-BackOffice"`). Each link is pinned in
    `test/utils/readFormData.test.ts`.
@@ -428,12 +428,12 @@ markup and is still inserted with `insertAdjacentHTML`.
 `type`, `id` (from `entry.id`), `className`
 (`entry btn btn-info template-button`) and the inline style, and puts the display
 name in via `textContent` (`getTemplateName(entry)`). The buttons are appended to
-`#bexioTimetrackingTemplates-entries` *after* the static block has been inserted.
+`#bexioTimetrackingTemplates-entries` _after_ the static block has been inserted.
 
 This is deliberate and must stay that way (#85). Template names and ids are
 untrusted:
 
-- the name is *suggested* from bexio field values — project, package and contact
+- the name is _suggested_ from bexio field values — project, package and contact
   names that any co-worker in the same bexio org can author (`readFormData`),
 - it can be typed freely into `prompt()` in `readFormData` or into the side
   panel's template modal, and is stored verbatim in `chrome.storage.local`,
@@ -450,14 +450,14 @@ HTML" rule the tooltip feature follows (`convertPopover.ts`, see
 
 Consumers of the rendered buttons that must keep working when this changes:
 
-| Consumer | How it finds the buttons |
-|---|---|
-| click handler wiring in `renderHtml` | `#bexioTimetrackingTemplates-entries` → `querySelectorAll("button.entry")` |
-| active-template highlight | `.template-button` / `.template-button--active` |
-| `confirmTemplateDeletion.ts` | `document.getElementById(buttonId)` and `.template-button--active` |
-| filter / reset inputs | the same `domButtons` NodeList, matching on `button.textContent` |
-| CSS (`public/bexioTimetrackingTemplates.css`) | `.template-button`, `#bexioTimetrackingTemplates-entries` |
-| e2e specs | `button#<id>`, `button.template-button` |
+| Consumer                                      | How it finds the buttons                                                   |
+| --------------------------------------------- | -------------------------------------------------------------------------- |
+| click handler wiring in `renderHtml`          | `#bexioTimetrackingTemplates-entries` → `querySelectorAll("button.entry")` |
+| active-template highlight                     | `.template-button` / `.template-button--active`                            |
+| `confirmTemplateDeletion.ts`                  | `document.getElementById(buttonId)` and `.template-button--active`         |
+| filter / reset inputs                         | the same `domButtons` NodeList, matching on `button.textContent`           |
+| CSS (`public/bexioTimetrackingTemplates.css`) | `.template-button`, `#bexioTimetrackingTemplates-entries`                  |
+| e2e specs                                     | `button#<id>`, `button.template-button`                                    |
 
 Pinned in `test/apps/bexioTimetrackingTemplates.test.ts` (rendering, the legacy
 `id`-as-name fallback, the click → `fillForm` path, and the two injection cases:
@@ -484,16 +484,16 @@ a name containing `<img src=x onerror=…>` and an id containing `"`).
 
 The selectors and assumptions most likely to break when bexio changes its markup:
 
-| Assumption | Selector / pattern | Breaks if... | Test that catches it |
-|---|---|---|---|
-| select2 container IDs | `#s2id_monitoring_*` | bexio renames the underlying `<select>` IDs | `test/selectors/formSelectors.test.ts` |
-| select2-chosen text read | `.closest(".input") .select2-chosen` | bexio restructures the select2 widget HTML | `test/utils/readFormData.test.ts` (readTextFromSelect2 tests) |
-| Contact autocomplete | `#autocomplete_monitoring_contact_id` | bexio renames or replaces the autocomplete field | `test/selectors/formSelectors.test.ts` |
-| Save button selector | `#MonitoringForm .getElementsByClassName("save")[0]` | bexio removes the `save` class from the submit button | `test/utils/fillForm.test.ts` (save-button focus assertion) |
-| TinyMCE iframe | `#monitoring_text_ifr` + `#tinymce` body | bexio upgrades TinyMCE or changes the iframe id | `test/selectors/formSelectors.test.ts` (getDescriptionField throw) + `test/utils/triggerDescription.test.ts` (success path, against the captured iframe fixture) |
-| Loader element | `#SoulcodeExtensionLoader` | The extension's injected loader is missing from the DOM | `test/utils/misc-utils.test.ts` (toggleDisplayLoader) |
-| `#select2-drop input` global | the drop uses a single global `#select2-drop` container | bexio changes select2 version where each drop has a unique id | `test/utils/triggerField.test.ts` (waitForSearchBoxField behaviour) |
-| Dependent-select freshness | `waitForSelectOptions` matches the searched value against the `<option>` texts | bexio labels an option differently from the string a template stored (then the wait burns its budget and degrades to the old behaviour) | `test/utils/waitFor.test.ts`, `test/utils/triggerField.test.ts` (#84 tests) |
+| Assumption                   | Selector / pattern                                                             | Breaks if...                                                                                                                            | Test that catches it                                                                                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| select2 container IDs        | `#s2id_monitoring_*`                                                           | bexio renames the underlying `<select>` IDs                                                                                             | `test/selectors/formSelectors.test.ts`                                                                                                                           |
+| select2-chosen text read     | `.closest(".input") .select2-chosen`                                           | bexio restructures the select2 widget HTML                                                                                              | `test/utils/readFormData.test.ts` (readTextFromSelect2 tests)                                                                                                    |
+| Contact autocomplete         | `#autocomplete_monitoring_contact_id`                                          | bexio renames or replaces the autocomplete field                                                                                        | `test/selectors/formSelectors.test.ts`                                                                                                                           |
+| Save button selector         | `#MonitoringForm .getElementsByClassName("save")[0]`                           | bexio removes the `save` class from the submit button                                                                                   | `test/utils/fillForm.test.ts` (save-button focus assertion)                                                                                                      |
+| TinyMCE iframe               | `#monitoring_text_ifr` + `#tinymce` body                                       | bexio upgrades TinyMCE or changes the iframe id                                                                                         | `test/selectors/formSelectors.test.ts` (getDescriptionField throw) + `test/utils/triggerDescription.test.ts` (success path, against the captured iframe fixture) |
+| Loader element               | `#SoulcodeExtensionLoader`                                                     | The extension's injected loader is missing from the DOM                                                                                 | `test/utils/misc-utils.test.ts` (toggleDisplayLoader)                                                                                                            |
+| `#select2-drop input` global | the drop uses a single global `#select2-drop` container                        | bexio changes select2 version where each drop has a unique id                                                                           | `test/utils/triggerField.test.ts` (waitForSearchBoxField behaviour)                                                                                              |
+| Dependent-select freshness   | `waitForSelectOptions` matches the searched value against the `<option>` texts | bexio labels an option differently from the string a template stored (then the wait burns its budget and degrades to the old behaviour) | `test/utils/waitFor.test.ts`, `test/utils/triggerField.test.ts` (#84 tests)                                                                                      |
 
 ---
 
@@ -510,7 +510,7 @@ The selectors and assumptions most likely to break when bexio changes its markup
   `test/utils/triggerDescription.test.ts`.
 
 - **`triggerDescription`'s `if (descriptionField)` guard is dead code.**
-  `getDescriptionField()` *throws* when the iframe body is missing instead of
+  `getDescriptionField()` _throws_ when the iframe body is missing instead of
   returning a falsy value, so the guard never sees `undefined` and the call
   rejects rather than silently no-op'ing. `onMessage` neither awaits nor catches
   it, so on a page without the TinyMCE iframe this surfaces as an unhandled
@@ -520,10 +520,10 @@ The selectors and assumptions most likely to break when bexio changes its markup
   now reject with a `WaitForTimeoutError` after `POLL_TIMEOUT_MS` (20 s), so
   `fillForm`'s `finally` hides the loader and the user gets an `alert()`. Pinned
   in: `test/utils/waitFor.test.ts` and `test/utils/fillForm.test.ts`. Residual
-  caveat: the deadline is *per wait*, so a fill that is merely very slow can
+  caveat: the deadline is _per wait_, so a fill that is merely very slow can
   still take minutes in total before any single wait gives up, and a timeout
   leaves the form partially filled — the alert says so, but nothing rolls the
-  already-applied fields back. (The one *routine* trigger — a template with an
+  already-applied fields back. (The one _routine_ trigger — a template with an
   empty contact — was separately closed by the `triggerContactField` guard, #82.)
 
 - **A template without a `work` value leaves the Tätigkeit untouched.** `fillForm`
@@ -533,7 +533,7 @@ The selectors and assumptions most likely to break when bexio changes its markup
   `test/utils/fillForm.test.ts` (absent-field test).
 
 - **The stale-options guard is a heuristic, not a handshake.** If the value the
-  new template searches for happens to be present in the *previous* selection's
+  new template searches for happens to be present in the _previous_ selection's
   option list too, `waitForSelectOptions` still resolves on the stale list —
   nothing in the DOM marks a list as "freshly loaded". The other direction is
   the bounded degradation above: a value that never arrives costs ~5 s and then

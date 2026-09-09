@@ -52,8 +52,8 @@ jobs:
           # Kept explicit rather than reading .nvmrc, because this workflow also
           # checks out old tags to re-publish them, and tags cut before .nvmrc
           # existed would make node-version-file fail. Keep in step with .nvmrc.
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
 
       - run: npm ci --workspaces --include-workspace-root
 

@@ -13,15 +13,15 @@ import pollUntil, { POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from "./pollUntil";
  */
 // Waits until Search box is gone
 async function waitForSearchBoxFieldToBeRemoved(
-    timeToWait = POLL_INTERVAL_MS,
-    timeoutMs = POLL_TIMEOUT_MS,
+  timeToWait = POLL_INTERVAL_MS,
+  timeoutMs = POLL_TIMEOUT_MS,
 ): Promise<void> {
-    await pollUntil(
-        "the select2 search box (#select2-drop input) to disappear",
-        () => document.querySelector("#select2-drop input") === null,
-        timeToWait,
-        timeoutMs,
-    );
+  await pollUntil(
+    "the select2 search box (#select2-drop input) to disappear",
+    () => document.querySelector("#select2-drop input") === null,
+    timeToWait,
+    timeoutMs,
+  );
 }
 
 export default waitForSearchBoxFieldToBeRemoved;

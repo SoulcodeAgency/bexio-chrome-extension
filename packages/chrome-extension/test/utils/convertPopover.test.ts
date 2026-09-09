@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
 
-const importConvert = () =>
-  import("@bexio-chrome-extension/chrome-extension/src/utils/convertPopover");
+const importConvert = () => import("@bexio-chrome-extension/chrome-extension/src/utils/convertPopover");
 
 describe("convertPopover", () => {
   beforeEach(() => {

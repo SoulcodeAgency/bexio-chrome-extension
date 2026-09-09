@@ -59,11 +59,7 @@ vi.mock("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemp
   }),
 }));
 
-type Listener = (
-  request: unknown,
-  sender: unknown,
-  sendResponse: (response: unknown) => void,
-) => unknown;
+type Listener = (request: unknown, sender: unknown, sendResponse: (response: unknown) => void) => unknown;
 
 async function loadListener(): Promise<Listener> {
   await import("@bexio-chrome-extension/chrome-extension/src/eventListeners/onMessage");
@@ -189,9 +185,7 @@ describe("onMessage listener", () => {
   });
 
   it("answers with { ok: false } when a handler throws", async () => {
-    const triggerDuration = await import(
-      "@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration"
-    );
+    const triggerDuration = await import("@bexio-chrome-extension/chrome-extension/src/utils/triggerDuration");
     vi.mocked(triggerDuration.default).mockImplementationOnce(() => {
       throw new Error("duration field is gone");
     });

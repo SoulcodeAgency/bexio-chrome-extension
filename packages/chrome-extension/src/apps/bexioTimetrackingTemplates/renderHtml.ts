@@ -83,7 +83,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
                 </div>
             </div>
         </div>
-    </div>`
+    </div>`,
   );
 
   // Add the template buttons into the (now existing) container. Done after the
@@ -138,7 +138,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
 
           (e.target as HTMLElement).classList.add("template-button--active");
         }
-      })
+      }),
     );
 
   // Special action buttons

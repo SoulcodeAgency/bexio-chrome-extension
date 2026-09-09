@@ -39,13 +39,12 @@
     padding: 0;
     outline: none;
     cursor: pointer;
-    transition: .1s;
+    transition: 0.1s;
   }
 }
 
 /* Super  special button styling for active delete action */
-.bx-formular-header:has(.btn-danger)+#bexioTimetrackingTemplates-entries:not(:has(.template-button--active)) {
-
+.bx-formular-header:has(.btn-danger) + #bexioTimetrackingTemplates-entries:not(:has(.template-button--active)) {
   & button:focus,
   & button:hover {
     background-color: red !important;

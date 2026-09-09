@@ -8,12 +8,12 @@ and a manual real-bexio walkthrough checklist.
 
 ## 1. The three test layers
 
-| Layer | Tool | When to use | Files |
-| --- | --- | --- | --- |
-| **Vitest unit / integration** | Vitest + jsdom | Every PR / CI run — the main safety net | `packages/*/test/**/*.test.ts(x)`, `scripts/**/*.test.ts` |
-| **Build smoke** | Vitest (slow) | Included in `npm test`; skip with `npm run test:fast` | `packages/*/test/**/*.slow.test.ts` |
-| **Playwright extension smoke + behaviour** | Playwright + real Chromium | Runs in CI (via Xvfb); opt-in locally | `e2e/*.spec.ts` |
-| **Manual real-bexio walkthrough** | Human + real browser | Before each release — the residual, fixture-drift risk | See Section 8 |
+| Layer                                      | Tool                       | When to use                                            | Files                                                     |
+| ------------------------------------------ | -------------------------- | ------------------------------------------------------ | --------------------------------------------------------- |
+| **Vitest unit / integration**              | Vitest + jsdom             | Every PR / CI run — the main safety net                | `packages/*/test/**/*.test.ts(x)`, `scripts/**/*.test.ts` |
+| **Build smoke**                            | Vitest (slow)              | Included in `npm test`; skip with `npm run test:fast`  | `packages/*/test/**/*.slow.test.ts`                       |
+| **Playwright extension smoke + behaviour** | Playwright + real Chromium | Runs in CI (via Xvfb); opt-in locally                  | `e2e/*.spec.ts`                                           |
+| **Manual real-bexio walkthrough**          | Human + real browser       | Before each release — the residual, fixture-drift risk | See Section 8                                             |
 
 The Vitest suite is the primary safety net: it is fast (< 5 s without the slow build smoke test),
 runs in CI without a display, requires no built artifact, and pins current behaviour so refactors
@@ -43,9 +43,11 @@ deliberately don't add). If you want it for a debugging session:
 ### `npm run test:e2e` prerequisites (one-time setup)
 
 1. Install the Playwright Chromium browser:
+
    ```
    npx playwright install chromium
    ```
+
    This step is required because `.npmrc` has `ignore-scripts=true`, which
    suppresses the post-install browser download.
 
@@ -62,12 +64,12 @@ deliberately don't add). If you want it for a debugging session:
 
 The root `vitest.config.ts` (via its `test.projects` array) defines four projects. (Vitest 4 deprecated the standalone `vitest.workspace.ts` file in favour of `test.projects`, so there is no workspace file — `vitest.config.ts` is the only test config.)
 
-| Project | Root | Environment | What it tests |
-| --- | --- | --- | --- |
-| `shared` | `packages/shared` | `node` | Storage helpers, template utilities |
-| `chrome-extension` | `packages/chrome-extension` | `jsdom` | Selectors, content scripts, form utils |
-| `sidePanel-import` | `packages/sidePanel-import` | `jsdom` | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`) |
-| `scripts` | `scripts` | `node` | Repo tooling that belongs to no package — currently the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review |
+| Project            | Root                        | Environment | What it tests                                                                                                                                                                                                                                                 |
+| ------------------ | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shared`           | `packages/shared`           | `node`      | Storage helpers, template utilities                                                                                                                                                                                                                           |
+| `chrome-extension` | `packages/chrome-extension` | `jsdom`     | Selectors, content scripts, form utils                                                                                                                                                                                                                        |
+| `sidePanel-import` | `packages/sidePanel-import` | `jsdom`     | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`) |
+| `scripts`          | `scripts`                   | `node`      | Repo tooling that belongs to no package — currently the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review                                                                              |
 
 The `sidePanel-import` project has two extra setup details: the `~` alias (that package's Vite
 alias for its `src/`) is mirrored in `vitest.config.ts`, and
@@ -96,12 +98,12 @@ drops — `undefined`, functions, and non-index array properties such as the `ar
 `structuredClone` would preserve those and keep re-introducing fake-only artifacts.
 
 **The fake throws loudly** if any code path reaches for an unimplemented `chrome.*` member.
-The guard covers the top level (`chrome.sidePanel`, `chrome.action`) *and* the namespaces we
+The guard covers the top level (`chrome.sidePanel`, `chrome.action`) _and_ the namespaces we
 stub, so `chrome.storage.sync` and `chrome.runtime.connect` throw the same clear error instead of
 returning `undefined`. Symbol properties are reported via `String(prop)` rather than crashing on
 string conversion. This is intentional — it surfaces new Chrome API usage immediately.
 `chrome.runtime.lastError` is deliberately present-but-`undefined`, because production code reads
-it to *check* for an error. `chrome.tabs` is a real member of the fake (a `FakeTabsApi` with
+it to _check_ for an error. `chrome.tabs` is a real member of the fake (a `FakeTabsApi` with
 `query`/`update`/`sendMessage`/`onUpdated` and a test-only `__emitUpdated`); tests may replace or
 delete it, and `resetChromeFake()` puts a fresh instance back.
 
@@ -134,20 +136,21 @@ Several source modules evaluate `document.querySelector(...)` at module-evaluati
 `packages/chrome-extension/src/selectors/contactField.ts`,
 `packages/chrome-extension/src/selectors/billableCheckbox.ts`.
 
-Because jsdom's `document` is empty at module-load time, importing these modules *before*
+Because jsdom's `document` is empty at module-load time, importing these modules _before_
 populating `document.body` captures `null` selectors that will never update.
 
 **The pattern every such test must follow:**
 
 ```ts
 beforeEach(() => {
-  vi.resetModules();          // discard the cached module so it re-evaluates next import
+  vi.resetModules(); // discard the cached module so it re-evaluates next import
   document.body.innerHTML = "";
 });
 
 it("...", async () => {
-  loadFixture("monitoring-edit");               // sets document.body.innerHTML first
-  const { mySelector } = await import(          // then import: module evaluates with real DOM
+  loadFixture("monitoring-edit"); // sets document.body.innerHTML first
+  const { mySelector } = await import(
+    // then import: module evaluates with real DOM
     "@bexio-chrome-extension/chrome-extension/src/selectors/mySelector"
   );
   // ...
@@ -207,6 +210,7 @@ The procedure is documented in full in
    is never committed.
 
 **Currently captured fixtures:**
+
 - `monitoring-edit.html` — the time-entry edit form (empty)
 - `monitoring-edit-filled.html` — the same form with values pre-filled
 - `monitoring-edit.tinymce-iframe.html` — the TinyMCE iframe body (injected via
@@ -222,6 +226,7 @@ The procedure is documented in full in
 
 `packages/chrome-extension/test/build-smoke.slow.test.ts` shells out to
 `Build.ps1` and asserts that:
+
 - `unpacked/manifest.json` exists and parses correctly
 - the manifest's `version` field matches the root `package.json` version
 - every file referenced in the manifest's `content_scripts` and `background`
@@ -283,6 +288,7 @@ window for the duration of the test run (~10 s locally).
 
 On a headless CI machine, the run is wrapped with `Xvfb` — this is exactly
 what `.github/workflows/node.js.yml` does:
+
 ```sh
 xvfb-run --auto-servernum npm run test:e2e
 ```
@@ -290,10 +296,12 @@ xvfb-run --auto-servernum npm run test:e2e
 ### Extension ID and storage seeding
 
 The extension ID is derived from the service worker URL:
+
 ```
 chrome-extension://<id>/service-worker-loader.js
                   ^^^^
 ```
+
 `context.serviceWorkers()[0].url()` gives the full URL; `new URL(...).host`
 extracts the ID. If the array is empty on startup, `launchExtensionContext`
 opens a blank page, waits 2 s, then re-checks. If the service worker still
@@ -318,6 +326,7 @@ honest). A Playwright-against-real-bexio spec would require real credentials
 and remains out of scope.
 
 ### Setup
+
 1. Build the extension: `npm run build:project -- -Development`
 2. Open Chrome → `chrome://extensions/` → enable "Developer mode" → "Load unpacked"
    → select the `unpacked/` directory.
@@ -325,9 +334,9 @@ and remains out of scope.
 
 ### 5.1 — `monitoring/edit`: Templates block
 
-*Automated (on fixtures): items 2–6 — injection (smoke spec), filter, Add
+_Automated (on fixtures): items 2–6 — injection (smoke spec), filter, Add
 (prompt), template apply, Delete (confirm) — in `extension-behaviour.spec.ts`.
-The live-bexio run additionally exercises the real select2/AJAX widgets.*
+The live-bexio run additionally exercises the real select2/AJAX widgets._
 
 1. Navigate to `https://office.bexio.com/index.php/monitoring/edit`
    (or open an existing time entry).
@@ -343,9 +352,9 @@ The live-bexio run additionally exercises the real select2/AJAX widgets.*
 
 ### 5.2 — `monitoring/list` + project/package tabs: Text-mode toggle
 
-*Automated (on fixtures): items 1–3 — the toggle round-trip on
+_Automated (on fixtures): items 1–3 — the toggle round-trip on
 `monitoring/list` — in `extension-behaviour.spec.ts`. The project/package
-tabs (item 4) are still manual-only.*
+tabs (item 4) are still manual-only._
 
 1. Navigate to `https://office.bexio.com/index.php/monitoring/list`.
    Confirm a **"Text mode"** toggle button appears in the page header.
@@ -357,11 +366,11 @@ tabs (item 4) are still manual-only.*
 
 ### 5.3 — Side panel: Templates and Import tabs
 
-*Automated: item 5 (parse → table, incl. billable icons and ▶ buttons) runs
+_Automated: item 5 (parse → table, incl. billable icons and ▶ buttons) runs
 as a jsdom Vitest test in `packages/sidePanel-import/test/importEntries.test.tsx`;
 the side panel mounting is covered by the smoke spec. Items 3 and 7
 (tab persistence, cross-tab message to the bexio form) are still manual-only,
-and item 6 is manual for its visual half only.*
+and item 6 is manual for its visual half only._
 
 1. On any bexio page (`https://office.bexio.com/index.php/monitoring/...`),
    click the extension icon (or the browser side-panel button) to open the
@@ -384,7 +393,7 @@ and item 6 is manual for its visual half only.*
    offsets are not — jsdom has no layout, so they are only checked here.
 7. Click the ▶ (play / fill) button on one row — confirm the
    `monitoring/edit` form in the main tab is populated with that entry's values.
-7. **Live template sync.** With the side panel open, save a new template from the
+8. **Live template sync.** With the side panel open, save a new template from the
    injected Templates block on `monitoring/edit`. The panel's **Templates** tab
    must list it without being closed and reopened, and **Auto map templates** on
    the Import tab must be able to match it. Then click the 🔄 button in the panel

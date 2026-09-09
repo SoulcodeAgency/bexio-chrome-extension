@@ -5,11 +5,7 @@
     "noEmit": true,
     "strict": true,
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     /* Bundler mode — matches how Vite resolves and emits these sources. */
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -20,14 +16,8 @@
     /* TypeScript 7 no longer pulls in every `node_modules/@types/*` package
        automatically, so the ambient globals this code relies on (the `chrome`
        namespace) have to be listed here. */
-    "types": [
-      "chrome"
-    ]
+    "types": ["chrome"]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
 }
