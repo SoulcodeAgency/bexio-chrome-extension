@@ -2,9 +2,9 @@ import confirmActiveTemplateDeletion from "../../utils/confirmTemplateDeletion";
 import fillForm from "../../utils/fillForm";
 import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "../../utils/packageInfo";
-import readFormData from "../../utils/readFormData";
 import { toggleDisplayLoader } from "../../utils/loader";
 import { setupTemplateFilter } from "./filter";
+import { setupInlineAddForm } from "./inlineAddForm";
 import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
@@ -87,6 +87,13 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
               <button type="button" id="DeleteTemplate" class="btn">Delete</button>
             </div>
         </div>
+        <div id="SoulcodeExtensionAddForm" hidden>
+          <label for="templateNameInput">Name</label>
+          <input type="text" id="templateNameInput">
+          <button type="button" id="templateNameSave" class="btn btn-info">Save</button>
+          <button type="button" id="templateNameCancel" class="btn">Cancel</button>
+          <span id="templateNameError" hidden></span>
+        </div>
         <div id="bexioTimetrackingTemplates-entries"><div id="templateFilterEmpty" hidden></div></div>
         <div id="SoulcodeExtensionLoader" style="position: fixed;
         top: 0;
@@ -144,10 +151,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     setActiveChip(panel, applyButton);
   });
 
-  document.getElementById("AddNewTemplate")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    readFormData();
-  });
+  setupInlineAddForm(panel);
 
   deleteTemplateButton.addEventListener("click", (e) => {
     e.preventDefault();
