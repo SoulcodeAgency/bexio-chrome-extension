@@ -1,4 +1,5 @@
 import { chromeStorageTemplateEntries } from "@bexio-chrome-extension/shared";
+import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 import { readCurrentFormValues } from "./readCurrentFormValues";
 
 /**
@@ -16,6 +17,9 @@ export async function updateActiveTemplate(templateId: string): Promise<boolean>
   if (!existing) return false;
 
   const values = await readCurrentFormValues();
-  await chromeStorageTemplateEntries.updateTemplate({ ...existing, ...values });
+  // The cast pins existing behaviour: the status read back from the bexio form
+  // is a free string, while TemplateEntry.status declares the known union —
+  // same rule as the entry literal in createTemplateFromForm.ts.
+  await chromeStorageTemplateEntries.updateTemplate({ ...existing, ...values } as TemplateEntry);
   return true;
 }
