@@ -1,5 +1,6 @@
 import { message } from "antd";
 import { ExchangeRequestData, ExchangeResponse } from "@bexio-chrome-extension/shared/types";
+import { getTabsApi } from "~/utils/getTabsApi";
 
 /**
  * Single entry point for every side-panel → content-script message.
@@ -30,18 +31,6 @@ export type SendToBexioTabOptions = {
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-/**
- * `chrome.tabs` is missing when the app runs outside the extension (the standalone Vite dev
- * server) and the test fake throws on unimplemented members, so the lookup itself is guarded.
- */
-function getTabsApi(): typeof chrome.tabs | undefined {
-  try {
-    return typeof chrome !== "undefined" && chrome.tabs ? chrome.tabs : undefined;
-  } catch {
-    return undefined;
-  }
 }
 
 function fail(text: string, level: "error" | "warning" = "error"): SendToBexioTabResult {

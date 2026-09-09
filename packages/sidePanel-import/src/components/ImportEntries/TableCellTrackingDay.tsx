@@ -1,5 +1,4 @@
 import { Button, message } from "antd";
-import { productionEnv } from "~/utils/development";
 import openBexioTimeTrackingPage from "~/utils/openBexioTimeTrackingPage";
 
 type ImportEntriesTableCellProps = {
@@ -16,17 +15,18 @@ const TableCellTrackingDay = (props: ImportEntriesTableCellProps) => {
   const entryIsEmpty = noTimeToBookRegex.test(simplifiedZeroes);
 
   async function clickHandler() {
-    if (productionEnv) {
-      try {
-        await openBexioTimeTrackingPage();
-      } catch (error) {
-        // Navigation failed (no tab, expired session redirect, timeout). Do not apply the
-        // entry — the content script is not on that page — and say so instead of dying in
-        // an unhandled rejection.
-        console.warn("Could not open the bexio time-tracking page:", error);
-        message.error("Could not open the bexio time-tracking page. Open it manually and try again.");
-        return;
-      }
+    // Not gated on the build mode: a development build of the extension has to navigate
+    // just like the production one. `openBexioTimeTrackingPage` itself is the one that
+    // knows when there is no tab to navigate (the standalone Vite dev server).
+    try {
+      await openBexioTimeTrackingPage();
+    } catch (error) {
+      // Navigation failed (no tab, expired session redirect, timeout). Do not apply the
+      // entry — the content script is not on that page — and say so instead of dying in
+      // an unhandled rejection.
+      console.warn("Could not open the bexio time-tracking page:", error);
+      message.error("Could not open the bexio time-tracking page. Open it manually and try again.");
+      return;
     }
     props.onButtonClick();
   }

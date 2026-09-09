@@ -1,3 +1,5 @@
+import { getTabsApi } from "~/utils/getTabsApi";
+
 export const BEXIO_MONITORING_TIMETRACKING = "https://office.bexio.com/index.php/monitoring/edit";
 
 /**
@@ -35,9 +37,19 @@ export function isTimeTrackingPageUrl(url: string | undefined): boolean {
  * navigation itself fails, or if the page has not loaded within
  * NAVIGATION_TIMEOUT_MS. The `chrome.tabs.onUpdated` listener is removed on
  * every exit path.
+ *
+ * Resolves `false` when there is no `chrome.tabs` at all — the standalone Vite
+ * dev server. That is not an error: there is simply no tab to navigate, and the
+ * caller should carry on with whatever the click was for.
  */
 async function openBexioTimeTrackingPage(): Promise<boolean> {
-  const [tab] = await chrome.tabs.query({
+  const tabsApi = getTabsApi();
+  if (!tabsApi) {
+    console.log("no chrome.tabs — not running inside the extension, skipping navigation");
+    return false;
+  }
+
+  const [tab] = await tabsApi.query({
     active: true,
     lastFocusedWindow: true,
   });
@@ -69,7 +81,7 @@ async function openBexioTimeTrackingPage(): Promise<boolean> {
     // listener and the timer can never be left behind.
     const finish = (error?: unknown) => {
       clearTimeout(timeoutId);
-      chrome.tabs.onUpdated.removeListener(onUpdated);
+      tabsApi.onUpdated.removeListener(onUpdated);
       if (error) reject(error);
       else resolve();
     };
@@ -79,9 +91,9 @@ async function openBexioTimeTrackingPage(): Promise<boolean> {
       NAVIGATION_TIMEOUT_MS,
     );
 
-    chrome.tabs.onUpdated.addListener(onUpdated);
+    tabsApi.onUpdated.addListener(onUpdated);
     // Open the page
-    chrome.tabs.update(tabId, { url: BEXIO_MONITORING_TIMETRACKING }).catch((error: unknown) => finish(error));
+    tabsApi.update(tabId, { url: BEXIO_MONITORING_TIMETRACKING }).catch((error: unknown) => finish(error));
   });
 
   // Wait a little bit, so the rendering can be finished. (Not sure how easy we
