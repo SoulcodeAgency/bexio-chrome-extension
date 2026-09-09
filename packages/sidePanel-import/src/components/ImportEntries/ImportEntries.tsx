@@ -285,20 +285,22 @@ function ImportEntries() {
 
   const manicTimeImport = (
     <div className="content">
+      {/* The list is a sibling of the paragraph, not a child: `<ul>` inside `<p>` is invalid
+          HTML and React logs it as a validateDOMNesting hydration error on every render. */}
       <p>
-        This lets you import entries from <b>ManicTime</b> - directly from your clipboard: <br />
-        <ul>
-          <li>
-            Use the <i>"Copy to clipboard"</i> function in ManicTime's TimeSheet Summary, and make sure you have at
-            least a <i>"Tag 1"</i> column.
-          </li>
-          <li>
-            Optionally you can add <b>Notes</b> and <b>Billable</b> columns as well to apply them. <br />
-            ⚠️ Notes are only supported if they don't contain line breaks. If you have any line breaks, you can still
-            search and remove them in the following textarea field
-          </li>
-        </ul>
+        This lets you import entries from <b>ManicTime</b> - directly from your clipboard:
       </p>
+      <ul>
+        <li>
+          Use the <i>"Copy to clipboard"</i> function in ManicTime's TimeSheet Summary, and make sure you have at least
+          a <i>"Tag 1"</i> column.
+        </li>
+        <li>
+          Optionally you can add <b>Notes</b> and <b>Billable</b> columns as well to apply them. <br />
+          ⚠️ Notes are only supported if they don't contain line breaks. If you have any line breaks, you can still
+          search and remove them in the following textarea field
+        </li>
+      </ul>
       <p>
         Paste the data into the following field <br />
         <i>(Note: This will import data and override the "Apply imported data"-tab content)</i>
@@ -496,7 +498,7 @@ function ImportEntries() {
       <Alert
         showIcon
         type="info"
-        message="Before you can apply the imported data, you need to add some data above and maybe also save it for later use."
+        title="Before you can apply the imported data, you need to add some data above and maybe also save it for later use."
       />
     </div>
   );

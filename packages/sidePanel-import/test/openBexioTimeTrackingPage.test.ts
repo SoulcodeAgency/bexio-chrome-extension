@@ -139,4 +139,13 @@ describe("openBexioTimeTrackingPage", () => {
     await expect(openBexioTimeTrackingPage()).rejects.toThrow("No tab found");
     expect(listenerCount()).toBe(0);
   });
+
+  it("resolves false instead of throwing when chrome.tabs is unavailable", async () => {
+    // The standalone Vite dev server: no extension APIs at all. Not an error —
+    // there is simply no tab, and the caller carries on. The build mode must not
+    // enter into it, so this is the *only* case in which navigation is skipped.
+    delete (globalThis.chrome as unknown as Record<string, unknown>).tabs;
+
+    await expect(openBexioTimeTrackingPage()).resolves.toBe(false);
+  });
 });

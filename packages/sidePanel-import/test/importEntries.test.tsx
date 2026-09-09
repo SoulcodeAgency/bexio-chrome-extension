@@ -62,6 +62,18 @@ describe("ImportEntries — ManicTime TSV parse → table", () => {
     document.body.innerHTML = "";
   });
 
+  it("nests the instruction markup validly", async () => {
+    const { container } = await renderImportEntries();
+
+    // `<ul>` is flow content and may not sit inside a `<p>` — the browser's parser closes
+    // the paragraph at the list, so the rendered tree stops matching React's and every
+    // render logs a validateDOMNesting hydration error.
+    expect(container.querySelectorAll("p ul")).toHaveLength(0);
+    // The instructions themselves must survive the fix.
+    expect(within(container).getByText(/Copy to clipboard/)).toBeDefined();
+    expect(container.querySelectorAll(".content ul li").length).toBeGreaterThan(0);
+  });
+
   it("renders the parsed entries with billable icons and ▶️ buttons on tracking-day columns", async () => {
     const { container } = await renderImportEntries();
 
