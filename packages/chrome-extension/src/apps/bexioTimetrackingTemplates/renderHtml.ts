@@ -4,6 +4,7 @@ import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "../../utils/packageInfo";
 import readFormData from "../../utils/readFormData";
 import { toggleDisplayLoader } from "../../utils/loader";
+import { setupTemplateFilter } from "./filter";
 import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
@@ -168,17 +169,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     toggleDisplayLoader(false);
   });
 
-  // ── Filter (interim: name+keywords via data-filter; replaced by filter.ts later) ──
-  const chips = () => Array.from(entriesContainer.querySelectorAll<HTMLElement>(".template-chip"));
-  document.getElementById("templateFilter")?.addEventListener("input", (e) => {
-    const query = (e.target as HTMLInputElement).value.trim().toLowerCase();
-    chips().forEach((chip) => (chip.hidden = !(chip.dataset.filter ?? "").includes(query)));
-  });
-  document.getElementById("templateFilterReset")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    (document.getElementById("templateFilter") as HTMLInputElement).value = "";
-    chips().forEach((chip) => (chip.hidden = false));
-  });
+  setupTemplateFilter(panel);
 }
 
 export default renderHtml;
