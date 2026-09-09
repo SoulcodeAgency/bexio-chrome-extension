@@ -504,22 +504,39 @@ The selectors and assumptions most likely to break when bexio changes its markup
   sets `.checked`; any listener registered for the `change` event will not fire.
   Pinned in: `test/utils/triggerCheckbox.test.ts`.
 
-- **`triggerDescription` dispatches no events and never syncs the textarea.**
-  It only sets `body#tinymce`'s `textContent`, so TinyMCE is not told the content
-  changed and the hidden `<textarea id="monitoring_text">` — the field bexio
+- **`triggerDescription` dispatches no events and never syncs the textarea — which
+  turns out not to cost anything on save.** It only sets `body#tinymce`'s
+  `textContent`, so the hidden `<textarea id="monitoring_text">` — the field bexio
   actually submits — is left as it was. Pinned in
   `test/utils/triggerDescription.test.ts`.
-  Whether that loses data on save is **an open question, not an established bug**
-  (#124): bexio's form is a plain `method="POST"` form with a
-  `<button type="submit">`, and TinyMCE 3 — which is what the captured fixture
-  shows bexio running — hooks form submit to run `triggerSave()`, which
-  serialises the _live_ iframe body into the textarea at that moment. On that
-  reading the direct DOM write does reach the server, and only TinyMCE's own
-  bookkeeping (dirty flag, undo stack) misses it. Confirm in a real browser
-  before "fixing" this: apply an entry with notes, do not click into the editor,
-  save, reopen the entry. Note that a content script cannot call the page's
-  `tinyMCE` API directly (isolated world), so the DOM write is not merely
-  laziness.
+
+  Measured against real bexio on 2026-09-09 (#124), on a live `monitoring/edit`
+  page, by emulating exactly what `triggerDescription` does and then reading the
+  editor back:
+
+  | Probe                                                  | Result                                             |
+  | ------------------------------------------------------ | -------------------------------------------------- |
+  | `tinyMCE.majorVersion` + `minorVersion`                | `3.5.4.1`                                          |
+  | `editor.formElement === MonitoringForm`                | `true`                                             |
+  | `form.submit` overridden, `form._mceOldSubmit` present | `true`                                             |
+  | `#monitoring_text.value` after the `textContent` write | `""` — the write really does not sync it           |
+  | `editor.getContent()` after the write                  | the written text                                   |
+  | `editor.isDirty()` after the write                     | `true`                                             |
+  | `#monitoring_text.value` after `tinyMCE.triggerSave()` | the written text                                   |
+  | jQuery submit handlers bound to the form               | `0`                                                |
+  | save control                                           | `<button type="submit" name="save">`, no `onclick` |
+
+  So the note does reach the server. `getContent()` serialises the _live_ iframe
+  body, and `triggerSave()` — which is what TinyMCE's own submit hook calls —
+  copies that into the submitted textarea; nothing on bexio's side bypasses the
+  hook. What the missing events actually cost is the undo stack. Not even the
+  dirty flag: TinyMCE 3.5 computes `isDirty()` by comparing `startContent` against
+  the serialised body, so it reflects a direct DOM write too.
+
+  Two things to know before "improving" this: writing into `#monitoring_text`
+  yourself is pointless — `triggerSave()` overwrites that field on submit anyway —
+  and a content script cannot call the page's `tinyMCE` API at all (isolated
+  world), so the DOM write is the available mechanism, not laziness.
 
 - ~~**`triggerDescription`'s `if (descriptionField)` guard is dead code.**~~
   Resolved in #124: the guard is gone (`getDescriptionField()` throws instead of
