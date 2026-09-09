@@ -32,8 +32,9 @@ updates:
     # The TypeScript 7 hold is lifted: each package now pins typescript 7.x for
     # type checking. typescript-eslint still cannot run on 7 (the Go-native
     # package no longer exports the compiler's JS API), so npm additionally
-    # installs a TypeScript 5.x at the root to satisfy its peer range — that
-    # copy is not declared anywhere and tracks typescript-eslint automatically.
+    # installs a JS-based TypeScript (6.0.x today) at the root to satisfy its
+    # peer range — that copy is not declared anywhere and tracks
+    # typescript-eslint automatically.
     # See docs/architecture/build-and-release.md.
     groups:
       npm-minor-patch:
