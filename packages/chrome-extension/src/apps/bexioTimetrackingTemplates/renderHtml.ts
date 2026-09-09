@@ -4,6 +4,7 @@ import getTemplateName from "@bexio-chrome-extension/shared/getTemplateName";
 import { DATE, VERSION } from "../../utils/packageInfo";
 import readFormData from "../../utils/readFormData";
 import { toggleDisplayLoader } from "../../utils/loader";
+import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 /**
@@ -113,7 +114,11 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
   const entriesContainer = document.getElementById("bexioTimetrackingTemplates-entries")!;
   const emptyState = document.getElementById("templateFilterEmpty")!;
 
-  (templateEntries ?? []).forEach((entry) => entriesContainer.insertBefore(createTemplateChip(entry), emptyState));
+  (templateEntries ?? []).forEach((entry) => {
+    const chip = createTemplateChip(entry);
+    entriesContainer.insertBefore(chip, emptyState);
+    attachTemplateTooltip(chip.querySelector<HTMLButtonElement>("button.template-button")!, entry, panel);
+  });
 
   // ── Delete mode (legacy — replaced by manage mode in a later change) ──
   const deleteTemplateButton = document.getElementById("DeleteTemplate")!;
@@ -128,6 +133,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
     const applyButton = (e.target as HTMLElement).closest<HTMLButtonElement>("button.template-button");
     if (!applyButton) return;
     e.preventDefault();
+    hideTemplateTooltip();
     if (deleteMode) {
       confirmActiveTemplateDeletion(applyButton.id);
       disableDeleteMode();
