@@ -359,7 +359,7 @@ are manual-only._
 7. Update: Chip anklicken (grün) → Formular ändern → ↻ klicken → "Updated ✓",
    Side Panel zeigt die neuen Werte. Danach denselben Chip hovern → die Vorschau
    zeigt die **neuen** Werte.
-8. Löschen: Stift-Button ("Manage templates") → Chips werden rot mit × → × klicken → Chip weg, Toast mit
+8. Löschen: Papierkorb-Button ("Delete templates") → Chips werden rot mit × → × klicken → Chip weg, Toast mit
    "Undo" (5 s) → "Done" beendet den Modus, der Toast bleibt aber stehen →
    Undo stellt das Template so wieder her, wie es zuletzt gespeichert war.
 

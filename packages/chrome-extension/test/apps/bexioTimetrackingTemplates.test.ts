@@ -71,9 +71,9 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
 
     const manage = document.getElementById("ManageTemplates") as HTMLButtonElement;
     expect(manage.textContent!.trim()).toBe("");
-    expect(manage.querySelector('svg[data-icon="pencil"]')).not.toBeNull();
-    expect(manage.getAttribute("aria-label")).toBe("Manage templates");
-    expect(manage.title).toBe("Manage templates");
+    expect(manage.querySelector('svg[data-icon="trash"]')).not.toBeNull();
+    expect(manage.getAttribute("aria-label")).toBe("Delete templates");
+    expect(manage.title).toBe("Delete templates");
     expect(manage.getAttribute("aria-pressed")).toBe("false");
 
     // The icons are decorative; the buttons carry the name.

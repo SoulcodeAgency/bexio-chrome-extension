@@ -23,8 +23,8 @@ export type ManageModeOptions = {
  * `aria-pressed`, so assistive tech reports it as a toggle rather than an action.
  */
 export function setManageButtonState(button: HTMLButtonElement, managing: boolean): void {
-  const label = managing ? "Done" : "Manage templates";
-  button.innerHTML = iconSvg(managing ? "check" : "pencil"); // static markup, see icons.ts
+  const label = managing ? "Done" : "Delete templates";
+  button.innerHTML = iconSvg(managing ? "check" : "trash"); // static markup, see icons.ts
   button.title = label;
   button.setAttribute("aria-label", label);
   button.setAttribute("aria-pressed", String(managing));

@@ -53,9 +53,9 @@ describe("manage mode", () => {
 
     manageButton().click();
     expect(panelEl().classList.contains("manage-mode")).toBe(false);
-    expect(manageButton().querySelector('svg[data-icon="pencil"]')).not.toBeNull();
-    expect(manageButton().getAttribute("aria-label")).toBe("Manage templates");
-    expect(manageButton().title).toBe("Manage templates");
+    expect(manageButton().querySelector('svg[data-icon="trash"]')).not.toBeNull();
+    expect(manageButton().getAttribute("aria-label")).toBe("Delete templates");
+    expect(manageButton().title).toBe("Delete templates");
     expect(manageButton().getAttribute("aria-pressed")).toBe("false");
     expect((document.getElementById("AddNewTemplate") as HTMLButtonElement).disabled).toBe(false);
   });

@@ -7,12 +7,14 @@
  * template data ever passes through here — which is what makes inserting it as HTML
  * safe (see the "static markup only" rule in `renderHtml.ts`).
  */
-export type IconName = "plus" | "search" | "pencil" | "check";
+export type IconName = "plus" | "search" | "trash" | "check";
 
 const PATHS: Record<IconName, string> = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
-  pencil: '<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>',
+  trash:
+    '<path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>' +
+    '<path d="m19 6-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/><path d="M10 11v6M14 11v6"/>',
   check: '<path d="m20 6-11 11-5-5"/>',
 };
 
