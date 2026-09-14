@@ -4,7 +4,7 @@
 
 The extension stores all persistent data in `chrome.storage.local`. There is no remote backend; everything lives in the browser's local extension storage. All values are serialized as JSON by the Chrome API.
 
-All storage access goes through the primitives in `packages/shared/chromeStorage.ts` (`load`, `save`, `remove`, `update`, `clear`), with higher-level wrappers in the three module files described below.
+All storage access goes through the primitives in `packages/shared/chromeStorage.ts` (`load`, `save`, `remove`, `update`, `clear`), with higher-level wrappers in the two module files described below.
 
 ---
 
@@ -17,17 +17,16 @@ All storage access goes through the primitives in `packages/shared/chromeStorage
 | `"uppercaseFirstLetterSetting"` | `boolean`                                  | `true`                     | `chromeStorageSettings.ts`        |
 | `"removePopoversSetting"`       | `boolean`                                  | `false`                    | `chromeStorageSettings.ts`        |
 | `"activeTabId"`                 | `string \| undefined`                      | `undefined`                | `chromeStorageSettings.ts`        |
-| `"importData"`                  | `ImportData[]` (i.e. `string[][]`)         | `[]`                       | `chromeStorageImportData.ts`      |
+| `"importData"`                  | `string[][]` (rows of column values)       | `[]`                       | — (raw `chromeStorage`)           |
 | `"importHeader"`                | `string[]`                                 | `[]`                       | — (raw `chromeStorage`)           |
 | `"importFooter"`                | `string[]`                                 | `[]`                       | — (raw `chromeStorage`)           |
 | `"importTemplates"`             | `string[]` (template id per import row)    | `[]`                       | — (raw `chromeStorage`)           |
 | `"entryStatus"`                 | `{ [colIndex-rowIndex: string]: boolean }` | `{}`                       | — (raw `chromeStorage`)           |
 
-The last four keys ("the import-buffer keys" below) have no wrapper module:
+The last five keys ("the import-buffer keys" below) have no wrapper module:
 `packages/sidePanel-import/src/components/ImportEntries/ImportEntries.tsx` calls
 `chromeStorage.load` / `chromeStorage.save` with the key string inline (via its
-`persistImport()` helper, which writes all five keys together — see issue #87). It
-writes `"importData"` the same way rather than through `chromeStorageImportData.ts`.
+`persistImport()` helper, which writes all five keys together — see issue #87).
 
 ---
 
@@ -46,9 +45,9 @@ Template entries are stored as a flat array under the single key `"entries"`. Ev
 
 ## The import buffer — `"importHeader"`, `"importData"`, `"importFooter"`, `"importTemplates"`, `"entryStatus"`
 
-`ImportData` is defined in `types.ts` as `string[]` (a single row of column values). The module stores an array of these rows: `string[][]` under the key `"importData"`.
+`"importData"` holds the parsed rows as `string[][]` — one inner array per import row, holding that row's column values in header order.
 
-`chromeStorageImportData.ts` exports `loadImportData`, `saveImportData`, and `deleteImportData`. The module is marked TODO in source — the delete and update paths are not fully implemented (the commented-out `updateImportData` is disabled). The side panel does **not** use it: `ImportEntries.tsx` writes all five import keys directly through `chromeStorage.save`.
+The import buffer has **no wrapper module**: `ImportEntries.tsx` writes all five keys directly through `chromeStorage.save`. A `chromeStorageImportData.ts` used to sit in `packages/shared/` next to the template and settings wrappers, but nothing ever called it and it covered only `"importData"` — one of the five keys. That made it look like the API for the import buffer while owning a fifth of its state, so it was removed in issue #125 (git history keeps it). If the buffer ever does get an owner module, it has to own all five keys at once; see known issue 4 below.
 
 The five keys are **one logical record**, not five independent ones:
 
@@ -62,8 +61,6 @@ Both are therefore only meaningful together with the exact `"importData"` / `"im
 - **"Delete saved data"** (`removeImportData`) clears all five.
 
 A failed parse writes nothing: storage keeps the last successfully parsed dataset with its own status/templates, so the record stays coherent even though the (empty) React state no longer matches it.
-
-**No app code imports this module.** It is re-exported from `packages/shared/index.ts` and covered by `packages/shared/test/chromeStorageImportData.test.ts`, but the side panel reads and writes `"importData"` through raw `chromeStorage` calls instead. Changing the module therefore changes nothing at runtime today.
 
 ---
 
@@ -104,6 +101,13 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
 - **`remove(id, key)`** — reads the stored value at `key`; if it is an array it filters by `entry.id !== id` and saves the result back to `key`. If the stored value is **not** an array it saves `[]` (silently drops whatever was stored).
 - **`update(updatedEntry, key, idKey)`** — reads the stored value at `key`; if it is an array it finds the index with `findIndex`, does a shallow merge via spread, and saves the array back to `key`. If the stored value is not an array the update block is skipped and `save` is called with `undefined` (the raw result of `chrome.storage.local.get(key)` when the key is absent), which writes `undefined` to that key.
 
+_Fixed (issue #89):_ both used to read from `key` but call `save()` **without** it, so the
+result always landed under the default key `"entries"`. For any non-default key that left the
+target key stale **and** clobbered the template store — calling `remove()` on an import key
+would have written the `string[][]` import buffer over the user's templates. Both now pass
+`key` through to `save()`, pinned by `test/chromeStorage.test.ts` (`remove: custom key` and
+`update: custom idKey`, both asserted against the raw storage keys).
+
 ---
 
 ## Known issues (surfaced by tests)
@@ -117,17 +121,11 @@ Both `remove` and `update` assume the stored value is a `TemplateEntry[]`. Speci
    `chrome.storage.local` serializes via JSON, so the property is dropped on the way in: the caller gets no error, and nothing is stored. The test fake serializes the same way (see `docs/architecture/testing.md`), so this is pinned as it actually behaves in production.
    Flagged in: `test/chromeStorage.test.ts` — `// KNOWN ISSUE: update() with an unknown id uses arr[-1] = {...}`.
 
-3. **`deleteImportData(id)` is effectively a no-op.**
-   `ImportData` is `string[]`, not an object with an `id` field. `chromeStorage.remove` filters by `entry.id !== id`, but `entry.id` is always `undefined` for `string[]` entries, so no entry is ever removed.
-   Flagged in: `test/chromeStorageImportData.test.ts` — `// KNOWN ISSUE: deleteImportData(id) is effectively a no-op`.
-
-   _Fixed (issue #89):_ `remove()` and `update()` used to read from `key` but call `save()` **without** it, so the result always landed under the default key `"entries"`. For any non-default key that left the target key stale **and** clobbered the template store — `deleteImportData(id)` would have written the `string[][]` import buffer over the user's templates. Both now pass `key` through to `save()`; covered by `test/chromeStorage.test.ts` (`remove`/`update: custom key`, asserted against raw storage keys) and `test/chromeStorageImportData.test.ts` (`deleteImportData does not touch the 'entries' (template) key`).
-
-4. **`sortTemplates` mutates its input array.**
+3. **`sortTemplates` mutates its input array.**
    `Array.prototype.sort` sorts in place; `sortTemplates` returns the same reference it was given. Callers that need the original order must copy the array first.
    Flagged in: `test/sortTemplates.test.ts` — `// KNOWN ISSUE: sortTemplates mutates its argument`.
 
-5. **The import buffer is spread over five keys and written non-atomically.**
+4. **The import buffer is spread over five keys and written non-atomically.**
    `persistImport()` issues five separate `chrome.storage.local.set` calls. They are not a transaction: a side panel closed mid-write could in principle leave a new `"importData"` next to an old `"entryStatus"`. Storing the whole import (data + templates + status) under a single key would remove the class of bug entirely, but needs a migration for buffers already in users' browsers — see issue #87.
    Covered in: `packages/sidePanel-import/test/importEntries.test.tsx` — "import state does not survive a new import (issue #87)".
 

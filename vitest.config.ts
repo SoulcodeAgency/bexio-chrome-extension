@@ -13,10 +13,6 @@ const sharedSubpathAliases = [
     replacement: path.resolve(__dirname, "packages/shared/chromeStorageSettings.ts"),
   },
   {
-    find: "@bexio-chrome-extension/shared/chromeStorageImportData",
-    replacement: path.resolve(__dirname, "packages/shared/chromeStorageImportData.ts"),
-  },
-  {
     find: "@bexio-chrome-extension/shared/chromeStorage",
     replacement: path.resolve(__dirname, "packages/shared/chromeStorage.ts"),
   },
