@@ -329,3 +329,44 @@ test("inline Add saves a template; manage mode deletes it with Undo — no nativ
 
   await page.close();
 });
+
+// ---------------------------------------------------------------------------
+// Test 5: the two-column chip grid never grows past its container
+// ---------------------------------------------------------------------------
+test("long template names truncate inside the chip grid instead of widening it", async () => {
+  test.skip(!serviceWorker, "could not resolve the extension service worker — cannot seed chrome.storage");
+
+  // Two names whose min-content width exceeds half of the panel. With
+  // `grid-template-columns: 1fr 1fr` a track can never shrink below its widest
+  // chip's min-content, so both tracks grew and the grid pushed past the panel.
+  // The fixture carries no bexio stylesheet, so the panel spans the viewport;
+  // a fixed viewport keeps the width the names must beat independent of the
+  // machine the test runs on.
+  const longName = "Leister-MaintenanceServicePlatform-".repeat(6);
+  await seedTemplates([
+    { ...TEMPLATE, id: "e2elong1", templateName: `${longName}-1` },
+    { ...TEMPLATE, id: "e2elong2", templateName: `${longName}-2` },
+  ]);
+
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await serveFixture(page, "https://office.bexio.com/index.php/monitoring/edit", "monitoring-edit");
+  await page.goto("https://office.bexio.com/index.php/monitoring/edit");
+  await expect(page.locator("button#e2elong2")).toBeVisible({ timeout: 10_000 });
+
+  const layout = await page.evaluate(() => {
+    const grid = document.getElementById("bexioTimetrackingTemplates-entries")!;
+    const gridBox = grid.getBoundingClientRect();
+    const chips = Array.from(grid.querySelectorAll<HTMLElement>(".template-chip"));
+    return {
+      scrollWidth: grid.scrollWidth,
+      clientWidth: grid.clientWidth,
+      chipOverflow: Math.max(...chips.map((chip) => chip.getBoundingClientRect().right - gridBox.right)),
+    };
+  });
+
+  expect(layout.scrollWidth, "grid must not scroll horizontally").toBeLessThanOrEqual(layout.clientWidth);
+  expect(layout.chipOverflow, "no chip may end past the grid's right edge").toBeLessThanOrEqual(1);
+
+  await page.close();
+});
