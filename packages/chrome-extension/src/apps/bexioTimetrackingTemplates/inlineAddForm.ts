@@ -61,7 +61,7 @@ export function setupInlineAddForm(elements: PanelElements): void {
 
     // Open first, then suggest a name. Reading the bexio form can throw when a
     // select2 widget is not where `readTextFromSelect2` expects it, and doing it
-    // before the form is shown would make "+ Add" a button that does nothing at
+    // before the form is shown would make the + button one that does nothing at
     // all — no form, no message.
     error.hidden = true;
     form.hidden = false;

@@ -5,6 +5,7 @@ import { PanelElements } from "./panelElements";
 import { showPanelToast } from "./panelToast";
 import { hideTemplateTooltip } from "./tooltip";
 import { initializeExtension } from "./index";
+import { iconSvg } from "./icons";
 
 export type ManageModeOptions = {
   elements: PanelElements;
@@ -16,13 +17,27 @@ export type ManageModeOptions = {
  * Manage mode: the explicit, visible replacement for the old hidden delete
  * mode. Deleting is instant with a 5-second Undo toast instead of confirm().
  */
+/**
+ * The toggle is an icon-only button, so its state lives in the icon and in the
+ * accessible name (`aria-label` + `title`, which doubles as the tooltip), plus
+ * `aria-pressed`, so assistive tech reports it as a toggle rather than an action.
+ */
+export function setManageButtonState(button: HTMLButtonElement, managing: boolean): void {
+  const label = managing ? "Done" : "Manage templates";
+  button.innerHTML = iconSvg(managing ? "check" : "pencil"); // static markup, see icons.ts
+  button.title = label;
+  button.setAttribute("aria-label", label);
+  button.setAttribute("aria-pressed", String(managing));
+}
+
 export function setupManageMode({ elements, onEntriesChanged }: ManageModeOptions): void {
   const { panel, entriesContainer, manageButton, addButton, addForm } = elements;
+  setManageButtonState(manageButton, false);
 
   manageButton.addEventListener("click", (e) => {
     e.preventDefault();
     const managing = panel.classList.toggle("manage-mode");
-    manageButton.textContent = managing ? "Done" : "Manage";
+    setManageButtonState(manageButton, managing);
     hideTemplateTooltip();
     addButton.disabled = managing;
     addForm.hidden = true;

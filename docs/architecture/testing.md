@@ -344,7 +344,7 @@ are manual-only._
    (or open an existing time entry).
 2. Confirm the **Templates** block appears below the form (an `#SoulcodeExtensionTemplates`
    section with a filter input and template chips if any are saved).
-3. Add: "+ Add" klicken → Inline-Feld erscheint mit vorgeschlagenem Namen →
+3. Add: Plus-Button ("Add template from the current form") klicken → Inline-Feld erscheint mit vorgeschlagenem Namen →
    Enter speichert, Chip erscheint (kein `prompt()`-Dialog).
    Danach Duplikat: gleiche Formularwerte nochmals speichern →
    Inline-Fehlermeldung, kein Dialog.
@@ -359,7 +359,7 @@ are manual-only._
 7. Update: Chip anklicken (grün) → Formular ändern → ↻ klicken → "Updated ✓",
    Side Panel zeigt die neuen Werte. Danach denselben Chip hovern → die Vorschau
    zeigt die **neuen** Werte.
-8. Löschen: "Manage" → Chips werden rot mit × → × klicken → Chip weg, Toast mit
+8. Löschen: Stift-Button ("Manage templates") → Chips werden rot mit × → × klicken → Chip weg, Toast mit
    "Undo" (5 s) → "Done" beendet den Modus, der Toast bleibt aber stehen →
    Undo stellt das Template so wieder her, wie es zuletzt gespeichert war.
 

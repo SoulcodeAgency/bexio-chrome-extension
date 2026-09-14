@@ -40,16 +40,23 @@ describe("manage mode", () => {
     await chrome.storage.local.set({ entries: [] });
   });
 
-  it("Manage toggles the mode: class, label, Add disabled, toast cleared on exit", async () => {
+  it("Manage toggles the mode: class, icon + accessible name, pressed state, Add disabled", async () => {
     await render([template()]);
     manageButton().click();
     expect(panelEl().classList.contains("manage-mode")).toBe(true);
-    expect(manageButton().textContent).toBe("Done");
+    // Icon-only button: the state lives in the icon and the accessible name, not in text.
+    expect(manageButton().querySelector('svg[data-icon="check"]')).not.toBeNull();
+    expect(manageButton().getAttribute("aria-label")).toBe("Done");
+    expect(manageButton().title).toBe("Done");
+    expect(manageButton().getAttribute("aria-pressed")).toBe("true");
     expect((document.getElementById("AddNewTemplate") as HTMLButtonElement).disabled).toBe(true);
 
     manageButton().click();
     expect(panelEl().classList.contains("manage-mode")).toBe(false);
-    expect(manageButton().textContent).toBe("Manage");
+    expect(manageButton().querySelector('svg[data-icon="pencil"]')).not.toBeNull();
+    expect(manageButton().getAttribute("aria-label")).toBe("Manage templates");
+    expect(manageButton().title).toBe("Manage templates");
+    expect(manageButton().getAttribute("aria-pressed")).toBe("false");
     expect((document.getElementById("AddNewTemplate") as HTMLButtonElement).disabled).toBe(false);
   });
 

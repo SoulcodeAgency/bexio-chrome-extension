@@ -59,6 +59,40 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
     expect((chips[0] as HTMLElement).dataset.filter).toBe("project falcon ");
   });
 
+  it("renders the header actions as icon-only buttons with accessible names", async () => {
+    const renderHtml = await importRenderHtml();
+    await renderHtml([]);
+
+    const add = document.getElementById("AddNewTemplate") as HTMLButtonElement;
+    expect(add.textContent!.trim()).toBe("");
+    expect(add.querySelector('svg[data-icon="plus"]')).not.toBeNull();
+    expect(add.getAttribute("aria-label")).toBe("Add template from the current form");
+    expect(add.title).toBe("Add template from the current form");
+
+    const manage = document.getElementById("ManageTemplates") as HTMLButtonElement;
+    expect(manage.textContent!.trim()).toBe("");
+    expect(manage.querySelector('svg[data-icon="pencil"]')).not.toBeNull();
+    expect(manage.getAttribute("aria-label")).toBe("Manage templates");
+    expect(manage.title).toBe("Manage templates");
+    expect(manage.getAttribute("aria-pressed")).toBe("false");
+
+    // The icons are decorative; the buttons carry the name.
+    document.querySelectorAll("#SoulcodeExtensionActions svg").forEach((svg) => {
+      expect(svg.getAttribute("aria-hidden")).toBe("true");
+    });
+  });
+
+  it("gives the filter box a search icon and an accessible name in place of the long placeholder", async () => {
+    const renderHtml = await importRenderHtml();
+    await renderHtml([]);
+
+    const filter = document.getElementById("templateFilter") as HTMLInputElement;
+    expect(filter.placeholder).toBe("Filter");
+    expect(filter.getAttribute("aria-label")).toBe("Filter templates");
+    expect(filter.parentElement!.querySelector('svg[data-icon="search"]')).not.toBeNull();
+    expect(document.getElementById("templateFilterReset")!.getAttribute("aria-label")).toBe("Clear filter");
+  });
+
   it("puts the version into the heading tooltip, not the heading text", async () => {
     const renderHtml = await importRenderHtml();
     await renderHtml([]);

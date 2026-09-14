@@ -124,14 +124,70 @@ button.template-button.template-button--active::before {
   color: #7a3030;
 }
 
+/* ── Header toolbar ── */
+.template-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#SoulcodeExtensionActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  margin-bottom: 5px;
+}
+
+/* One height for all three controls — bexio's .btn and input metrics differ otherwise. */
+#SoulcodeExtensionActions .search-input,
+#SoulcodeExtensionActions .template-icon-button {
+  height: 34px;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+#SoulcodeExtensionActions .template-icon-button {
+  width: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.template-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+/* In manage mode the toggle takes on the chips' dashed red look and shows ✓ ("Done"). */
+.manage-mode #ManageTemplates {
+  border: 1px dashed #d9a0a0;
+  background: #fdf7f7;
+  color: #7a3030;
+}
+
 /* ── Filter ── */
 .template-search-filter {
   position: relative;
-  width: 150px;
+  width: 190px;
+
+  .template-icon {
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    color: #8a95a0;
+    pointer-events: none;
+  }
 
   .search-input {
     width: 100%;
-    margin: 0;
+    padding: 0 26px 0 30px; /* room for the search icon on the left and the clear button on the right */
   }
 
   button.template-search-filter-clear-button {
@@ -145,9 +201,9 @@ button.template-button.template-button--active::before {
     border-radius: 50%;
     top: 0;
     bottom: 0;
-    right: 5px;
+    right: 6px;
     background: #ddd;
-    margin: 7px 0;
+    margin: auto 0;
     padding: 0;
     outline: none;
     cursor: pointer;

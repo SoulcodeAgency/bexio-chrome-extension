@@ -9,6 +9,7 @@ import { setupInlineAddForm } from "./inlineAddForm";
 import { setupManageMode } from "./manageMode";
 import { resolvePanelElements } from "./panelElements";
 import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
+import { iconSvg } from "./icons";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 /**
@@ -73,21 +74,24 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
 
   const templatePlacement = document.getElementById("pr_package")?.parentNode?.parentNode?.parentNode as HTMLElement;
 
-  // Static markup only — template-derived strings are appended as DOM nodes below.
+  // Static markup only — template-derived strings are appended as DOM nodes below. The
+  // icon SVGs are static too (a closed set of names, see icons.ts). The manage button
+  // gets its icon and accessible name from setupManageMode, the one place that owns its state.
   const logoPath = chrome.runtime.getURL("assets/logo_orig.png");
   templatePlacement.insertAdjacentHTML(
     "beforeend",
     `<div id="SoulcodeExtensionTemplates" class="row-fluid">
         <hr>
-        <div class="bx-formular-header" style="display: flex; justify-content: space-between">
+        <div class="bx-formular-header template-panel-header">
             <h2 title="Soulcode extension v${VERSION} — last update ${DATE}">Templates</h2>
-            <div id="SoulcodeExtensionActions" style="margin-left: 4px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
+            <div id="SoulcodeExtensionActions">
               <div class="template-search-filter">
-                <input type="search" id="templateFilter" class="search-input" placeholder="Filter templates">
-                <button id="templateFilterReset" class="template-search-filter-clear-button" type="button">&times;</button>
+                ${iconSvg("search")}
+                <input type="search" id="templateFilter" class="search-input" placeholder="Filter" aria-label="Filter templates">
+                <button id="templateFilterReset" class="template-search-filter-clear-button" type="button" aria-label="Clear filter">&times;</button>
               </div>
-              <button type="button" id="AddNewTemplate" class="btn btn-info">+ Add</button>
-              <button type="button" id="ManageTemplates" class="btn">Manage</button>
+              <button type="button" id="AddNewTemplate" class="btn btn-info template-icon-button" title="Add template from the current form" aria-label="Add template from the current form">${iconSvg("plus")}</button>
+              <button type="button" id="ManageTemplates" class="btn template-icon-button"></button>
             </div>
         </div>
         <div id="SoulcodeExtensionAddForm" hidden>
