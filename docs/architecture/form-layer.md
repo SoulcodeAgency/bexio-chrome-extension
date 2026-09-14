@@ -384,6 +384,21 @@ Pinned in `packages/sidePanel-import/test/sendToBexioTab.test.ts`,
 `packages/sidePanel-import/test/importEntries.test.tsx` and
 `packages/chrome-extension/test/eventListeners/onMessage.test.ts`.
 
+### The other direction — content script → service worker (`openSidePanel`)
+
+The injected Templates block has an "Open side panel" button. A content script cannot
+call `chrome.sidePanel`, so the click sends `{ mode: "openSidePanel" }`
+(`OpenSidePanelRequest`) through `chrome.runtime.sendMessage`, and
+`public/service_worker.js` answers it with `chrome.sidePanel.open({ tabId: sender.tab.id })`
+— the panel is enabled per bexio tab, so it opens for exactly that tab. Two Chrome
+constraints shape the worker side: `sidePanel.open()` may only run in response to a user
+gesture (a click in a content script counts, Chrome 116+), and that gesture does not survive
+an `await`, so the worker calls it synchronously inside the listener with no storage read or
+other async work in front. Chrome has no API to close the panel, so the button only opens. A
+rejected `sendMessage` (no worker reachable) is reported with a panel toast that points at
+the toolbar icon. Pinned in `test/apps/bexioTimetrackingTemplates.openSidePanel.test.ts` and
+`test/service-worker.test.ts` (the worker is plain JS, imported with a hand-rolled `chrome` stub).
+
 ---
 
 ## Read-back path (`readCurrentFormValues` + `createTemplateFromForm`)

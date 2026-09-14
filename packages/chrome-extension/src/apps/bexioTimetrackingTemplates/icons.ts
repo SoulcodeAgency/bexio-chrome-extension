@@ -7,7 +7,7 @@
  * template data ever passes through here — which is what makes inserting it as HTML
  * safe (see the "static markup only" rule in `renderHtml.ts`).
  */
-export type IconName = "plus" | "search" | "trash" | "check";
+export type IconName = "plus" | "search" | "trash" | "check" | "sidebar";
 
 const PATHS: Record<IconName, string> = {
   plus: '<path d="M12 5v14M5 12h14"/>',
@@ -16,6 +16,7 @@ const PATHS: Record<IconName, string> = {
     '<path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>' +
     '<path d="m19 6-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/><path d="M10 11v6M14 11v6"/>',
   check: '<path d="m20 6-11 11-5-5"/>',
+  sidebar: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M15 4v16"/>',
 };
 
 export function iconSvg(name: IconName): string {

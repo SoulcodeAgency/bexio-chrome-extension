@@ -162,6 +162,14 @@ button.template-button.template-button--active::before {
   flex: none;
 }
 
+/* Sets the "open side panel" button apart: it opens something else, it does not act on templates. */
+.template-toolbar-separator {
+  width: 1px;
+  height: 22px;
+  background: #dde3e8;
+  margin: 0 4px;
+}
+
 /* In manage mode the toggle takes on the chips' dashed red look and shows ✓ ("Done"). */
 .manage-mode #ManageTemplates {
   border: 1px dashed #d9a0a0;

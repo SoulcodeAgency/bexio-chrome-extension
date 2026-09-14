@@ -337,8 +337,8 @@ and remains out of scope.
 _Automated (on fixtures): items 2–8 — injection (smoke spec), keyword filter,
 inline Add, template apply, manage-mode Delete + Undo — in
 `extension-behaviour.spec.ts`. The live-bexio run additionally exercises the
-real select2/AJAX widgets. The tooltip (item 4) and the update button (item 7)
-are manual-only._
+real select2/AJAX widgets. The tooltip (item 4), the update button (item 7)
+and the side-panel button (item 9) are manual-only._
 
 1. Navigate to `https://office.bexio.com/index.php/monitoring/edit`
    (or open an existing time entry).
@@ -362,6 +362,9 @@ are manual-only._
 8. Löschen: Papierkorb-Button ("Delete templates") → Chips werden rot mit × → × klicken → Chip weg, Toast mit
    "Undo" (5 s) → "Done" beendet den Modus, der Toast bleibt aber stehen →
    Undo stellt das Template so wieder her, wie es zuletzt gespeichert war.
+9. Side Panel: Button ganz rechts in der Toolbar ("Open side panel (ManicTime
+   import)") klicken → das Side Panel öffnet sich für diesen Tab. Ist es schon
+   offen, passiert nichts.
 
 ### 5.2 — `monitoring/list` + project/package tabs: Text-mode toggle
 

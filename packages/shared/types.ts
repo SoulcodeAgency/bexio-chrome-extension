@@ -52,6 +52,15 @@ export type ReloadExtension = {
   mode: "reload";
 };
 
+/**
+ * Content script → service worker (the one message that goes the other way): open this
+ * tab's side panel. Sent by the "open side panel" button in the injected Templates block
+ * via `chrome.runtime.sendMessage`; the worker answers with `chrome.sidePanel.open`.
+ */
+export type OpenSidePanelRequest = {
+  mode: "openSidePanel";
+};
+
 export type ExchangeRequestData = TemplateExchangeData | EntryExchangeData | ReloadExtension;
 
 /**

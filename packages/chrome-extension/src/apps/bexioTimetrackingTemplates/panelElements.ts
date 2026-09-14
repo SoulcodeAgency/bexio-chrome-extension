@@ -29,6 +29,7 @@ export type PanelElements = {
   nameCancel: HTMLButtonElement;
   nameError: HTMLElement;
   manageButton: HTMLButtonElement;
+  openSidePanelButton: HTMLButtonElement;
   closeLoaderButton: HTMLElement;
 };
 
@@ -46,6 +47,7 @@ export function resolvePanelElements(panel: HTMLElement): PanelElements {
     nameCancel: panel.querySelector<HTMLButtonElement>("#templateNameCancel")!,
     nameError: panel.querySelector<HTMLElement>("#templateNameError")!,
     manageButton: panel.querySelector<HTMLButtonElement>("#ManageTemplates")!,
+    openSidePanelButton: panel.querySelector<HTMLButtonElement>("#OpenSidePanel")!,
     closeLoaderButton: panel.querySelector<HTMLElement>("#closeModal")!,
   };
 }

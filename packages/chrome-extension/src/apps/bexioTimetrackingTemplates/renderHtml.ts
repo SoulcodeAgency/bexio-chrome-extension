@@ -7,6 +7,7 @@ import { showPanelToast } from "./panelToast";
 import { setupTemplateFilter } from "./filter";
 import { setupInlineAddForm } from "./inlineAddForm";
 import { setupManageMode } from "./manageMode";
+import { setupOpenSidePanelButton } from "./openSidePanel";
 import { resolvePanelElements } from "./panelElements";
 import { attachTemplateTooltip, hideTemplateTooltip } from "./tooltip";
 import { iconSvg } from "./icons";
@@ -92,6 +93,8 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
               </div>
               <button type="button" id="AddNewTemplate" class="btn btn-info template-icon-button" title="Add template from the current form" aria-label="Add template from the current form">${iconSvg("plus")}</button>
               <button type="button" id="ManageTemplates" class="btn template-icon-button"></button>
+              <span class="template-toolbar-separator" aria-hidden="true"></span>
+              <button type="button" id="OpenSidePanel" class="btn template-icon-button" title="Open side panel (ManicTime import)" aria-label="Open side panel (ManicTime import)">${iconSvg("sidebar")}</button>
             </div>
         </div>
         <div id="SoulcodeExtensionAddForm" hidden>
@@ -198,6 +201,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
 
   const refreshFilter = setupTemplateFilter(elements);
   setupManageMode({ elements, onEntriesChanged: refreshFilter });
+  setupOpenSidePanelButton(elements);
 }
 
 export default renderHtml;

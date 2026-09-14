@@ -93,6 +93,20 @@ describe("bexioTimetrackingTemplates renderHtml", () => {
     expect(document.getElementById("templateFilterReset")!.getAttribute("aria-label")).toBe("Clear filter");
   });
 
+  it("renders an icon-only 'open side panel' button, set apart from the template actions by a separator", async () => {
+    const renderHtml = await importRenderHtml();
+    await renderHtml([]);
+
+    const open = document.getElementById("OpenSidePanel") as HTMLButtonElement;
+    expect(open.closest("#SoulcodeExtensionActions")).not.toBeNull();
+    expect(open.textContent!.trim()).toBe("");
+    expect(open.querySelector('svg[data-icon="sidebar"]')).not.toBeNull();
+    expect(open.getAttribute("aria-label")).toBe("Open side panel (ManicTime import)");
+    expect(open.title).toBe("Open side panel (ManicTime import)");
+    // It opens something else, it does not act on templates: a separator says so.
+    expect(open.previousElementSibling!.classList.contains("template-toolbar-separator")).toBe(true);
+  });
+
   it("puts the version into the heading tooltip, not the heading text", async () => {
     const renderHtml = await importRenderHtml();
     await renderHtml([]);
