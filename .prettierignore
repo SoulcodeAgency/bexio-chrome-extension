@@ -17,3 +17,11 @@ CHANGELOG.md
 packages/chrome-extension/test/fixtures/bexio/*.html
 packages/chrome-extension/test/fixtures/bexio/_raw/
 packages/chrome-extension/test/support/__inline__/tiny.html
+
+# release-please owns this file's version field and rewrites the whole file with
+# its own JSON serializer, which puts every array element on its own line.
+# Prettier's printWidth collapses those arrays again, so `format:check` failed on
+# every Release PR (the bot's commit is the only thing on that branch and nobody
+# can reformat it before the check runs). The file is checked in exactly as
+# release-please emits it, so a release now shows a one-line diff.
+packages/chrome-extension/public/manifest.json
