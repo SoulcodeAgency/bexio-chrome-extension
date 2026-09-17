@@ -2,6 +2,87 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.8.0...1.9.0) (2026-09-17)
+
+
+### Features
+
+* add field-preview tooltip to template chips ([20fe287](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/20fe287c04412044f7cd849f007f1b16bdd0f7d3))
+* add in-panel toast for undo and error feedback ([5142ae3](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/5142ae36f5a98408b967b6c8a063d6843048e23d))
+* add restoreTemplate storage helper for delete undo ([5b4055f](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/5b4055f50d45e8ad7710acacbada73808cded63c))
+* add update action that overwrites the active template from the form ([aafb692](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/aafb6923f3963ec73bcb7702b196663a07e77c1f))
+* **chrome-extension:** give the waitFor* helpers a deadline ([#106](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/106)) ([adb054f](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/adb054f3fae4fae361e719f23e31d2c23e78aa6b)), closes [#83](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/83)
+* **chrome-extension:** icon-only header actions in the template panel ([aedec23](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/aedec23dba89f880dab9c526fb4abfbb777fde5b))
+* **chrome-extension:** open the side panel from the template panel ([86d8402](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/86d840252e6d85b5acc8de78bd86e7d8fd0debd5))
+* **chrome-extension:** show a trash can on the manage-mode toggle ([c0ce886](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/c0ce88651c723d720907a77534e7cee493cca4e8))
+* keyword-aware template filter with keyboard support and empty state ([429ec26](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/429ec267bc0096355a9365f62b4662c0f9340c91))
+* replace hidden delete mode with manage mode and undo toast ([0f43d03](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/0f43d031bdbf017b6d9e2ecd37834fbd20478a34))
+* replace prompt-based template add with inline form ([2bb3635](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/2bb3635ff92f3babe24175fb24333b08c3c46ce7))
+* rework template panel into chips with grid layout and header cleanup ([58aef13](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/58aef1366aa7cc04803db234b33c0b3b766e4891))
+* **side-panel:** add a "Capitalize notes" toggle for the applied description ([eebd7db](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/eebd7db2ce445a33d34f87ade51911739d2a3584))
+* **side-panel:** keep the template list in sync with storage ([29ad0d6](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/29ad0d6c8b1b2977e44768164cad031ec268b3f4))
+* **side-panel:** pin the import table columns up to Billable ([#127](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/127)) ([8061e70](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/8061e706dd1608ad8e89b19e0ff6f00e24ce4d4f)), closes [#12](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/12)
+* **side-panel:** submit the bexio form with a second, deliberate click ([783faba](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/783faba3e9cfebfb462777a8d6e532e9e16e35b0))
+* template area UX redesign — chips, tooltip, keyword filter, inline add, manage-mode delete with undo ([f6289da](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/f6289dac5359745074d4c0740ad9cbad5d56b64d))
+
+
+### Bug Fixes
+
+* **build:** warn when a build leaves unpacked/ without a side panel ([134f8de](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/134f8dee3ac9c1a290fd9d65aa83c08c0dccdb28))
+* **chrome-extension:** apply the template's stored work value ([#104](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/104)) ([33ae6c3](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/33ae6c372b5d78f5b252f0fdf7a3385b424ea4db)), closes [#81](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/81)
+* **chrome-extension:** build template buttons as DOM nodes instead of HTML ([#108](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/108)) ([0e6d844](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/0e6d8446d6ce1cdacf8a6dea77ec298775a36b81)), closes [#85](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/85)
+* **chrome-extension:** do not search a dependent select's stale options ([#107](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/107)) ([16f29b5](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/16f29b50e23b86284e76f3493d28bb36a7e45437)), closes [#84](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/84)
+* **chrome-extension:** keep the template chip grid inside its panel ([3919991](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/391999132ad522a4ff5f30d895f86fd91b741f67))
+* **chrome-extension:** report a failed apply instead of a false success ([56e23d2](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/56e23d2346804af816554a7fe854c5ff418c2167)), closes [#124](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/124)
+* **chrome-extension:** scope the manifest to office.bexio.com ([#119](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/119)) ([4d1a9b2](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/4d1a9b2ef0aac616976ab6a5b5e29734254caadf)), closes [#99](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/99)
+* **chrome-extension:** skip the contact field when the template has no contact ([#105](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/105)) ([f8e0419](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/f8e04195e5e08b073e3a5b047bc4c354d06907d5)), closes [#82](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/82)
+* close the stale-state and re-entrancy holes in the template panel ([1f12640](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/1f1264039dda85455ae005e6d631bd8e127a80a8))
+* pin the form status string to TemplateEntry in updateActiveTemplate ([061d769](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/061d7694b74c3ce4267e9578ca5359358c44692d))
+* **service-worker:** enable the side panel on already-open bexio tabs ([a512c04](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/a512c04d1ea68e05a71901ff6b13d139eed83c1f))
+* **shared:** write remove/update back to the key they read from ([#109](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/109)) ([35401d8](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/35401d87fa69866bd8859c26a83e46b24522ee59)), closes [#89](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/89)
+* **side-panel:** apply entries from any monitoring page again ([74f9109](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/74f9109b293413a63f780a8fc245db0d73abe6a6))
+* **side-panel:** auto-map legacy templates without crashing ([#114](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/114)) ([52bcb39](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/52bcb39422b3d71ec59ec5411f03c8b1297c1694)), closes [#91](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/91)
+* **side-panel:** keep the import buffer's five storage keys consistent ([#111](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/111)) ([0eaa049](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/0eaa04927ababca5a486db531f2e81ec93abf193)), closes [#87](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/87)
+* **side-panel:** make openBexioTimeTrackingPage settle and stop leaking listeners ([#112](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/112)) ([b9e7b69](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/b9e7b69731091d52f086fef2b30ec1c79cf2489b)), closes [#88](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/88)
+* **side-panel:** normalize the pasted TSV block and guard short rows ([#113](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/113)) ([49fba88](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/49fba88cce166be40c1bc962e6ab41302f936d26)), closes [#90](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/90)
+* **side-panel:** read the user's templates in development builds too ([547ae39](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/547ae390b64d8cb2179ed8c46ca856ebac1ae752))
+* **side-panel:** report messaging failures instead of failing silently ([#110](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/110)) ([d1d2390](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/d1d239026785bb6dc43598fbec038352457f563a)), closes [#86](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/86)
+* **side-panel:** route toasts through antd's App context ([07b1fb9](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/07b1fb926aa55b13ccde04503607187106c677ad))
+* **side-panel:** stop keying runtime behaviour on NODE_ENV ([cacb117](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/cacb11721f8bd796f98006bf634e748ff2e6ac3e))
+* **side-panel:** stop nesting the import instructions' list inside a paragraph ([4fc5083](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/4fc508383e140efba784a155d4fbb693af5fcfdd))
+* **side-panel:** use the Alert `title` prop instead of the deprecated `message` ([f90b971](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/f90b971c8fff375bc786a827a17f3620114ff98a))
+* **tooltips:** show the Text | Tooltip toggle in bexio's page title bar ([e0f2f89](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/e0f2f89c242f8299a7741017d849c01ccb8d3a96))
+* **tooltips:** style the Text | Tooltip toggle when the sidebar opened the page ([1caf815](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/1caf815c2e42c9ca2cbd540466052b48f5d53816))
+
+
+### Code Refactoring
+
+* extract dialog-free template creation into createTemplateFromForm ([056ad9f](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/056ad9fd5b30f10ef515d9be80620864672dd626))
+* extract form reading into readCurrentFormValues ([b572511](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/b5725112b91e7f1007638b617233955004808da5))
+* **shared:** remove the unused chromeStorageImportData module ([dd2a3f2](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/dd2a3f27cdce0a9cb4b32f7ee300ef8c83b3192f)), closes [#125](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/125)
+
+
+### Build System
+
+* add prettier tooling and formatting config ([0e3129c](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/0e3129c8b14114a10e637ca6eee92461e754fafd))
+* deliver manual test builds into one folder with npm run build:test ([00e2d49](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/00e2d4975637aac02d3a6492c9b7f522793189be))
+* show the loaded manifest version on the page ([11ea29f](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/11ea29f194beb114c2463cecea7b9a2d5b799785))
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump @humanfs/node from 0.16.7 to 0.16.8 ([#136](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/136)) ([9ce91b9](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/9ce91b975a647e63f2047540c1d576f8d6b0a945))
+* **deps-dev:** bump @playwright/test in the npm-minor-patch group ([#123](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/123)) ([64de1ec](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/64de1ec15c3425a4ef4f0c9ee675ed97391152d2))
+* **deps-dev:** bump the npm-minor-patch group with 10 updates ([#135](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/135)) ([a65a4e7](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/a65a4e77dc6443c5ca9dcd4b35a877e252cd9e2d))
+* **deps-dev:** bump the npm-minor-patch group with 8 updates ([#137](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/137)) ([8bf3dcc](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/8bf3dcc6acc26c2e31c7a300199f2a814c1bd901))
+* **deps:** bump mnao305/chrome-extension-upload from 6.0.0 to 7.0.0 ([d74559b](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/d74559b9a45c545e86df818620cca70128ba70d4))
+* **deps:** bump the npm-minor-patch group across 1 directory with 13 updates ([#134](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/134)) ([ebd349a](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/ebd349ac22ad36a7c7291d561d09f497af18852f))
+* **deps:** bump the npm-minor-patch group with 6 updates ([#146](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/146)) ([8bec4d7](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/8bec4d75331e237535e97dde80c530282a8e4309))
+* **deps:** update all dependencies, move to Vitest 5 and fix the audit ([78688b0](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/78688b0369999afa3fde73fd484e8681bd66ef70))
+* ignore graft's cache and document the changelog-duplicating merge body ([ab3538e](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/ab3538e91c2345e7bae6434090a143171d6a2de6))
+* **release:** reset version files leaked by a dev build ([c6cd0d6](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/c6cd0d66406173038cd6706c993a8fb4b90a33b3))
+* repo hygiene cleanups ([#121](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/121)) ([a7ab47d](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/a7ab47d8f3024e26ca2a916fc91b1b976ffff069)), closes [#101](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/101)
+
 ## [1.8.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.7.0...1.8.0) (2026-07-31)
 
 
