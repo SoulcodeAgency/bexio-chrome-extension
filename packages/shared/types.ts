@@ -83,10 +83,10 @@ export type FormSubmittedMessage = {
  * The answer the content script's `chrome.runtime.onMessage` listener sends back for every
  * `ExchangeRequestData` it receives (see `packages/chrome-extension/src/eventListeners/onMessage.ts`).
  *
- * It is a **dispatch acknowledgement**, not a "the form is filled" signal: the listener replies as
- * soon as it has handed the request to the matching handler. `fillForm` in particular is not
- * awaited, because its `waitFor*` helpers have no timeout and could keep the message channel open
- * forever (see `docs/architecture/form-layer.md`).
+ * `{ ok: true }` means the request is applied to the form: every `trigger*` call and `fillForm` are
+ * awaited, so for a template it arrives after the last field is filled and the loader is hidden. The
+ * side panel offers its 📤 submit step on that acknowledgement. A fill that ended half-done (timeout,
+ * stale template id) answers `{ ok: false }` (see `docs/architecture/form-layer.md`).
  *
  * The side panel treats a rejected `chrome.tabs.sendMessage` (no content script in the tab) and an
  * `{ ok: false }` response as the two failure cases it reports to the user.
