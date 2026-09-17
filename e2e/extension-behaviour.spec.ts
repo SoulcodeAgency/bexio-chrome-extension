@@ -4,7 +4,8 @@
  * Where extension-smoke.spec.ts only asserts that the content scripts *inject*,
  * these tests assert *behaviour* on the same anonymised bexio fixtures:
  *
- * - the "Text | Tooltip" toggle round-trip on monitoring/list (bexioProjectList)
+ * - the "Text | Tooltip" toggle round-trip on monitoring/list (bexioProjectList),
+ *   and its active option when bexio's sidebar opened the page
  * - applying a template on monitoring/edit (the fragile fillForm +
  *   synthetic-event path through src/utils/trigger*.ts)
  * - the template filter input (names, keywords, empty state, reset)
@@ -167,6 +168,37 @@ test("Text | Tooltip toggle converts popover icons to inline text and back", asy
   await expect(page.locator(".new-popover-text")).toHaveCount(0);
   await expect(icons.first()).toHaveCSS("display", "inline-block");
   await expect(tooltipOption).toHaveAttribute("aria-pressed", "true");
+
+  expect(errors, `unexpected page errors:\n${errors.join("\n")}`).toEqual([]);
+
+  await page.close();
+});
+
+// ---------------------------------------------------------------------------
+// Test 1b: the toggle's active option is styled when bexio's sidebar opened the page
+// ---------------------------------------------------------------------------
+test("Text | Tooltip toggle shows its active option when opened through bexio's sidebar", async () => {
+  const page = await context.newPage();
+
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+
+  // The sidebar's "Zeiten" link loads this URL; bexio then rewrites the address to
+  // /monitoring/list through the History API (seen on live bexio 2026-09-17).
+  const sidebarUrl = "https://office.bexio.com/index.php/monitoring/list/resetListView/1";
+  await serveFixture(
+    page,
+    sidebarUrl,
+    "monitoring-list",
+    'history.replaceState(null, "", "/index.php/monitoring/list");',
+  );
+  await page.goto(sidebarUrl);
+  expect(page.url()).toBe("https://office.bexio.com/index.php/monitoring/list");
+
+  const activeOption = page.locator("#PopoverTextSwitcher button[aria-pressed='true']");
+  await expect(activeOption).toBeAttached({ timeout: 10_000 });
+  // Only bexioProjectList.css marks the active option; without it both options look alike.
+  await expect(activeOption).toHaveCSS("background-color", "rgb(0, 172, 240)");
 
   expect(errors, `unexpected page errors:\n${errors.join("\n")}`).toEqual([]);
 
