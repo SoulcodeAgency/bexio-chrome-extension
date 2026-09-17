@@ -7,8 +7,10 @@ type ImportEntriesTableCellProps = {
   columnHeader: string;
   fieldValue: string;
   entryStatus: boolean;
+  readyToSubmit: boolean;
   onButtonClick: () => void;
   onButtonClickReset: () => void;
+  onButtonClickSubmit: () => void;
   /** Set when this column is part of the frozen leading block; tracking days never are. */
   frozenColumn?: FrozenColumn;
 };
@@ -21,8 +23,10 @@ const ImportEntriesTableCell = (props: ImportEntriesTableCellProps) => {
       <TableCellTrackingDay
         fieldValue={props.fieldValue}
         entryStatus={props.entryStatus}
+        readyToSubmit={props.readyToSubmit}
         onButtonClick={props.onButtonClick}
         onButtonClickReset={props.onButtonClickReset}
+        onButtonClickSubmit={props.onButtonClickSubmit}
       />
     );
   } else if (columnIsBillable) {

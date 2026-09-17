@@ -51,24 +51,42 @@ export type ReloadExtension = {
 };
 
 /**
- * Content script → service worker (the one message that goes the other way): open this
- * tab's side panel. Sent by the "open side panel" button in the injected Templates block
- * via `chrome.runtime.sendMessage`; the worker answers with `chrome.sidePanel.open`.
+ * Asks the content script to click bexio's "Speichern" button. Sent by the side panel's 📤 button
+ * after an entry was applied — never automatically, the user always confirms with that second click.
+ */
+export type SubmitFormData = {
+  mode: "submit";
+};
+
+export type ExchangeRequestData = TemplateExchangeData | EntryExchangeData | ReloadExtension | SubmitFormData;
+
+/**
+ * Content script → service worker: open this tab's side panel. Sent by the "open side panel"
+ * button in the injected Templates block via `chrome.runtime.sendMessage`; the worker answers
+ * with `chrome.sidePanel.open`.
  */
 export type OpenSidePanelRequest = {
   mode: "openSidePanel";
 };
 
-export type ExchangeRequestData = TemplateExchangeData | EntryExchangeData | ReloadExtension;
+/**
+ * Content script → side panel, also via `chrome.runtime.sendMessage`. The content script sends it
+ * whenever `#MonitoringForm` fires a `submit` event — a click on "Speichern", Enter inside the
+ * form, or the side panel's own `SubmitFormData` request. The side panel marks the entry that is
+ * waiting on 📤 as booked (✅). The service worker's listener ignores it.
+ */
+export type FormSubmittedMessage = {
+  mode: "form-submitted";
+};
 
 /**
  * The answer the content script's `chrome.runtime.onMessage` listener sends back for every
  * `ExchangeRequestData` it receives (see `packages/chrome-extension/src/eventListeners/onMessage.ts`).
  *
- * It is a **dispatch acknowledgement**, not a "the form is filled" signal: the listener replies as
- * soon as it has handed the request to the matching handler. `fillForm` in particular is not
- * awaited, because its `waitFor*` helpers have no timeout and could keep the message channel open
- * forever (see `docs/architecture/form-layer.md`).
+ * `{ ok: true }` means the request is applied to the form: every `trigger*` call and `fillForm` are
+ * awaited, so for a template it arrives after the last field is filled and the loader is hidden. The
+ * side panel offers its 📤 submit step on that acknowledgement. A fill that ended half-done (timeout,
+ * stale template id) answers `{ ok: false }` (see `docs/architecture/form-layer.md`).
  *
  * The side panel treats a rejected `chrome.tabs.sendMessage` (no content script in the tab) and an
  * `{ ok: false }` response as the two failure cases it reports to the user.
