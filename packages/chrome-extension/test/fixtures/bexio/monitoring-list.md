@@ -1,9 +1,9 @@
 # Fixture: monitoring-list
 
 - **Source URL:** https://office.bexio.com/index.php/monitoring/list
-- **Captured:** 2026-05-13
-- **Captured via:** `copy(document.body.outerHTML) — full body so .globalsearch (which the content script's renderHtml() needs) is present`
-- **Trimmed:** inline <script> blocks removed; modal-dialog placeholders + chat widgets + iframes pruned; data <tbody> reduced to 12 rows + footer_row; one kept row's data-content was given an '&amp;' so entity-decoding is exercised; raw capture was taken with the extension active in Text mode, so the injected .new-popover-text divs were dropped, the popover <i>s un-hidden, and the extension-set <td> background-colors removed, restoring the pristine pre-conversion bexio state.
-- **Anonymised:** yes — personal names → Doe/Roe/Smith/Klein/Weber/… placeholders; client/project/package/template names → Acme/Globex/Initech/Project Falcon/AC… placeholders; CSRF token → `TEST_CSRF_TOKEN`; extension id → `EXTENSION_ID_PLACEHOLDER`.
-- **Notable elements for tests:** Full body — incl. the nav (.globalsearch — required by bexioProjectList/renderHtml.ts) and #monitoring_content with table#dataTable; ~12 <tr.link id='item...'> rows, each with a visible <i rel='popover' data-content='...'> tooltip icon (no .new-popover-text present — clean pre-conversion state).
-- **Size:** 82558 bytes; 12 `i[rel='popover']` icons
+- **Captured:** 2026-09-17
+- **Captured via:** the in-page capture script in `README.md` (live DOM, full body, extension changes undone); `<html class="use-new-nav">` restored from the live page (its other, Modernizr-generated classes are dropped); built with `npm run fixtures:build`
+- **Trimmed:** `<script>`, `<style>`, `<link>`, `<noscript>` and `<iframe>` removed; the Angular shell roots (`bexio-application-header-root`, `bexio-application-navigation-root`, `bexio-application-footer-root`, `application-wrapper-root`, `.cdk-overlay-container`) emptied; chat/analytics widgets and unused modal placeholders removed (incl. `#jqDialog`); every `<tbody>` cut to 12 data rows; selects with more than 5 options cut to their first 3; whitespace between tags collapsed.
+- **Anonymised:** yes — names → Doe/Roe/Smith/Klein/Weber/… placeholders; clients/projects → Acme/Globex/Initech/Umbrella/Hooli placeholders; every popover `data-content` replaced with "Sample time entry N" (#1 contains `&amp;`, #2 contains `<br />`); e-mail addresses → example.com; CSRF tokens → `TEST_CSRF_TOKEN`; the access token in bexio's hidden support form → `TEST_ACCESS_TOKEN`; UUIDs zeroed; record ids → 99999 / `item9000N`.
+- **Notable elements for tests:** Full body in bexio's sidebar layout (2026-09): the legacy top navigation `.lgcy-topbar-nav-office` (incl. `.globalsearch`) is still in the markup but hidden by bexio's CSS (`.use-new-nav .lgcy-topbar-nav-office { display: none }`); the page title bar `.bx-breadcrumb-container .bx-card-title` with the primary `a.js-first-btn` ('Neue Zeiterfassung'); `#monitoring_content` with `table#dataTable`, 12 rows each with a visible `<i rel='popover' data-content='…'>`.
+- **Size:** 68076 bytes; 12 `i[rel='popover']` icons

@@ -156,7 +156,7 @@ test("text-mode toggle converts popover icons to inline text and back", async ()
   await expect(icons.first()).toHaveCSS("display", "none");
   await expect(toggle).toContainText("Text mode");
   // The inline text is the decoded data-content of the icon (fixture value).
-  await expect(page.locator(".new-popover-text").first()).toHaveText("UpHill Conference & QA");
+  await expect(page.locator(".new-popover-text").first()).toHaveText("Sample time entry 1 & QA");
 
   // Revert: inline texts removed, icons restored.
   await toggle.click();

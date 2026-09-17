@@ -27,6 +27,7 @@
     "test:fast": "vitest run --exclude \"**/*.slow.test.ts\"",
     "test:watch": "vitest",
     "test:e2e": "playwright test --config e2e/playwright.config.ts",
+    "fixtures:build": "node scripts/bexio-fixtures/build.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

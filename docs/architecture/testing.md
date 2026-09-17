@@ -64,12 +64,12 @@ deliberately don't add). If you want it for a debugging session:
 
 The root `vitest.config.ts` (via its `test.projects` array) defines four projects. (Vitest 4 deprecated the standalone `vitest.workspace.ts` file in favour of `test.projects`, so there is no workspace file — `vitest.config.ts` is the only test config.)
 
-| Project            | Root                        | Environment | What it tests                                                                                                                                                                                                                                                 |
-| ------------------ | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `shared`           | `packages/shared`           | `node`      | Storage helpers, template utilities                                                                                                                                                                                                                           |
-| `chrome-extension` | `packages/chrome-extension` | `jsdom`     | Selectors, content scripts, form utils                                                                                                                                                                                                                        |
-| `sidePanel-import` | `packages/sidePanel-import` | `jsdom`     | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`) |
-| `scripts`          | `scripts`                   | `node`      | Repo tooling that belongs to no package — currently the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review                                                                              |
+| Project            | Root                        | Environment | What it tests                                                                                                                                                                                                                                                                              |
+| ------------------ | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `shared`           | `packages/shared`           | `node`      | Storage helpers, template utilities                                                                                                                                                                                                                                                        |
+| `chrome-extension` | `packages/chrome-extension` | `jsdom`     | Selectors, content scripts, form utils                                                                                                                                                                                                                                                     |
+| `sidePanel-import` | `packages/sidePanel-import` | `jsdom`     | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`)                              |
+| `scripts`          | `scripts`                   | `node`      | Repo tooling that belongs to no package — the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review, and the bexio fixture pipeline (`bexio-fixtures/`: scrub + leak check, plus the guard over all committed fixtures) |
 
 The `sidePanel-import` project has two extra setup details: the `~` alias (that package's Vite
 alias for its `src/`) is mirrored in `vitest.config.ts`, and
@@ -197,18 +197,24 @@ Cleaned, anonymised HTML fixtures live in
 The procedure is documented in full in
 `packages/chrome-extension/test/fixtures/bexio/README.md`; summary:
 
-1. Open the target bexio page in Chrome while logged in.
-2. Open DevTools → Console and run the `copy(...)` snippet from the README table
-   for that page.
-3. Paste the copied HTML into a new file under
-   `packages/chrome-extension/test/fixtures/bexio/_raw/<name>.html`
-   (`_raw/` is git-ignored).
-4. Run the anonymise/trim pass: `node packages/chrome-extension/test/fixtures/bexio/_raw/__build-fixtures.cjs`
-   (this script strips scripts, anonymises names, and trims table rows).
-5. Write the sibling `<name>.md` documenting the source URL, capture date,
-   what was trimmed, and the anonymisation applied.
-6. The cleaned `*.html` and `*.md` files are committed; the `_raw/` directory
-   is never committed.
+1. Log into bexio in Chrome. For the four tooltip pages, run the README's capture
+   script on each page (it undoes the extension's changes on a clone, strips the
+   account-data parts of the page and trims tables), then download the bundle into
+   `packages/chrome-extension/test/fixtures/bexio/_raw/` (git-ignored). The
+   `monitoring-edit` form fixtures still use the README's `copy(...)` snippets.
+2. Keep `_raw/anonymise.local.json` — the real names of people, clients and
+   projects — up to date. It is git-ignored and never committed.
+3. `npm run fixtures:build` (`scripts/bexio-fixtures/build.ts`) scrubs the bundle
+   and writes each `<name>.html` with its sibling `<name>.md` (source URL, capture
+   date, what was trimmed and anonymised). A fixture in which `findLeaks` still
+   recognises a token, e-mail address, UUID or listed name is not written.
+4. Read through the remaining text before committing: the leak check only knows
+   the names in `anonymise.local.json`.
+5. The cleaned `*.html` and `*.md` files are committed; `_raw/` is not. The
+   repository is public: `scripts/bexio-fixtures/committed-fixtures.test.ts` fails
+   when a committed fixture contains an access token, CSRF token, e-mail address,
+   UUID or extension id. (Until 2026-09 two fixtures carried an expired bexio access
+   token and account ids — the check exists because of that.)
 
 **Currently captured fixtures:**
 
@@ -216,10 +222,14 @@ The procedure is documented in full in
 - `monitoring-edit-filled.html` — the same form with values pre-filled
 - `monitoring-edit.tinymce-iframe.html` — the TinyMCE iframe body (injected via
   `loadIframeFixture`; see Section 4)
-- `monitoring-list.html` — full-body capture of the time-entry list (with `.globalsearch` so renderHtml can inject its toggle button; rows trimmed to 12)
-- `pr_project-listMonitoring.html` — a project's times tab (trimmed rows)
-- `pr_project-showPackage.html` — a work-package's times tab (trimmed rows)
-- `kb_invoice-show.html` — full-body capture of an invoice with the "Zeiten importieren" modal open; the modal's table rows trimmed to 12. Path through the UI: **Verkauf → Rechnungen → \<invoice\> → Positionen → "Weitere Positionen" → "Zeit/Leistung"**.
+- `monitoring-list.html` — full-body capture of the time-entry list in bexio's sidebar layout (2026-09): page title bar with the primary action, hidden legacy top navigation, rows trimmed to 12
+- `pr_project-listMonitoring.html` — full-body capture of a project's "Zeiten" tab (rows trimmed to 12)
+- `pr_project-showPackage.html` — full-body capture of a work package with its lower "Zeiten" tab open (jQuery-UI panel `#ui-id-4`)
+- `kb_invoice-show.html` — full-body capture of an invoice with the "Zeiten importieren" modal open; the modal's table rows trimmed to 12. Path through the UI: **Verkauf → Rechnungen → \<draft invoice\> → Positionen → "Weitere Positionen" → "Zeit/Leistung"**.
+
+The four tooltip fixtures were recaptured on 2026-09-17; the three `monitoring-edit`
+fixtures date from 2026-05-13 and were compared against the live form that day
+(identical structure).
 
 ---
 
