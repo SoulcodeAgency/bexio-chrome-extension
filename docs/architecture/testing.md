@@ -431,8 +431,9 @@ and item 6 is manual for its visual half only._
    are pinned is covered by
    `packages/sidePanel-import/test/frozenColumns.test.ts`; the measured pixel
    offsets are not — jsdom has no layout, so they are only checked here.
-7. Click the ▶ (play / fill) button on one row — confirm the
+7. Click the ▶️ (play / fill) button on one row — confirm the
    `monitoring/edit` form in the main tab is populated with that entry's values.
+   The button must then become 📤; the three-state cell is section 5.4.
 8. **Live template sync.** With the side panel open, save a new template from the
    injected Templates block on `monitoring/edit`. The panel's **Templates** tab
    must list it without being closed and reopened, and **Auto map templates** on
@@ -440,7 +441,37 @@ and item 6 is manual for its visual half only._
    header and confirm the list still shows it — that button is the manual
    fallback for the same reload.
 
-### 5.4 — `kb_invoice` tracked-time tooltip (`kb_invoice/show/id/*`)
+### 5.4 — Side panel: the ▶️ → 📤 → ✅ submit flow
+
+**This step books real time entries.** Use today's date and delete them afterwards.
+Nothing here is covered by the automated layers against live bexio: the panel side
+is pinned in `packages/sidePanel-import/test/importEntries.test.tsx` (the three
+button states, the failure paths, `form-submitted`) and the content-script side in
+`packages/chrome-extension/test/eventListeners/onMessage.test.ts`, but both run
+against the chrome fake. What only a real browser shows is that the programmatic
+click on bexio's save button really submits — a synthetic Enter key never did, which
+is why the button is clicked rather than focused (`docs/architecture/form-layer.md`).
+
+1. Click ▶️ in a date column. The `monitoring/edit` form fills and the button
+   becomes 📤.
+2. Confirm in the bexio tab that **nothing has been saved yet** — no new entry in
+   the list. Applying must never book.
+3. Apply a _different_ row with ▶️. The first row returns to ▶️ and only the new
+   one shows 📤: at most one entry is ever waiting to be submitted, and it is never
+   persisted.
+4. Click 📤. bexio saves, and the button becomes ✅ — which _is_ persisted
+   (`entryStatus`), so it survives closing and reopening the panel.
+5. **The reverse channel.** Fill a row with ▶️, then press **Speichern** in the
+   bexio tab by hand (or Enter in the form). The row waiting on 📤 must also flip to
+   ✅ — the content script reports every `#MonitoringForm` submit, not just the ones
+   the panel triggered.
+6. With no row waiting, save the bexio form again. Nothing in the panel may change.
+7. Delete the entries you created.
+
+**Known limit** (`form-layer.md`): the submit event fires before the POST, so a
+server-side rejection still reads as booked. Clicking ✅ resets the row by hand.
+
+### 5.5 — `kb_invoice` tracked-time tooltip (`kb_invoice/show/id/*`)
 
 On an invoice detail page, navigate **Positionen → "Weitere Positionen" →
 "Zeit/Leistung"** to open the "Zeiten importieren" modal (on a draft invoice —
