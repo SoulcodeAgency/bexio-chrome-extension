@@ -70,6 +70,9 @@ jobs:
         with:
           file-path: dist/bexio-chrome-extension.zip
           extension-id: ${{ secrets.CWS_EXTENSION_ID }}
+          # Required since the action's v7.0.0 (d74559b). Missing it fails the job
+          # before a single byte is uploaded - see publishing.md.
+          publisher-id: ${{ secrets.CWS_PUBLISHER_ID }}
           client-id: ${{ secrets.CWS_CLIENT_ID }}
           client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}

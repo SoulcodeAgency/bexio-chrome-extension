@@ -123,7 +123,7 @@ For a dry run (e.g. validating credentials, smoke testing changes to the workflo
 
 ### Why the upload action is pinned to a SHA
 
-`mnao305/chrome-extension-upload` is the **only third-party action in the repo** — everything else is `actions/*` or `googleapis/*` — and it is the one that receives all four CWS secrets (`CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`). A tag, even a fully-qualified one like `v6.0.0`, can be force-moved by whoever controls the action's repository. If that account or repo is compromised, the moved tag runs attacker code inside a job holding the refresh token — which is on its own enough to publish arbitrary code to every installed user's browser. That is the 2025 `tj-actions/changed-files` pattern.
+`mnao305/chrome-extension-upload` is the **only third-party action in the repo** — everything else is `actions/*` or `googleapis/*` — and it is the one that receives all five CWS secrets (`CWS_EXTENSION_ID`, `CWS_PUBLISHER_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`). A tag, even a fully-qualified one like `v6.0.0`, can be force-moved by whoever controls the action's repository. If that account or repo is compromised, the moved tag runs attacker code inside a job holding the refresh token — which is on its own enough to publish arbitrary code to every installed user's browser. That is the 2025 `tj-actions/changed-files` pattern.
 
 So the workflow pins the commit SHA with the version in a trailing comment:
 
@@ -155,14 +155,15 @@ Recommendation: pick one path per release and stick with it.
 
 > Prefer to work through this as a tick-off list in German? See `docs/architecture/publishing-setup.de.md` — same steps, checklist form.
 
-Four GitHub Actions secrets must be configured in repo settings → Secrets and variables → Actions:
+Five GitHub Actions secrets must be configured in repo settings → Secrets and variables → Actions:
 
-| Secret              | What it is                     | Source                                      |
-| ------------------- | ------------------------------ | ------------------------------------------- |
-| `CWS_EXTENSION_ID`  | The CWS listing id             | `nbmjdligmcfaeebdihmgbdpahdfddlhm` (public) |
-| `CWS_CLIENT_ID`     | OAuth client id                | Step 3 below                                |
-| `CWS_CLIENT_SECRET` | OAuth client secret            | Step 3 below                                |
-| `CWS_REFRESH_TOKEN` | Long-lived OAuth refresh token | Step 4 below                                |
+| Secret              | What it is                           | Source                                                                     |
+| ------------------- | ------------------------------------ | -------------------------------------------------------------------------- |
+| `CWS_EXTENSION_ID`  | The CWS listing id                   | `nbmjdligmcfaeebdihmgbdpahdfddlhm` (public)                                |
+| `CWS_PUBLISHER_ID`  | The publisher the listing sits under | Dev dashboard → account switcher; a personal account uses the literal `me` |
+| `CWS_CLIENT_ID`     | OAuth client id                      | Step 3 below                                                               |
+| `CWS_CLIENT_SECRET` | OAuth client secret                  | Step 3 below                                                               |
+| `CWS_REFRESH_TOKEN` | Long-lived OAuth refresh token       | Step 4 below                                                               |
 
 Procedure (run once, by the listing owner):
 
@@ -181,14 +182,15 @@ Procedure (run once, by the listing owner):
 
    It will ask for the client id + secret, open a browser tab on a Google consent page, and print the refresh token to your terminal. Two things to watch: **check which account the consent screen is using** (it must be the account from step 1 — easy to get wrong with several Google accounts in one browser), and expect the **"Google hasn't verified this app"** warning — click "Advanced" → "Go to … (unsafe)". The app is unverified because it is only ever used internally; verification is not required for that.
 
-5. **Add all four values to repo secrets.** GitHub repo → Settings → Secrets and variables → Actions → "New repository secret", four times, names matching exactly: `CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`.
+5. **Add all five values to repo secrets.** GitHub repo → Settings → Secrets and variables → Actions → "New repository secret", five times, names matching exactly: `CWS_EXTENSION_ID`, `CWS_PUBLISHER_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`.
 6. **Smoke test — credentials only.** Actions tab → `publish-chrome-web-store` → "Run workflow" → current latest tag, `publish: false`.
 
    Note the ordering: GitHub only registers workflows that exist on the **default branch**, so neither workflow is dispatchable until the branch carrying them has merged to `main`. This step therefore comes _after_ the merge, not before.
 
    Note what this can and cannot prove. The CWS API rejects any upload whose manifest version is not **higher** than the published one ("If you have not increased the version field in your extension's manifest file, this will fail"), and the latest tag by definition carries the published version. So a full dry run is not possible — but the failure mode is still informative:
 
-   - **401 / 403 from Google**, or `invalid_grant` → one of the four secrets is wrong, the API was enabled in a different project, or a stray newline was copied into `CWS_REFRESH_TOKEN`.
+   - **`Input required and not supplied: <name>`** → the action wants an input the workflow does not pass. This is what a **major** bump of the action looks like: v7.0.0 made `publisher-id` required, Dependabot merged it in `d74559b`, and nothing failed until the next real release — 1.9.0 tagged and released on GitHub with the store untouched. Nothing in CI exercises this workflow, so after any major bump of it, read the action's `action.yml` inputs before trusting the release.
+   - **401 / 403 from Google**, or `invalid_grant` → one of the five secrets is wrong, the API was enabled in a different project, or a stray newline was copied into `CWS_REFRESH_TOKEN`.
    - **`PKG_INVALID_VERSION_NUMBER`** → the credentials work. That is the result you want here: Google resolved the item, accepted the OAuth exchange, and compared against the published version.
 
    Pass a ref that exists **on the remote** — `main` is the safe choice. The input is named `tag` but is used as a checkout ref, so a ref that only exists locally makes the run die in checkout. `createRelease.ps1` now pushes its tag explicitly (`git push origin refs/tags/<version>`; `git push --all` pushes branches only, and `--follow-tags` would skip it because the tag is lightweight), so release tags from the local path are on the remote — but tags from releases made before that fix, and tags merely named in a _draft_ GitHub release, are not.
