@@ -46,8 +46,8 @@ Clicking the extension icon on the bexio time tracking page opens the extension'
 bexio hides some cell content behind small tooltip icons. Because that content is often important, the extension can
 replace those icons with the real text.
 
-On the supported pages a **"Text mode / Popover mode"** button is placed in the top right corner next to the
-"Quick find". With "Text mode" enabled, tooltips are automatically replaced with their content on:
+On the supported pages a **Text | Tooltip** toggle sits in the page title bar, left of the page's main button (e.g.
+"Neue Zeiterfassung"). With **Text** selected, tooltips are automatically replaced with their content on:
 
 - Projects → Time tracking
 - Projects → Projects → Project XY → Times
@@ -104,6 +104,9 @@ npm run npm:installProject
 - `npm run build:cleanup` — remove `dist/` and `unpacked/`.
 
 To load the extension locally: build, then Chrome → Extensions → **Load unpacked** → select the `unpacked/` folder.
+For repeated manual testing, `npm run build:test` builds the current checkout (also from a git worktree) into the main
+checkout's `unpacked/` and stamps a test build number (`1.8.2.7`) into its manifest — load that folder once, then just
+reload the extension after each build.
 
 ### Tests and checks
 

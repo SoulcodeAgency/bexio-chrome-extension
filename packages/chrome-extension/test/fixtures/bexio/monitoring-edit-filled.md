@@ -2,8 +2,9 @@
 
 - **Source URL:** https://office.bexio.com/index.php/monitoring/edit/id/<id>
 - **Captured:** 2026-05-13
+- **Re-verified:** 2026-09-17, after bexio switched to its sidebar layout — the live `#MonitoringForm` of an existing entry matched this capture element by element (tag, id, classes, `name`, `type`, `role`, `for`; select2 counters normalised), so it was kept. The same day a leak check against the extended name list replaced a client brand and internal project names left in the template buttons and the project options.
 - **Captured via:** `copy(document.getElementById('MonitoringForm').outerHTML)`
 - **Trimmed:** inline <script> blocks removed; otherwise whole.
 - **Anonymised:** yes — personal names → Doe/Roe/Smith/Klein/Weber/… placeholders; client/project/package/template names → Acme/Globex/Initech/Project Falcon/AC… placeholders; CSRF token → `TEST_CSRF_TOKEN`; extension id → `EXTENSION_ID_PLACEHOLDER`.
 - **Notable elements for tests:** Same elements as monitoring-edit.html, but an existing entry: select2-chosen spans show work='Work', status='Erledigt', project='Acme - Back Office', package='Misc'; #monitoring_user_id selected 'Doe Jane'; hidden #monitoring_contact_id has a value. Useful for readFormData / readTextFromSelect2.
-- **Size:** 60948 bytes
+- **Size:** 60183 bytes

@@ -39,46 +39,35 @@ Lint (side panel only): `npm run lint -w @bexio-chrome-extension/side-panel-impo
 
 Typecheck: `npm run typecheck` (root; fans out to all three packages, also run in CI). `tsc` never emits here — Vite does the transpiling and every tsconfig sets `noEmit`. The packages are on TypeScript 7 (the Go-native compiler) while ESLint still parses with a root-level JS-based TypeScript (currently 6.0.x) that npm auto-installs for `typescript-eslint`'s peer range. All three packages are `strict`. Read the "TypeScript" section of `docs/architecture/build-and-release.md` before touching a `tsconfig.json` — in particular the rules for `chrome-extension`, where strict mode was reached by pinning existing behaviour (`!`/casts) rather than adding runtime guards.
 
-Tests: there is now a Vitest suite — `npm test` (all projects, including a slow build smoke test that shells out to `Build.ps1`), `npm run test:fast` (Vitest minus `*.slow.test.ts`), `npm run test:watch`, plus `npm run test:e2e` (Playwright smoke + behaviour specs in `e2e/` — runs in CI via Xvfb; locally needs `npx playwright install chromium` once and a built `unpacked/`, and opens a visible Chromium window because MV3 service workers don't surface headlessly). See `docs/architecture/testing.md`. Tests pin **current** behaviour (bugs included, flagged `// KNOWN ISSUE:`). DOM-dependent tests load anonymised captured bexio HTML from `packages/chrome-extension/test/fixtures/bexio/`. "Test" in the release docs (`RELEASE.md`) still refers to the manual in-browser walkthrough — that checklist is in `docs/architecture/testing.md`.
+Tests: there is now a Vitest suite — `npm test` (all projects, including a slow build smoke test that shells out to `Build.ps1`), `npm run test:fast` (Vitest minus `*.slow.test.ts`), `npm run test:watch`, plus `npm run test:e2e` (Playwright smoke + behaviour specs in `e2e/` — runs in CI via Xvfb; locally needs `npx playwright install chromium` once and a built `unpacked/`, and opens a visible Chromium window because MV3 service workers don't surface headlessly). See `docs/architecture/testing.md`. Tests pin **current** behaviour (bugs included, flagged `// KNOWN ISSUE:`). DOM-dependent tests load anonymised captured bexio HTML from `packages/chrome-extension/test/fixtures/bexio/`. The repo is public: fixtures are recaptured with the script in that folder's `README.md` and built with `npm run fixtures:build` (real names stay in the main checkout's git-ignored `_raw/anonymise.local.json`), and `scripts/bexio-fixtures/committed-fixtures.test.ts` fails on any committed fixture carrying a token, e-mail address or UUID. "Test" in the release docs (`RELEASE.md`) still refers to the manual in-browser walkthrough — that checklist is in `docs/architecture/testing.md`.
 
 Loading locally: build, then in Chrome → Extensions → Load unpacked → select the `unpacked/` folder.
 
 ### Handing a build over for manual testing
 
-Whenever a change needs to be verified by the user in a real browser, **build a dev release first and hand over the absolute Windows path**. Never ask for a manual test without one.
+Whenever a change needs to be verified by the user in a real browser, **run `npm run build:test` in the checkout that holds the code under test** — the main checkout or any worktree — and tell the user the version it printed. Never ask for a manual test without one.
 
 ```bash
-npm run build:devRelease               # bumps package.json, then builds unpacked/
-npm run version:updateManifest         # stamps that version into public/manifest.json
-npm run build:project -- -Development  # full rebuild, so unpacked/ carries the stamped manifest
+npm run build:test
 ```
 
-**Run the third line from bash, not PowerShell.** `npm run <script> -- -Flag` silently loses every
-flag when PowerShell invokes it: PowerShell treats the `--` as its own end-of-parameters marker, so
-npm never forwards anything and `Build.ps1` runs with all switches at their defaults — a production
-build where a dev build was intended, and `-IgnoreExtension`/`-IgnoreSidePanel` are dropped the same
-way. Nothing fails; the only tell is Vite printing `building client environment for production...`.
-Verified on PowerShell 7.6.4 (2026-08-14). The first line is safe anywhere — `build:devRelease`
-chains the flag through npm's own shell, not through PowerShell. From a PowerShell terminal, use
-`powershell -File Build.ps1 -Development` for the third step instead.
-
-Path to hand over, for the main checkout:
+The user has loaded exactly one folder in Chrome and never changes it:
 
 ```
 E:\git\soulcode\bexio-chrome-extension\unpacked
 ```
 
-**Why the version bump matters.** `build:devRelease` runs `version:patch` on purpose: the bumped number is how the user tells _which_ local build is loaded in Chrome, when several dev builds follow each other in one session. That only works if the number actually reaches the extension.
+`scripts/build-test/build-test.ts` runs a full `Build.ps1 -Development` (with `NODE_ENV=development`) in the current checkout, replaces the content of the **main checkout's** `unpacked/` with the result, and stamps the version `<release version>.<build number>` (e.g. `1.8.2.7`) into that copy's `manifest.json` only. The user then clicks reload on chrome://extensions and must see that version there. `build-info.json` in the same folder records branch, commit, uncommitted changes and source checkout.
 
-**Why the last two steps are not optional.** `build:devRelease` bumps `package.json` but does **not** stamp the manifest, and the manifest is copied into `unpacked/` _during_ the build. Running only `build:devRelease` — or running `version:updateManifest` after it without rebuilding — leaves `unpacked/manifest.json` on the previous version. Chrome then shows a stale version for the very build that is meant to prove the change, which defeats the point of the bump. Stamp first, then re-emit.
+**Why one fixed folder.** Chrome derives an unpacked extension's id from its folder path, and `chrome.storage.local` (templates, settings) belongs to that id. Loading a worktree's `unpacked/` gives an extension with empty storage and a second copy of every content script on the bexio pages. The main checkout's `unpacked/` is the id the user's templates live in (`flkgdpjl…`). The worktree's branch does not need to be checked out there — only the build output moves.
 
-**The last step must be a full build — never `-IgnoreSidePanel`.** `packages/chrome-extension/vite.config.js` sets `outDir: "../../unpacked"` with `emptyOutDir: true`, so the extension build **empties the whole `unpacked/` folder**; Build.ps1 then rebuilds the side panel into `unpacked/sidePanel-import/`. In a full build the order saves you. An extension-only build does not merely skip the side panel — it _deletes_ the one already there, and nothing fails: Chrome loads the folder, the injected template UI still works, and only opening the side panel reveals `ERR_FILE_NOT_FOUND`. The same applies to `-IgnoreExtension` in reverse. `Build.ps1` now prints a warning when `unpacked/sidePanel-import/index.html` is missing after a build, but do not rely on spotting it — just build both.
+**Why the fourth version part.** The number is how the user tells _which_ build is loaded when several follow each other, possibly from different worktrees. It counts in `.git/bexio-test-build-number` (the git common dir, shared by all worktrees) and is written into the build output only, so no tracked file changes. (The previous handover flow bumped the patch in `package.json` and `public/manifest.json`; such a bump reaching `main` makes release-please propose a wrong version — versions belong to the release process, `docs/architecture/publishing.md`.) A **three-part** version on chrome://extensions means a plain build overwrote the folder since: any `Build.ps1` run in the main checkout writes the same `unpacked/` — including the build smoke test in `npm test` there, and `npm run test:e2e` there when `unpacked/manifest.json` is missing. Rerun `npm run build:test`.
 
-**To hand over a build whose console warnings can be read, set `NODE_ENV=development`.** `-Development` only turns off minification; which React build gets bundled follows `NODE_ENV` when Vite resolves react-dom's export conditions. Without it you get `react-dom.production`, which logs no `validateDOMNesting`, no hydration errors and none of antd's deprecation warnings — a clean console that proves nothing. Check with `grep -o "react-dom.development\|react-dom.production" unpacked/sidePanel-import/assets/index-*.js`. (This is also why the build smoke test produces a DEV bundle: Vitest sets `NODE_ENV=test`, which the child process inherits.)
+**`npm run <script> -- -Flag` loses its flags in PowerShell.** PowerShell treats the `--` as its own end-of-parameters marker, so npm never forwards anything and `Build.ps1` runs with all switches at their defaults — a production build where a dev build was intended, and `-IgnoreExtension`/`-IgnoreSidePanel` are dropped the same way. Nothing fails; the only tell is Vite printing `building client environment for production...`. Verified on PowerShell 7.6.4 (2026-08-14). `npm run build:test` takes no flags, so it is safe from either shell; for other flag-carrying scripts use bash, or call `powershell -File Build.ps1 -Development` directly.
 
-Build in the checkout that actually holds the code under test. A worktree has its own `unpacked/`, so handing over the main checkout's path after building in a worktree ships the wrong build.
+**Plain builds must be full builds — never `-IgnoreSidePanel`.** `packages/chrome-extension/vite.config.js` sets `outDir: "../../unpacked"` with `emptyOutDir: true`, so the extension build **empties the whole `unpacked/` folder**; Build.ps1 then rebuilds the side panel into `unpacked/sidePanel-import/`. In a full build the order saves you. An extension-only build does not merely skip the side panel — it _deletes_ the one already there, and nothing fails: Chrome loads the folder, the injected template UI still works, and only opening the side panel reveals `ERR_FILE_NOT_FOUND`. The same applies to `-IgnoreExtension` in reverse. `Build.ps1` now prints a warning when `unpacked/sidePanel-import/index.html` is missing after a build, but do not rely on spotting it — just build both.
 
-The version bump, the stamped `public/manifest.json` and `.release-please-manifest.json` are left **uncommitted**. Versions belong to the CI release process (`release-please`), not to a dev build — see `docs/architecture/publishing.md`.
+**`build:test` sets `NODE_ENV=development` so the console warnings can be read.** `-Development` only turns off minification; which React build gets bundled follows `NODE_ENV` when Vite resolves react-dom's export conditions. Without it you get `react-dom.production`, which logs no `validateDOMNesting`, no hydration errors and none of antd's deprecation warnings — a clean console that proves nothing. Check with `grep -o "react-dom.development\|react-dom.production" unpacked/sidePanel-import/assets/index-*.js`. (This is also why the build smoke test produces a DEV bundle: Vitest sets `NODE_ENV=test`, which the child process inherits.)
 
 ## Releases
 
@@ -103,7 +92,7 @@ Detailed, behaviour-pinned docs for the topics that have a test suite — **read
 
 - `docs/architecture/storage.md` — `chrome.storage.local` model, the `entries` key, settings keys, the `TemplateEntry` shape, the array-only assumptions in `chromeStorage.remove`/`update`, known issues.
 - `docs/architecture/form-layer.md` — the bexio jQuery/select2/jQuery-UI form, the synthetic-event recipe per field type (`trigger*`), the `waitFor*` polling, the `fillForm` order + `timeEntryBillable` rule, the read-back path, the module-load quirk, and a "blast radius" map of fragile selectors.
-- `docs/architecture/tooltip-replacement.md` — which bexio pages get the tooltip→text treatment, the per-page `MutationObserver` setup, the convert/revert cycle, the "Text mode" toggle, known issues (incl. the unverified `kb_invoice/show` branch).
+- `docs/architecture/tooltip-replacement.md` — which bexio pages get the tooltip→text treatment, the per-page `MutationObserver` setup, the convert/revert cycle, the "Text | Tooltip" toggle in bexio's page title bar, known issues.
 - `docs/architecture/build-and-release.md` — the workspace layout, `Build.ps1` flag matrix, the Vite + `@crxjs/vite-plugin` quirks, the `createRelease.ps1` sequence, the gotchas (`Build.ps1`'s fail-fast exit codes and package assertion).
 - `docs/architecture/testing.md` — the three test layers, the commands, the chrome fake, the module-load quirk, the fixture-capture procedure, and the manual real-bexio walkthrough checklist.
 - `docs/architecture/publishing.md` — the two release paths, the `release-please` Release-PR concept, conventional-commit rules, the Chrome Web Store workflow + its secrets, and the recovery procedures.

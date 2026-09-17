@@ -1,0 +1,16 @@
+/* "Text | Tooltip" toggle in bexio's page title bar (bexioProjectList/renderHtml.ts).
+   The buttons are bexio's own `.btn-group > .btn`; only the active option is restyled. */
+
+#PopoverTextSwitcher {
+  margin-right: 10px;
+}
+
+/* The id keeps these rules ahead of bexio's `.btn:hover` / `.btn:active` states. */
+#PopoverTextSwitcher .btn[aria-pressed="true"] {
+  background: #00acf0; /* bexio's link blue ("Heute", "Filtern"), measured 2026-09-17 */
+  border-color: #00acf0;
+  color: #fff;
+  text-shadow: none;
+  box-shadow: none;
+  cursor: default; /* the halflings icon is a font glyph and follows `color` */
+}

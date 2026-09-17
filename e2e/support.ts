@@ -79,6 +79,13 @@ export async function launchExtensionContext(): Promise<ExtensionContext> {
 }
 
 /**
+ * bexio's own inline CSS rule (captured 2026-09-17) that hides the legacy top navigation
+ * — incl. `.globalsearch` — in the sidebar layout, keyed on `<html class="use-new-nav">`.
+ * Fixtures ship without bexio's stylesheets; add this to make that layout's visibility real.
+ */
+export const BEXIO_HIDES_LEGACY_TOP_NAVIGATION = ".use-new-nav .lgcy-topbar-nav-office { display: none; }";
+
+/**
  * Routes `url` to serve the named anonymised bexio fixture instead of hitting
  * the real bexio server. Fixtures that already start with `<html>`/`<!doctype`
  * are served as-is; body-only captures get wrapped in a document skeleton.

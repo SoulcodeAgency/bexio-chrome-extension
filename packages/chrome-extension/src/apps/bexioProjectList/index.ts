@@ -1,17 +1,18 @@
 import renderHtml from "./renderHtml";
 import convertPopover from "../../utils/convertPopover";
+import { getPackageTimesPanel } from "../../selectors/packageTimesPanel";
 
 const observerOptions = { attributes: false, childList: true, subtree: false };
 
 /**
- * Bootstraps the extension on the current page: injects the "Text mode" toggle
- * button via `renderHtml()` and performs the initial popover conversion via
+ * Bootstraps the extension on the current page: injects the "Text | Tooltip" toggle
+ * via `renderHtml()` and performs the initial popover conversion via
  * `convertPopover()`.
  *
  * Both calls are fire-and-forget (not awaited) because this function is invoked at
- * module-evaluation time, where top-level `await` is not available. Any errors in
- * `renderHtml()` (e.g. missing `.globalsearch` nav element) will surface as
- * unhandled promise rejections.
+ * module-evaluation time, where top-level `await` is not available. A page without
+ * bexio's title bar gets no toggle (`renderHtml()` logs a warning); the conversion
+ * still runs.
  */
 export async function initializeExtension() {
   renderHtml();
@@ -68,11 +69,11 @@ function observerProjectPage() {
 }
 
 function observerProjectWorkPackagePage() {
-  // Project view
+  // Work package view: bexio (re)loads the "Zeiten" tab panel's children on tab open, sort and paging
   if (location.pathname.startsWith("/index.php/pr_project/showPackage")) {
-    const prProject_listMonitoring_TargetNode = document.getElementById("ui-id-5");
-    if (prProject_listMonitoring_TargetNode) {
-      createObserverWithCallback(convertPopover).observe(prProject_listMonitoring_TargetNode, observerOptions);
+    const packageTimesPanel = getPackageTimesPanel();
+    if (packageTimesPanel) {
+      createObserverWithCallback(convertPopover).observe(packageTimesPanel, observerOptions);
     }
   }
 }
@@ -90,8 +91,8 @@ function observeBillingModalTable() {
   console.log("[bexio extension] observing billing modal table");
   // Unguarded on purpose — unchanged from before. This callback only fires from the
   // observer that `observeBillingPage` attached to #jqDialog, so the element existed
-  // at least once. (The kb_invoice/show branch is flagged as unverified in
-  // docs/architecture/tooltip-replacement.md.)
+  // at least once. (Checked on live bexio 2026-09-17: opening "Zeiten importieren"
+  // converted all of the modal's tooltips.)
   const jqDialog = document.getElementById("jqDialog")!;
   const modalTable = jqDialog.getElementsByClassName("list block")[0];
   createObserverWithCallback(convertPopover).observe(modalTable, observerOptions);

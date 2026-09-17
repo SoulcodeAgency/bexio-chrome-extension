@@ -216,3 +216,60 @@ because the app also runs on the standalone Vite dev server, where there are no
 `packages/sidePanel-import/test/templateRefresh.test.tsx` pins the behaviour,
 including the manual 🔄 refresh button in the panel header, which calls the same
 `reloadData` for the case where the subscription was not yet attached.
+
+## Storage does not follow a build to another `unpacked/` folder
+
+Chrome derives an **unpacked** extension's ID from the absolute path of the
+folder it was loaded from (unless the manifest carries a `key`): the SHA-256 of
+the path — on Windows its UTF-16LE bytes, exactly as spelled, drive-letter case
+included — cut to 32 hex digits and mapped `0-f` → `a-p`. Every checkout
+therefore produces its own extension: the main checkout's `unpacked/` and each
+worktree's `.claude/worktrees/<name>/unpacked/` load as _different_ extensions
+with _separate_ `chrome.storage.local` areas. Loading a build from a new folder
+starts with an empty store — no templates, no settings, no import buffer.
+Nothing is lost; the data still sits in the old extension's store. Rebuilding
+into the **same** folder keeps the ID and the data.
+
+The store-published build has a fixed ID and is unaffected.
+
+### Keeping the templates: always deliver into the folder Chrome already has
+
+`npm run build:test` (see "Handing a build over for manual testing" in
+`CLAUDE.md`) builds the current checkout — main or worktree — and replaces the
+content of the **main checkout's** `unpacked/`, the one folder kept loaded in
+Chrome. Path, ID and store stay the same; only the code changes, and the user
+clicks reload. Two consequences:
+
+- That folder may hold a build from **another branch**; `unpacked/build-info.json`
+  names branch, commit and source checkout.
+- Any plain `Build.ps1` run in the main checkout (including the build smoke test
+  of `npm test` there) replaces it again. Its manifest then shows a three-part
+  version instead of the test build's `x.y.z.N`.
+
+### Moving the store between two extension IDs
+
+Needed only when a build really has to run under a different ID (a new folder,
+a new Chrome profile). Only an extension context can read its own
+`chrome.storage.local`; no page, script or other extension can reach it.
+
+- **DevTools** — in the old build's service-worker console
+  `chrome.storage.local.get(null, (d) => copy(JSON.stringify(d)))`, then in the
+  new build's ``chrome.storage.local.set(JSON.parse(`<paste>`))``. `copy()` is
+  DevTools' command-line API; when it was tried (2026-09) it was reported as not
+  defined, so this route has not worked in practice yet.
+- **Profile files** — what did work: copy the old extension's folder under
+  `<Chrome user data>/<profile>/Local Extension Settings/<extension id>/` (a
+  LevelDB) somewhere else, read it with `classic-level` (values are JSON
+  strings, one per storage key), and paste the resulting
+  `chrome.storage.local.set({ … })` call into the new build's service-worker
+  console. Reading a copy works while Chrome is running.
+
+### Not done: pinning the ID with a manifest `key`
+
+Adding a `key` entry to `public/manifest.json` would give every unpacked build
+the same ID regardless of its folder, and the moves above would become
+unnecessary. It has not been done as of 2026-09-17, and it is a decision to
+make deliberately rather than a drive-by change: which key to use (the store
+listing's, so local builds share the installed store build's ID, or a separate
+dev-only one, so local builds only share storage with each other) and how the
+Web Store treats a `key` in an uploaded manifest both need checking first.

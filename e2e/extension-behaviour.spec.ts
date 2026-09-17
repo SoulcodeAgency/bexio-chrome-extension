@@ -4,7 +4,7 @@
  * Where extension-smoke.spec.ts only asserts that the content scripts *inject*,
  * these tests assert *behaviour* on the same anonymised bexio fixtures:
  *
- * - the "Text mode" toggle round-trip on monitoring/list (bexioProjectList)
+ * - the "Text | Tooltip" toggle round-trip on monitoring/list (bexioProjectList)
  * - applying a template on monitoring/edit (the fragile fillForm +
  *   synthetic-event path through src/utils/trigger*.ts)
  * - the template filter input (names, keywords, empty state, reset)
@@ -128,9 +128,9 @@ async function installBexioFormStub(page: Page, optionsBySelectId: Record<string
 }
 
 // ---------------------------------------------------------------------------
-// Test 1: "Text mode" toggle round-trip on monitoring/list
+// Test 1: "Text | Tooltip" toggle round-trip on monitoring/list
 // ---------------------------------------------------------------------------
-test("text-mode toggle converts popover icons to inline text and back", async () => {
+test("Text | Tooltip toggle converts popover icons to inline text and back", async () => {
   const page = await context.newPage();
 
   const errors: string[] = [];
@@ -140,10 +140,12 @@ test("text-mode toggle converts popover icons to inline text and back", async ()
   await page.goto("https://office.bexio.com/index.php/monitoring/list");
 
   const toggle = page.locator("#PopoverTextSwitcher");
+  const textOption = toggle.locator("button[data-mode='text']");
+  const tooltipOption = toggle.locator("button[data-mode='tooltip']");
   await expect(toggle).toBeAttached({ timeout: 10_000 });
-  // The label reflects the current setting:
-  // false → "🙈 Popover mode", true → "👀 Text mode".
-  await expect(toggle).toContainText("Popover mode");
+  // The active option reflects the current setting (default false → "Tooltip").
+  await expect(tooltipOption).toHaveAttribute("aria-pressed", "true");
+  await expect(textOption).toHaveAttribute("aria-pressed", "false");
 
   const icons = page.locator('i[rel="popover"]');
   const iconCount = await icons.count();
@@ -151,18 +153,20 @@ test("text-mode toggle converts popover icons to inline text and back", async ()
   await expect(page.locator(".new-popover-text")).toHaveCount(0);
 
   // Convert: every popover icon is hidden and replaced by an inline text div.
-  await toggle.click();
+  await textOption.click();
   await expect(page.locator(".new-popover-text")).toHaveCount(iconCount);
   await expect(icons.first()).toHaveCSS("display", "none");
-  await expect(toggle).toContainText("Text mode");
+  await expect(textOption).toHaveAttribute("aria-pressed", "true");
+  // bexioProjectList.css (declared in the manifest) paints the active option in bexio's link blue.
+  await expect(textOption).toHaveCSS("background-color", "rgb(0, 172, 240)");
   // The inline text is the decoded data-content of the icon (fixture value).
-  await expect(page.locator(".new-popover-text").first()).toHaveText("UpHill Conference & QA");
+  await expect(page.locator(".new-popover-text").first()).toHaveText("Sample time entry 1 & QA");
 
   // Revert: inline texts removed, icons restored.
-  await toggle.click();
+  await tooltipOption.click();
   await expect(page.locator(".new-popover-text")).toHaveCount(0);
   await expect(icons.first()).toHaveCSS("display", "inline-block");
-  await expect(toggle).toContainText("Popover mode");
+  await expect(tooltipOption).toHaveAttribute("aria-pressed", "true");
 
   expect(errors, `unexpected page errors:\n${errors.join("\n")}`).toEqual([]);
 

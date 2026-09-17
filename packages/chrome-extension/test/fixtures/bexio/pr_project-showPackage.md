@@ -1,9 +1,9 @@
 # Fixture: pr_project-showPackage
 
-- **Source URL:** https://office.bexio.com/index.php/pr_project/showPackage/<projectId>/<packageId>
-- **Captured:** 2026-05-13
-- **Captured via:** `copy(document.getElementById('ui-id-5').outerHTML)`
-- **Trimmed:** inline <script> blocks removed; data <tbody> reduced to the first 12 rows + the footer_row.
-- **Anonymised:** yes — personal names → Doe/Roe/Smith/Klein/Weber/… placeholders; client/project/package/template names → Acme/Globex/Initech/Project Falcon/AC… placeholders; CSRF token → `TEST_CSRF_TOKEN`; extension id → `EXTENSION_ID_PLACEHOLDER`.
-- **Notable elements for tests:** #ui-id-5 tab panel wrapper; table#dataTable; ~12 rows with <i rel='popover' data-content='...'> tooltip icons.
-- **Size:** 102456 bytes; 12 `i[rel='popover']` icons
+- **Source URL:** https://office.bexio.com/index.php/pr_project/showPackage/packageId/<packageId>
+- **Captured:** 2026-09-17
+- **Captured via:** the in-page capture script in `README.md` (live DOM, full body, extension changes undone); `<html class="use-new-nav">` restored from the live page (its other, Modernizr-generated classes are dropped); built with `npm run fixtures:build`
+- **Trimmed:** `<script>`, `<style>`, `<link>`, `<noscript>` and `<iframe>` removed; inline event-handler attributes (`onclick`, …) removed; the Angular shell roots (`bexio-application-header-root`, `bexio-application-navigation-root`, `bexio-application-footer-root`, `application-wrapper-root`, `.cdk-overlay-container`) emptied; chat/analytics widgets and unused modal placeholders removed (incl. `#jqDialog`); every `<tbody>` cut to 12 data rows; selects with more than 5 options cut to their first 3; whitespace between tags collapsed.
+- **Anonymised:** yes — names → Doe/Roe/Smith/Klein/Weber/… placeholders; clients/projects → Acme/Globex/Initech/Umbrella/Hooli placeholders; every popover `data-content` replaced with "Sample time entry N" (#1 contains `&amp;`, #2 contains `<br />`); e-mail addresses → example.com; CSRF tokens → `TEST_CSRF_TOKEN`; the access token in bexio's hidden support form → `TEST_ACCESS_TOKEN`; UUIDs zeroed; record ids → 99999 / `item9000N`.
+- **Notable elements for tests:** Full body with the lower jQuery-UI tab widget `#tabs.listBlock` switched to 'Zeiten': the tab link `a[href*='/pr_project/listMonitorings/']` is `#ui-id-3`, its `li[aria-controls='ui-id-4']` points at the populated panel `#ui-id-4` (7 time-entry rows with `<i rel='popover'>` icons). jQuery UI numbers these ids at runtime — the May 2026 capture had the panel at `#ui-id-5`; page title bar with `a.js-first-btn` ('Neues Projekt').
+- **Size:** 57299 bytes; 7 `i[rel='popover']` icons

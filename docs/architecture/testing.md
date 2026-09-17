@@ -22,7 +22,7 @@ get caught early.
 The Playwright layer is not part of `npm test` and requires a built `unpacked/` plus a one-time
 `npx playwright install chromium`. CI runs it as its own step (see Section 7). It has two specs:
 `extension-smoke.spec.ts` (do the content scripts inject, does the side panel mount) and
-`extension-behaviour.spec.ts` (issue #66: text-mode toggle round-trip, template apply, template
+`extension-behaviour.spec.ts` (issue #66: Text | Tooltip toggle round-trip, template apply, template
 filter, the inline Add and manage-mode Delete/Undo flows).
 
 ---
@@ -64,12 +64,12 @@ deliberately don't add). If you want it for a debugging session:
 
 The root `vitest.config.ts` (via its `test.projects` array) defines four projects. (Vitest 4 deprecated the standalone `vitest.workspace.ts` file in favour of `test.projects`, so there is no workspace file — `vitest.config.ts` is the only test config.)
 
-| Project            | Root                        | Environment | What it tests                                                                                                                                                                                                                                                 |
-| ------------------ | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `shared`           | `packages/shared`           | `node`      | Storage helpers, template utilities                                                                                                                                                                                                                           |
-| `chrome-extension` | `packages/chrome-extension` | `jsdom`     | Selectors, content scripts, form utils                                                                                                                                                                                                                        |
-| `sidePanel-import` | `packages/sidePanel-import` | `jsdom`     | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`) |
-| `scripts`          | `scripts`                   | `node`      | Repo tooling that belongs to no package — currently the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review                                                                              |
+| Project            | Root                        | Environment | What it tests                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------ | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shared`           | `packages/shared`           | `node`      | Storage helpers, template utilities                                                                                                                                                                                                                                                                                                                                       |
+| `chrome-extension` | `packages/chrome-extension` | `jsdom`     | Selectors, content scripts, form utils                                                                                                                                                                                                                                                                                                                                    |
+| `sidePanel-import` | `packages/sidePanel-import` | `jsdom`     | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`)                                                                                                             |
+| `scripts`          | `scripts`                   | `node`      | Repo tooling that belongs to no package — the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review, the bexio fixture pipeline (`bexio-fixtures/`: scrub + leak check, plus the guard over all committed fixtures), and the version and target-folder helpers of `npm run build:test` (`build-test/`) |
 
 The `sidePanel-import` project has two extra setup details: the `~` alias (that package's Vite
 alias for its `src/`) is mirrored in `vitest.config.ts`, and
@@ -197,18 +197,24 @@ Cleaned, anonymised HTML fixtures live in
 The procedure is documented in full in
 `packages/chrome-extension/test/fixtures/bexio/README.md`; summary:
 
-1. Open the target bexio page in Chrome while logged in.
-2. Open DevTools → Console and run the `copy(...)` snippet from the README table
-   for that page.
-3. Paste the copied HTML into a new file under
-   `packages/chrome-extension/test/fixtures/bexio/_raw/<name>.html`
-   (`_raw/` is git-ignored).
-4. Run the anonymise/trim pass: `node packages/chrome-extension/test/fixtures/bexio/_raw/__build-fixtures.cjs`
-   (this script strips scripts, anonymises names, and trims table rows).
-5. Write the sibling `<name>.md` documenting the source URL, capture date,
-   what was trimmed, and the anonymisation applied.
-6. The cleaned `*.html` and `*.md` files are committed; the `_raw/` directory
-   is never committed.
+1. Log into bexio in Chrome. For the four tooltip pages, run the README's capture
+   script on each page (it undoes the extension's changes on a clone, strips the
+   account-data parts of the page and trims tables), then download the bundle into
+   `packages/chrome-extension/test/fixtures/bexio/_raw/` (git-ignored). The
+   `monitoring-edit` form fixtures still use the README's `copy(...)` snippets.
+2. Keep `_raw/anonymise.local.json` — the real names of people, clients and
+   projects — up to date. It is git-ignored and never committed.
+3. `npm run fixtures:build` (`scripts/bexio-fixtures/build.ts`) scrubs the bundle
+   and writes each `<name>.html` with its sibling `<name>.md` (source URL, capture
+   date, what was trimmed and anonymised). A fixture in which `findLeaks` still
+   recognises a token, e-mail address, UUID or listed name is not written.
+4. Read through the remaining text before committing: the leak check only knows
+   the names in `anonymise.local.json`.
+5. The cleaned `*.html` and `*.md` files are committed; `_raw/` is not. The
+   repository is public: `scripts/bexio-fixtures/committed-fixtures.test.ts` fails
+   when a committed fixture contains an access token, CSRF token, e-mail address,
+   UUID or extension id. (Until 2026-09 two fixtures carried an expired bexio access
+   token and account ids — the check exists because of that.)
 
 **Currently captured fixtures:**
 
@@ -216,10 +222,14 @@ The procedure is documented in full in
 - `monitoring-edit-filled.html` — the same form with values pre-filled
 - `monitoring-edit.tinymce-iframe.html` — the TinyMCE iframe body (injected via
   `loadIframeFixture`; see Section 4)
-- `monitoring-list.html` — full-body capture of the time-entry list (with `.globalsearch` so renderHtml can inject its toggle button; rows trimmed to 12)
-- `pr_project-listMonitoring.html` — a project's times tab (trimmed rows)
-- `pr_project-showPackage.html` — a work-package's times tab (trimmed rows)
-- `kb_invoice-show.html` — full-body capture of an invoice with the "Zeiten importieren" modal open; the modal's table rows trimmed to 12. Path through the UI: **Verkauf → Rechnungen → \<invoice\> → Positionen → "Weitere Positionen" → "Zeit/Leistung"**.
+- `monitoring-list.html` — full-body capture of the time-entry list in bexio's sidebar layout (2026-09): page title bar with the primary action, hidden legacy top navigation, rows trimmed to 12
+- `pr_project-listMonitoring.html` — full-body capture of a project's "Zeiten" tab (rows trimmed to 12)
+- `pr_project-showPackage.html` — full-body capture of a work package with its lower "Zeiten" tab open (jQuery-UI panel `#ui-id-4`)
+- `kb_invoice-show.html` — full-body capture of an invoice with the "Zeiten importieren" modal open; the modal's table rows trimmed to 12. Path through the UI: **Verkauf → Rechnungen → \<draft invoice\> → Positionen → "Weitere Positionen" → "Zeit/Leistung"**.
+
+The four tooltip fixtures were recaptured on 2026-09-17; the three `monitoring-edit`
+fixtures date from 2026-05-13 and were compared against the live form that day
+(identical structure).
 
 ---
 
@@ -251,10 +261,11 @@ the npm script made the test fail on the Linux CI runner with
 There are two specs, sharing the launch/fixture helpers in `e2e/support.ts`:
 
 - `e2e/extension-smoke.spec.ts` — injection-level: template UI appears on
-  `monitoring/edit`, the side panel mounts, the "Text mode" toggle appears
-  on `monitoring/list`.
+  `monitoring/edit`, the side panel mounts, the "Text | Tooltip" toggle is
+  _visible_ in the page title bar of `monitoring/list` (the test adds bexio's
+  rule that hides the legacy top navigation, which the fixture ships without).
 - `e2e/extension-behaviour.spec.ts` — behaviour-level (issue #66): the
-  text-mode toggle round-trip (convert → revert), applying a template through
+  Text | Tooltip toggle round-trip (convert → revert), applying a template through
   the real `fillForm` synthetic-event path, the keyword-aware template filter,
   and the inline Add + manage-mode Delete/Undo flows — dialog-free by design;
   `page.on("dialog")` stays wired to prove no native dialog ever opens.
@@ -328,9 +339,14 @@ and remains out of scope.
 
 ### Setup
 
-1. Build the extension: `npm run build:project -- -Development`
-2. Open Chrome → `chrome://extensions/` → enable "Developer mode" → "Load unpacked"
-   → select the `unpacked/` directory.
+1. Build the extension: `npm run build:test`, in the checkout that holds the code
+   under test (main checkout or worktree). It always delivers into the **main
+   checkout's** `unpacked/` and prints the version to expect, e.g. `1.8.2.7`.
+2. Once only: Chrome → `chrome://extensions/` → enable "Developer mode" → "Load
+   unpacked" → select `E:\git\soulcode\bexio-chrome-extension\unpacked`. After
+   every later `build:test`, click the extension's reload button instead and
+   check that it shows the printed version. The folder path fixes the extension
+   id, so templates and settings stay.
 3. Log into your bexio account in the same Chrome profile.
 
 ### 5.1 — `monitoring/edit`: Templates block
@@ -367,19 +383,24 @@ and the side-panel button (item 9) are manual-only._
    import)") klicken → das Side Panel öffnet sich für diesen Tab. Ist es schon
    offen, passiert nichts.
 
-### 5.2 — `monitoring/list` + project/package tabs: Text-mode toggle
+### 5.2 — `monitoring/list` + project/package tabs: Text | Tooltip toggle
 
 _Automated (on fixtures): items 1–3 — the toggle round-trip on
-`monitoring/list` — in `extension-behaviour.spec.ts`. The project/package
-tabs (item 4) are still manual-only._
+`monitoring/list` — in `extension-behaviour.spec.ts`; the toggle's placement on
+all four pages and the work package's panel reload in
+`test/apps/bexioProjectList.test.ts`. What only a real browser shows: how the
+toggle looks next to bexio's own buttons._
 
 1. Navigate to `https://office.bexio.com/index.php/monitoring/list`.
-   Confirm a **"Text mode"** toggle button appears in the page header.
-2. Click the toggle — confirm tooltip popover icons (`<i rel="popover">`) are
-   replaced by inline text.
-3. Click the toggle again — confirm the page reverts to the original popover icons.
-4. Repeat on a project's Times tab (`pr_project/listMonitoring/...`) and a
-   work-package's Times tab (`pr_project/showPackage/...`).
+   Confirm a **Text | Tooltip** toggle is visible in the page title bar, directly
+   left of the green "Neue Zeiterfassung" button, with "Tooltip" in blue (default).
+2. Click **Text** — confirm tooltip popover icons (`<i rel="popover">`) are
+   replaced by inline text and "Text" turns blue.
+3. Click **Tooltip** — confirm the page reverts to the original popover icons.
+4. Repeat on a project's "Zeiten" tab (`pr_project/listMonitoring/...`, toggle
+   next to "Neues Projekt") and on a work package (`pr_project/showPackage/...`):
+   there, open the lower "Zeiten" tab, then sort by a column — the notes must be
+   converted after both.
 
 ### 5.3 — Side panel: Templates and Import tabs
 
@@ -420,8 +441,10 @@ and item 6 is manual for its visual half only._
 ### 5.4 — `kb_invoice` tracked-time tooltip (`kb_invoice/show/id/*`)
 
 On an invoice detail page, navigate **Positionen → "Weitere Positionen" →
-"Zeit/Leistung"** to open the "Zeiten importieren" modal. Toggle "Text mode" via
-the `#PopoverTextSwitcher` button in the bexio nav — the info-icon popovers in
-the modal table should turn into inline text and the rows should pick up the
-alternating background colours. Toggle back and confirm the modal reverts. The
-fixture `kb_invoice-show.html` covers the same DOM under `test/fixtures/bexio/`.
+"Zeit/Leistung"** to open the "Zeiten importieren" modal (on a draft invoice —
+issued ones do not offer it). With **Text** selected in the toggle next to "Neue
+Rechnung" — select it _before_ opening the modal, whose overlay covers the title
+bar — the info-icon popovers in the modal table should turn into inline text and
+the rows should pick up the alternating background colours. Close the modal,
+select **Tooltip**, reopen it and confirm the icons are back. The fixture
+`kb_invoice-show.html` covers the same DOM under `test/fixtures/bexio/`.
