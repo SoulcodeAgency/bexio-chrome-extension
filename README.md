@@ -35,6 +35,9 @@ Clicking the extension icon on the bexio time tracking page opens the extension'
   - Import [ManicTime](https://www.manictime.com/) timesheet data from the clipboard and select which template to use per entry.
   - Clicking an entry's ▶️ button **automatically** fills the time tracking page, applying the selected template if one
     is set, plus the entry's **time and date** and the **billable** checkbox where the entry provides them.
+  - Once the form is filled, the button turns into 📤. Clicking it saves the entry in bexio for you — nothing is ever
+    submitted without that second click. The entry then shows ✅, also when you save the form in bexio yourself.
+    Only the entry applied last offers 📤; applying another one first puts it back to ▶️.
   - The **auto-mapper** tries to find the right template for each entry — it checks the template **keywords** as well as
     other template fields.
 

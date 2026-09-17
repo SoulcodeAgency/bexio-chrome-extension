@@ -191,7 +191,13 @@ export interface ChromeFake {
   storage: { local: FakeLocalStorageArea; onChanged: FakeOnChangedEvent };
   tabs: FakeTabsApi;
   runtime: {
-    onMessage: { addListener: (fn: unknown) => void; __listeners: unknown[] };
+    onMessage: {
+      addListener: (fn: unknown) => void;
+      removeListener: (fn: unknown) => void;
+      __listeners: unknown[];
+      /** test-only: deliver a runtime message (e.g. from the content script) to the registered listeners. */
+      __emit: (message: unknown) => void;
+    };
     sendMessage: (...args: unknown[]) => void;
     getURL: (path: string) => string;
     lastError?: unknown;
@@ -210,6 +216,14 @@ export function installChromeFake(): ChromeFake {
         __listeners: [],
         addListener(fn: unknown) {
           this.__listeners.push(fn);
+        },
+        removeListener(fn: unknown) {
+          const index = this.__listeners.indexOf(fn);
+          if (index !== -1) this.__listeners.splice(index, 1);
+        },
+        __emit(message: unknown) {
+          type Listener = (message: unknown, sender: unknown, sendResponse: () => void) => unknown;
+          for (const listener of [...this.__listeners] as Listener[]) listener(message, {}, () => {});
         },
       },
       sendMessage: () => {

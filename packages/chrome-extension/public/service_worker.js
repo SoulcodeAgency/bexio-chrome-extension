@@ -53,3 +53,15 @@ async function enableSidePanelOnOpenMonitoringTabs() {
 
 chrome.runtime.onInstalled.addListener(enableSidePanelOnOpenMonitoringTabs);
 chrome.runtime.onStartup.addListener(enableSidePanelOnOpenMonitoringTabs);
+
+// The injected Templates block has an "open side panel" button. Content scripts
+// cannot call chrome.sidePanel, so they send this message and the worker opens the
+// panel for the sender's tab. sidePanel.open() is only allowed in response to a user
+// gesture, and that gesture does not survive an `await` — so nothing asynchronous
+// may run before the call.
+chrome.runtime.onMessage.addListener((message, sender) => {
+  if (!message || message.mode !== "openSidePanel") return;
+  const tabId = sender.tab && sender.tab.id;
+  if (tabId === undefined) return;
+  chrome.sidePanel.open({ tabId }).catch((error) => console.error(error));
+});

@@ -4,11 +4,24 @@ import { getMessageApi } from "~/utils/messageApi";
 
 type ImportEntriesTableCellProps = {
   fieldValue: string;
+  /** Booked in bexio (persisted) — shown as ✅, a click resets it. */
   entryStatus: boolean;
+  /** Filled into the open bexio form, waiting for the user's deliberate 📤 click. */
+  readyToSubmit: boolean;
   onButtonClick: () => void;
   onButtonClickReset: () => void;
+  onButtonClickSubmit: () => void;
 };
 
+/**
+ * The per-day cell with its three button states:
+ *
+ * - ▶️ apply — fills the bexio form with this entry (and its template).
+ * - 📤 submit — the form holds this entry; a second, deliberate click saves it in bexio. Never
+ *   triggered automatically. Only the entry applied last can be in this state.
+ * - ✅ booked — the content script reported that the form was submitted; a click resets the
+ *   entry to ▶️.
+ */
 const TableCellTrackingDay = (props: ImportEntriesTableCellProps) => {
   // Remove double zeroes from the time string
   const simplifiedZeroes = props.fieldValue.replace(/00/g, "0");
@@ -35,6 +48,12 @@ const TableCellTrackingDay = (props: ImportEntriesTableCellProps) => {
   let button = <Button onClick={clickHandler}>▶️</Button>;
   if (props.entryStatus) {
     button = <Button onClick={() => props.onButtonClickReset()}>✅</Button>;
+  } else if (props.readyToSubmit) {
+    button = (
+      <Button onClick={() => props.onButtonClickSubmit()} title="Save this entry in bexio">
+        📤
+      </Button>
+    );
   }
 
   let tableCell = <td></td>;

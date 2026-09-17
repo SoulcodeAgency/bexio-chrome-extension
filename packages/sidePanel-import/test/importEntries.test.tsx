@@ -303,17 +303,25 @@ describe("ImportEntries — description switches", () => {
  */
 describe("ImportEntries — applying an entry", () => {
   let errorSpy: ReturnType<typeof vi.spyOn>;
+  /** Every message the panel sent to the bexio tab, in order. */
+  let sent: Array<{ mode: string }>;
 
-  function installTabsStub(sendMessage: () => Promise<unknown>) {
+  function installTabsStub(sendMessage: (data: { mode: string }) => Promise<unknown>) {
     (globalThis as unknown as { chrome: Record<string, unknown> }).chrome.tabs = {
       query: async () => [{ id: 7, url: "https://office.bexio.com/index.php/monitoring/edit" }],
-      sendMessage,
+      sendMessage: async (_tabId: number, data: { mode: string }) => {
+        sent.push(data);
+        return sendMessage(data);
+      },
       update: async () => ({}),
     };
   }
 
+  const acknowledgeEverything = async () => ({ ok: true });
+
   beforeEach(() => {
     document.body.innerHTML = "";
+    sent = [];
     errorSpy = vi.spyOn(message, "error").mockImplementation((() => {}) as never);
     errorSpy.mockClear();
   });
@@ -322,18 +330,37 @@ describe("ImportEntries — applying an entry", () => {
     delete (globalThis as unknown as { chrome: Record<string, unknown> }).chrome.tabs;
   });
 
-  it("marks the entry as applied when the content script acknowledges", async () => {
-    installTabsStub(async () => ({ ok: true }));
+  const buttons = (container: HTMLElement, name: string) => within(container).queryAllByRole("button", { name });
+
+  async function click(button: HTMLElement) {
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    await act(async () => {});
+  }
+
+  /**
+   * The content script's `form-submitted` message (see `onFormSubmit.ts`) arrives through
+   * `chrome.runtime.onMessage`, whichever way the bexio form was saved.
+   */
+  async function reportFormSubmitted() {
+    await act(async () => {
+      chrome.runtime.onMessage.__emit({ mode: "form-submitted" });
+    });
+  }
+
+  it("offers the submit step (📤) instead of a checkmark once the content script acknowledges", async () => {
+    installTabsStub(acknowledgeEverything);
     const { container } = await renderImportEntries();
     pasteIntoTextarea(container, TSV);
 
-    const applyButton = within(container).getAllByRole("button", { name: "▶️" })[0];
-    await act(async () => {
-      fireEvent.click(applyButton);
-    });
+    await click(buttons(container, "▶️")[0]);
 
     expect(errorSpy).not.toHaveBeenCalled();
-    expect(within(container).getAllByRole("button", { name: "✅" })).toHaveLength(1);
+    expect(buttons(container, "📤")).toHaveLength(1);
+    expect(buttons(container, "✅")).toHaveLength(0);
+    // Nothing is booked yet, so nothing is persisted as applied.
+    expect((await chrome.storage.local.get("entryStatus")).entryStatus).toEqual({});
   });
 
   it("shows an actionable error and leaves the entry unmarked when no content script answers", async () => {
@@ -343,15 +370,114 @@ describe("ImportEntries — applying an entry", () => {
     const { container } = await renderImportEntries();
     pasteIntoTextarea(container, TSV);
 
-    const applyButton = within(container).getAllByRole("button", { name: "▶️" })[0];
-    await act(async () => {
-      fireEvent.click(applyButton);
-    });
+    await click(buttons(container, "▶️")[0]);
 
     expect(errorSpy).toHaveBeenCalledWith(NO_CONTENT_SCRIPT_MESSAGE);
-    // Still applicable — no ✅ checkmark was set.
-    expect(within(container).queryAllByRole("button", { name: "✅" })).toHaveLength(0);
-    expect(within(container).getAllByRole("button", { name: "▶️" })).toHaveLength(3);
+    // Still applicable — neither 📤 nor ✅ was set.
+    expect(buttons(container, "📤")).toHaveLength(0);
+    expect(buttons(container, "✅")).toHaveLength(0);
+    expect(buttons(container, "▶️")).toHaveLength(3);
+  });
+
+  it("does not offer the submit step when the template fill is reported incomplete", async () => {
+    installTabsStub(async (data) =>
+      data.mode === "template" ? { ok: false, error: "The template was not applied completely" } : { ok: true },
+    );
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+    await click(within(container).getByRole("button", { name: "Auto map templates" }));
+
+    await click(buttons(container, "▶️")[0]);
+
+    expect(sent.map((m) => m.mode)).toEqual(["time+duration", "template"]);
+    expect(errorSpy).toHaveBeenCalled();
+    expect(buttons(container, "📤")).toHaveLength(0);
+    expect(buttons(container, "▶️")).toHaveLength(3);
+  });
+
+  it("clicking 📤 asks the content script to submit the form", async () => {
+    installTabsStub(acknowledgeEverything);
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+    await click(buttons(container, "▶️")[0]);
+
+    await click(buttons(container, "📤")[0]);
+
+    expect(sent.map((m) => m.mode)).toEqual(["time+duration", "submit"]);
+    // Not booked until the content script reports the submit; the button stays 📤 meanwhile.
+    expect(buttons(container, "📤")).toHaveLength(1);
+    expect(buttons(container, "✅")).toHaveLength(0);
+  });
+
+  it("marks the entry ✅ and persists it when the content script reports the form was submitted", async () => {
+    installTabsStub(acknowledgeEverything);
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+    await click(buttons(container, "▶️")[0]);
+
+    await reportFormSubmitted();
+
+    expect(buttons(container, "✅")).toHaveLength(1);
+    expect(buttons(container, "📤")).toHaveLength(0);
+    expect((await chrome.storage.local.get("entryStatus")).entryStatus).toEqual({ "3-0": true });
+  });
+
+  it("returns the entry to ▶️ when the submit request fails", async () => {
+    installTabsStub(async (data) => {
+      if (data.mode === "submit") throw new Error("Could not establish connection. Receiving end does not exist.");
+      return { ok: true };
+    });
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+    await click(buttons(container, "▶️")[0]);
+
+    await click(buttons(container, "📤")[0]);
+
+    expect(errorSpy).toHaveBeenCalledWith(NO_CONTENT_SCRIPT_MESSAGE);
+    expect(buttons(container, "📤")).toHaveLength(0);
+    expect(buttons(container, "✅")).toHaveLength(0);
+    expect(buttons(container, "▶️")).toHaveLength(3);
+  });
+
+  it("moves 📤 to the entry applied last and returns the previous one to ▶️", async () => {
+    installTabsStub(acknowledgeEverything);
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+    const rows = container.querySelectorAll("tbody tr");
+
+    await click(buttons(container, "▶️")[0]);
+    expect(buttons(rows[0] as HTMLElement, "📤")).toHaveLength(1);
+
+    // Second thoughts: the form now holds the second entry, so only that one can be submitted.
+    await click(buttons(container, "▶️")[0]);
+
+    expect(buttons(rows[0] as HTMLElement, "▶️")).toHaveLength(1);
+    expect(buttons(rows[0] as HTMLElement, "📤")).toHaveLength(0);
+    expect(buttons(rows[1] as HTMLElement, "📤")).toHaveLength(1);
+    expect(buttons(container, "📤")).toHaveLength(1);
+  });
+
+  it("ignores form-submitted when no entry is waiting on 📤", async () => {
+    installTabsStub(acknowledgeEverything);
+    const { container } = await renderImportEntries();
+    pasteIntoTextarea(container, TSV);
+
+    await reportFormSubmitted();
+
+    expect(buttons(container, "✅")).toHaveLength(0);
+    expect(buttons(container, "▶️")).toHaveLength(3);
+    // The paste persisted an empty status map; nothing was added to it.
+    expect((await chrome.storage.local.get("entryStatus")).entryStatus).toEqual({});
+  });
+
+  it("stops listening for form-submitted once unmounted", async () => {
+    installTabsStub(acknowledgeEverything);
+    const { unmount } = await renderImportEntries();
+    expect(chrome.runtime.onMessage.__listeners).toHaveLength(1);
+
+    unmount();
+
+    expect(chrome.runtime.onMessage.__listeners).toHaveLength(0);
   });
 });
 
@@ -382,6 +508,17 @@ async function clickFirstApplyButton(container: HTMLElement) {
   await act(async () => {});
 }
 
+/**
+ * Applies the first ▶️ button and then lets the content script report that the bexio form was
+ * saved — the step that persists the entry as booked (✅).
+ */
+async function applyFirstAndBook(container: HTMLElement) {
+  await clickFirstApplyButton(container);
+  await act(async () => {
+    chrome.runtime.onMessage.__emit({ mode: "form-submitted" });
+  });
+}
+
 async function readImportBuffer() {
   return await chrome.storage.local.get([
     "importHeader",
@@ -410,12 +547,12 @@ describe("ImportEntries — import state does not survive a new import (issue #8
   it("drops the previous status and templates when a new import is pasted and saved", async () => {
     const first = await renderImportEntries();
 
-    // Dataset A: auto map the templates and apply one entry.
+    // Dataset A: auto map the templates, apply one entry and book it.
     pasteIntoTextarea(first.container, TSV);
     await act(async () => {
       fireEvent.click(within(first.container).getByRole("button", { name: "Auto map templates" }));
     });
-    await clickFirstApplyButton(first.container);
+    await applyFirstAndBook(first.container);
 
     expect(within(first.container).getAllByRole("button", { name: "✅" })).toHaveLength(1);
     const bufferAfterA = await readImportBuffer();
@@ -444,34 +581,41 @@ describe("ImportEntries — import state does not survive a new import (issue #8
     expect(templateSelect.value).toBe("");
   });
 
-  it("keeps both statuses when a second entry is applied before the first one settles", async () => {
+  it("books only the entry applied last when two applies overlap and the form is then saved", async () => {
     const { container } = await renderImportEntries();
 
     pasteIntoTextarea(container, TSV);
     const buttons = within(container).getAllByRole("button", { name: "▶️" });
-    // Both clicks happen before the async apply chain of the first one resolves — the status of
-    // the first entry must not be clobbered by the stale state the second click started from.
+    // Both clicks happen before the async apply chain of the first one resolves. The bexio form
+    // can only hold one entry, so the later apply wins the 📤 slot — and the booking that follows
+    // must be derived from the latest state, not from the stale state either click started from.
     await act(async () => {
       fireEvent.click(buttons[0]);
       fireEvent.click(buttons[1]);
     });
     await act(async () => {});
+    expect(within(container).getAllByRole("button", { name: "📤" })).toHaveLength(1);
+
+    await act(async () => {
+      chrome.runtime.onMessage.__emit({ mode: "form-submitted" });
+    });
 
     const buffer = await readImportBuffer();
-    expect(buffer.entryStatus).toEqual({ "3-0": true, "3-1": true });
-    expect(within(container).getAllByRole("button", { name: "✅" })).toHaveLength(2);
+    expect(buffer.entryStatus).toEqual({ "3-1": true });
+    expect(within(container).getAllByRole("button", { name: "✅" })).toHaveLength(1);
+    expect(within(container).getAllByRole("button", { name: "▶️" })).toHaveLength(2);
   });
 
   it("keeps storage consistent when new data is pasted but not saved", async () => {
     const first = await renderImportEntries();
 
     pasteIntoTextarea(first.container, TSV);
-    await clickFirstApplyButton(first.container);
+    await applyFirstAndBook(first.container);
 
-    // No "Save this import" click for dataset B — but applying an entry still persists a status,
+    // No "Save this import" click for dataset B — but booking an entry still persists a status,
     // so the stored rows have to be B's already.
     pasteIntoTextarea(first.container, TSV_B);
-    await clickFirstApplyButton(first.container);
+    await applyFirstAndBook(first.container);
 
     const buffer = await readImportBuffer();
     expect(buffer.importData).toEqual(IMPORT_DATA_B);

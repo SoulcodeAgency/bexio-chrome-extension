@@ -39,18 +39,25 @@ import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
  *
  * A `WaitForTimeoutError` — one of the `waitFor*` helpers gave up because bexio
  * never produced the DOM it was waiting for (#83) — is the one error that is
- * caught here instead of propagating: neither caller awaits `fillForm`, so
- * rethrowing would only produce an unhandled rejection, and this failure mode is
- * common enough (AJAX error, offline, no matching option) to deserve real user
- * feedback. It is reported like the stale-id case: console + `alert()`, after the
- * loader is gone. Every other error still propagates untouched.
+ * caught here instead of propagating: the in-page template button does not await
+ * `fillForm`, so rethrowing would only produce an unhandled rejection there, and
+ * this failure mode is common enough (AJAX error, offline, no matching option) to
+ * deserve real user feedback. It is reported like the stale-id case: console +
+ * `alert()`, after the loader is gone, and signalled to the awaiting `onMessage`
+ * caller through the `false` return value. Every other error still propagates
+ * untouched.
  *
  * @param id               The template entry's `id` field.
  * @param timeEntryBillable  When provided, overrides the template's `billable`
  *                           flag via `timeEntryBillable ?? billable`.
+ * @returns `true` once every field is applied and the loader is gone; `false` when
+ *          the form was left untouched (stale id) or half-filled (timeout). The
+ *          `onMessage` dispatcher awaits this so the side panel only offers the
+ *          "submit" step for a fully filled form. The in-page template button
+ *          ignores the value.
  */
 // Fill form
-async function fillForm(id: string, timeEntryBillable?: boolean) {
+async function fillForm(id: string, timeEntryBillable?: boolean): Promise<boolean> {
   toggleDisplayLoader();
   let entry: TemplateEntry | undefined;
   let timeout: WaitForTimeoutError | undefined;
@@ -92,8 +99,8 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
     }
   } catch (error) {
     // A waitFor* gave up: bexio never rendered what the next step needs. Handled
-    // below (after the loader is gone) instead of rethrown, because no caller awaits
-    // fillForm and an unhandled rejection would tell the user nothing (#83).
+    // below (after the loader is gone) instead of rethrown, because the in-page button
+    // does not await fillForm and an unhandled rejection would tell the user nothing (#83).
     if (!(error instanceof WaitForTimeoutError)) throw error;
     timeout = error;
   } finally {
@@ -111,6 +118,7 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
     console.warn(`No template found for id "${id}" - it was probably deleted in another tab or window.`);
     await initializeExtension();
     alert("This template does not exist anymore. It was probably deleted in another tab or window.");
+    return false;
   }
 
   // The form is left half-filled in this case; say so, so nobody submits a partial
@@ -121,7 +129,10 @@ async function fillForm(id: string, timeEntryBillable?: boolean) {
       `The template could not be applied completely: ${timeout.message}\n\n` +
         "bexio may be slow or offline right now. Please check the form and try again.",
     );
+    return false;
   }
+
+  return true;
 }
 
 export default fillForm;
