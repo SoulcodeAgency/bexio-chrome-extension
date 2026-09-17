@@ -13,7 +13,8 @@ import {
   saveApplyNotesSetting,
   saveUppercaseFirstLetterSetting,
 } from "@bexio-chrome-extension/shared/chromeStorageSettings";
-import { EntryExchangeData } from "@bexio-chrome-extension/shared/types";
+import { EntryExchangeData, FormSubmittedMessage } from "@bexio-chrome-extension/shared/types";
+import { getRuntimeApi } from "~/utils/getRuntimeApi";
 import { autoMapTemplatesV3 } from "./AutoMapTemplatesV3";
 import { frozenCellProps, getFrozenColumns } from "./frozenColumns";
 import { useFrozenColumnOffsets } from "./useFrozenColumnOffsets";
@@ -24,6 +25,10 @@ export type ImportData = ImportRow[];
 export type ImportBillable = "Billable" | "Not billable" | undefined;
 export type EntryStatus = { [key: string]: boolean };
 
+function isFormSubmittedMessage(message: unknown): message is FormSubmittedMessage {
+  return typeof message === "object" && message !== null && (message as { mode?: unknown }).mode === "form-submitted";
+}
+
 function ImportEntries() {
   const [applyNotesSetting, setApplyNotesSetting] = useState(true);
   const [uppercaseFirstLetterSetting, setUppercaseFirstLetterSetting] = useState(true);
@@ -32,6 +37,11 @@ function ImportEntries() {
   const [importFooter, setImportFooter] = useState<ImportRow>([]);
   const [importData, setImportData] = useState<ImportData>([]);
   const [entryStatus, setEntryStatus] = useState<EntryStatus>({});
+  // The entry (`${columnIndex}-${entryIndex}`) that is filled into the bexio form and waiting for
+  // the user's deliberate 📤 click. One at a time — the form holds one entry — and not persisted:
+  // it is only meaningful while that form is open. The ref mirrors it for the message listener.
+  const [readyToSubmit, setReadyToSubmit] = useState<string | null>(null);
+  const readyToSubmitRef = useRef<string | null>(null);
   const [importTemplates, setImportTemplates] = useState<string[]>([]);
   const [tabs, setTabs] = useState<string[]>(["import", "apply"]);
   const importDataRef = useRef<HTMLTextAreaElement>(null);
@@ -160,6 +170,9 @@ function ImportEntries() {
   }
 
   async function applyImportEntry(columnIndex: number, timeAmount: string, entryIndex: number) {
+    const entryKey = `${columnIndex}-${entryIndex}`;
+    // Whatever was waiting on 📤 is gone: from here on the form holds this entry, or nothing usable.
+    setReadyToSubmit(null);
     // Take the first 2 number blocks of the time, we only need hh:mm from the hh:mm:ss signature
     timeAmount = timeAmount.split(":").slice(0, 2).join(":");
     const date = importHeader[columnIndex];
@@ -192,22 +205,64 @@ function ImportEntries() {
       return;
     }
 
-    // Check if this entry has a template — applyTemplate reports its own failures.
+    // Check if this entry has a template — applyTemplate reports its own failures. Its
+    // acknowledgement only arrives once the content script has filled every field (or gave up),
+    // so a half-filled form never gets offered for submission.
     const templateId = importTemplates[entryIndex];
     if (templateId?.length) {
-      await applyTemplate(templateId, billable);
+      const applied = await applyTemplate(templateId, billable);
+      if (!applied) {
+        return;
+      }
     }
 
-    // Update the entry status. `entryStatus` from the closure is stale by now (two awaits
-    // happened), so derive the new status from the latest state instead of overwriting it.
-    setEntryStatus((currentEntryStatus) => {
-      const entryStatusCopy = { ...currentEntryStatus };
-      entryStatusCopy[`${columnIndex}-${entryIndex}`] = true;
-      chromeStorage.save(entryStatusCopy, "entryStatus");
-      console.log("Updated entry status", entryStatusCopy);
-      return entryStatusCopy;
-    });
+    // Filled, not booked: offer the second, deliberate click. Nothing is persisted yet — that
+    // happens when the content script reports the form was actually submitted.
+    setReadyToSubmit(entryKey);
   }
+
+  /**
+   * The user's 📤 click: asks the content script to click bexio's "Speichern" button. Success is
+   * not marked here — the content script reports the actual submit (see the listener below),
+   * which also covers the user saving the form directly in bexio.
+   */
+  async function submitImportEntry(entryKey: string) {
+    const result = await sendToBexioTab({ mode: "submit" });
+    if (!result.ok) {
+      // No form to submit (the tab navigated away, the form is empty): nothing was booked, so the
+      // entry goes back to ▶️. sendToBexioTab has already told the user why.
+      setReadyToSubmit((current) => (current === entryKey ? null : current));
+    }
+  }
+
+  useEffect(() => {
+    readyToSubmitRef.current = readyToSubmit;
+  }, [readyToSubmit]);
+
+  // The content script sends `form-submitted` whenever bexio's form is saved — through 📤 or by
+  // the user clicking "Speichern" themselves. Either way the entry waiting on 📤 is now booked.
+  // This fires when the POST leaves the page, so a server-side rejection (bexio re-rendering the
+  // form with errors) still counts as booked here; the ✅ click resets that by hand.
+  useEffect(() => {
+    const onMessage = getRuntimeApi()?.onMessage;
+    if (!onMessage) return;
+    const listener = (message: unknown) => {
+      if (!isFormSubmittedMessage(message)) return;
+      const entryKey = readyToSubmitRef.current;
+      if (!entryKey) return;
+      setReadyToSubmit(null);
+      // Derived from the latest state: the apply chain that set 📤 may have started from a stale
+      // `entryStatus`.
+      setEntryStatus((currentEntryStatus) => {
+        const entryStatusCopy = { ...currentEntryStatus, [entryKey]: true };
+        chromeStorage.save(entryStatusCopy, "entryStatus");
+        console.log("Updated entry status", entryStatusCopy);
+        return entryStatusCopy;
+      });
+    };
+    onMessage.addListener(listener);
+    return () => onMessage.removeListener(listener);
+  }, []);
 
   function resetEntryStatus(id: string) {
     // Reset the entry status
@@ -416,8 +471,10 @@ function ImportEntries() {
                     fieldValue={fieldValue}
                     key={`table-cell-${entryIndex + 1}-${columnIndex}`}
                     entryStatus={entryStatus[`${columnIndex}-${entryIndex}`]}
+                    readyToSubmit={readyToSubmit === `${columnIndex}-${entryIndex}`}
                     onButtonClick={() => applyImportEntry(columnIndex, fieldValue, entryIndex)}
                     onButtonClickReset={() => resetEntryStatus(`${columnIndex}-${entryIndex}`)}
+                    onButtonClickSubmit={() => submitImportEntry(`${columnIndex}-${entryIndex}`)}
                     frozenColumn={frozenColumns.data[columnIndex]}
                   />
                 ))}

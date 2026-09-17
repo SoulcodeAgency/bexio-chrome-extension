@@ -50,7 +50,25 @@ export type ReloadExtension = {
   mode: "reload";
 };
 
-export type ExchangeRequestData = TemplateExchangeData | EntryExchangeData | ReloadExtension;
+/**
+ * Asks the content script to click bexio's "Speichern" button. Sent by the side panel's 📤 button
+ * after an entry was applied — never automatically, the user always confirms with that second click.
+ */
+export type SubmitFormData = {
+  mode: "submit";
+};
+
+export type ExchangeRequestData = TemplateExchangeData | EntryExchangeData | ReloadExtension | SubmitFormData;
+
+/**
+ * The one message that travels the other way, content script → side panel, via
+ * `chrome.runtime.sendMessage`. The content script sends it whenever `#MonitoringForm` fires a
+ * `submit` event — a click on "Speichern", Enter inside the form, or the side panel's own
+ * `SubmitFormData` request. The side panel marks the entry that is waiting on 📤 as booked (✅).
+ */
+export type FormSubmittedMessage = {
+  mode: "form-submitted";
+};
 
 /**
  * The answer the content script's `chrome.runtime.onMessage` listener sends back for every

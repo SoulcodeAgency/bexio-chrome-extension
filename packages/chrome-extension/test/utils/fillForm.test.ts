@@ -63,7 +63,9 @@ describe("fillForm", () => {
     await chrome.storage.local.set({ entries: [template()] });
     loadFixture("monitoring-edit");
     const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
-    await fillForm("tmpl1");
+    // Resolves to `true` only once every field is applied — the side panel relies on that to
+    // offer the "submit" step (see docs/architecture/form-layer.md, "Messaging contract").
+    await expect(fillForm("tmpl1")).resolves.toBe(true);
 
     // The exact call order from fillForm.ts:
     // toggleDisplayLoader() → triggerField(workFieldID, work) → triggerField(statusFieldID, status)
@@ -117,7 +119,8 @@ describe("fillForm", () => {
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
 
-    await expect(fillForm("deleted-template")).resolves.toBeUndefined();
+    // `false`: nothing was applied, so the side panel must not offer to submit the form.
+    await expect(fillForm("deleted-template")).resolves.toBe(false);
 
     // No form field is touched; the loader is closed again and the injected
     // template list is re-rendered so the stale button disappears.
@@ -156,9 +159,10 @@ describe("fillForm", () => {
     );
     const { default: fillForm } = await import("@bexio-chrome-extension/chrome-extension/src/utils/fillForm");
 
-    // Neither caller awaits fillForm, so this must not reject: it would only become an
-    // unhandled rejection the user never sees.
-    await expect(fillForm("tmpl1")).resolves.toBeUndefined();
+    // The in-page template button does not await fillForm, so this must not reject: it would
+    // only become an unhandled rejection the user never sees. `false` tells the awaiting caller
+    // (onMessage) that the form is half-filled and must not be offered for submission.
+    await expect(fillForm("tmpl1")).resolves.toBe(false);
 
     expect(calls).toEqual(["loader:on", "loader:off"]);
     expect(errorSpy).toHaveBeenCalled();

@@ -52,11 +52,11 @@ The import buffer has **no wrapper module**: `ImportEntries.tsx` writes all five
 The five keys are **one logical record**, not five independent ones:
 
 - `"importTemplates"` is indexed by row (`importTemplates[entryIndex]` = the template id applied with that row),
-- `"entryStatus"` is keyed by `` `${columnIndex}-${entryIndex}` `` (which tracking-day cells were already booked into bexio).
+- `"entryStatus"` is keyed by `` `${columnIndex}-${entryIndex}` `` (which tracking-day cells were already booked into bexio). A key is set to `true` when the content script reports that bexio's form was submitted (`form-submitted`, see `docs/architecture/form-layer.md`), not when the entry is applied — the intermediate "filled, waiting for the 📤 click" state is React state only and never stored.
 
 Both are therefore only meaningful together with the exact `"importData"` / `"importHeader"` they were produced for. `ImportEntries.tsx` keeps them consistent by writing all five keys together in `persistImport()`:
 
-- **Parsing new clipboard data** (`convertImportData`, i.e. every successful paste) writes the new header/data/footer and resets `"entryStatus"` to `{}` and `"importTemplates"` to `[]`. The reset lives here, not in `saveImport`, because auto-map, the per-row template `<select>` and the ▶️ apply button all persist their key immediately — even for data the user never saved. Writing the parsed data through on paste is what keeps those later single-key writes attached to the right rows.
+- **Parsing new clipboard data** (`convertImportData`, i.e. every successful paste) writes the new header/data/footer and resets `"entryStatus"` to `{}` and `"importTemplates"` to `[]`. The reset lives here, not in `saveImport`, because auto-map, the per-row template `<select>` and the booking of an entry (the `form-submitted` message after ▶️ + 📤) all persist their key immediately — even for data the user never saved. Writing the parsed data through on paste is what keeps those later single-key writes attached to the right rows.
 - **"Save this import"** (`saveImport`) re-writes the same five keys with the _current_ status/templates. It must not reset them; that already happened when the data was parsed.
 - **"Delete saved data"** (`removeImportData`) clears all five.
 

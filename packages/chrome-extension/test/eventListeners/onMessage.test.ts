@@ -14,12 +14,17 @@ import { getChromeFake } from "../../../../test/support/chrome-fake";
 
 const { calls } = vi.hoisted(() => ({ calls: [] as string[] }));
 
+const { fillFormControl } = vi.hoisted(() => ({
+  fillFormControl: { resolve: (_value: boolean) => {} },
+}));
+
 vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/fillForm", () => ({
   default: vi.fn((id: string, billable?: boolean) => {
     calls.push(`fillForm:${id}:${String(billable)}`);
-    // fillForm is not awaited by the listener — a never-settling promise (its waitFor* helpers
-    // have no timeout) must not hold the response back.
-    return new Promise(() => {});
+    // The listener awaits fillForm: the test decides when (and how) the fill finishes.
+    return new Promise<boolean>((resolve) => {
+      fillFormControl.resolve = resolve;
+    });
   }),
 }));
 
@@ -107,17 +112,87 @@ describe("onMessage listener", () => {
     expect(response).toEqual({ ok: true });
   });
 
-  it("acknowledges a template request without waiting for fillForm to finish", async () => {
+  /**
+   * The side panel offers the "submit" step as soon as the template request is acknowledged, so
+   * the acknowledgement has to mean "the form is filled and the loader is gone" — not merely
+   * "fillForm was started". Since #83 every waitFor* has a deadline, so awaiting is safe.
+   */
+  it("acknowledges a template request only after fillForm reports a complete fill", async () => {
     const listener = await loadListener();
 
-    const { response } = await dispatch(listener, {
-      mode: "template",
-      templateId: "tmpl1",
-      timeEntryBillable: true,
+    let response: unknown;
+    const responded = new Promise<void>((resolve) => {
+      listener({ mode: "template", templateId: "tmpl1", timeEntryBillable: true }, {}, (value) => {
+        response = value;
+        resolve();
+      });
+    });
+    await Promise.resolve();
+    expect(calls).toEqual(["fillForm:tmpl1:true"]);
+    expect(response).toBeUndefined();
+
+    fillFormControl.resolve(true);
+    await responded;
+
+    expect(response).toEqual({ ok: true });
+  });
+
+  it("answers with { ok: false } when fillForm reports an incomplete fill", async () => {
+    const listener = await loadListener();
+
+    const pending = dispatch(listener, { mode: "template", templateId: "tmpl1" });
+    await Promise.resolve();
+    fillFormControl.resolve(false);
+    const { response } = await pending;
+
+    expect(response).toEqual({ ok: false, error: expect.stringMatching(/not applied/i) });
+  });
+
+  describe("submit request", () => {
+    function installForm(duration: string) {
+      document.body.innerHTML = `
+        <form id="MonitoringForm" action="/index.php/monitoring/edit" method="POST">
+          <input id="monitoring_duration" value="${duration}">
+          <button type="submit" name="save" class="btn btn-primary save">Speichern</button>
+        </form>`;
+      const form = document.getElementById("MonitoringForm") as HTMLFormElement;
+      const submits: string[] = [];
+      form.addEventListener("submit", (event) => {
+        // jsdom cannot navigate; recording the submitter is what matters.
+        event.preventDefault();
+        submits.push((event as SubmitEvent).submitter?.getAttribute("name") ?? "none");
+      });
+      return submits;
+    }
+
+    it("clicks bexio's save button so the form submits with the `save` control", async () => {
+      const submits = installForm("01:30");
+      const listener = await loadListener();
+
+      const { response } = await dispatch(listener, { mode: "submit" });
+
+      expect(submits).toEqual(["save"]);
+      expect(response).toEqual({ ok: true });
     });
 
-    expect(calls).toEqual(["fillForm:tmpl1:true"]);
-    expect(response).toEqual({ ok: true });
+    it("refuses to submit a form with an empty duration", async () => {
+      const submits = installForm("");
+      const listener = await loadListener();
+
+      const { response } = await dispatch(listener, { mode: "submit" });
+
+      expect(submits).toEqual([]);
+      expect(response).toEqual({ ok: false, error: expect.stringMatching(/duration/i) });
+    });
+
+    it("answers with { ok: false } when the save button is gone", async () => {
+      document.body.innerHTML = `<form id="MonitoringForm"><input id="monitoring_duration" value="01:00"></form>`;
+      const listener = await loadListener();
+
+      const { response } = await dispatch(listener, { mode: "submit" });
+
+      expect(response).toEqual({ ok: false, error: expect.stringMatching(/save button/i) });
+    });
   });
 
   it("applies duration, date, billable and notes, then acknowledges", async () => {

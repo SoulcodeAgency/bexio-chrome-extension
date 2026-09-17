@@ -11,13 +11,16 @@ import capitalizeFirstLetter from "../utils/capitalizeFirstLetter";
 import triggerCheckbox from "../utils/triggerCheckbox";
 import { billableCheckbox } from "../selectors/billableCheckbox";
 import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
+import { submitMonitoringForm } from "../utils/submitMonitoringForm";
 
 /**
- * Dispatches one side-panel request. Resolves once the request has been handed to its handler.
+ * Dispatches one side-panel request. Resolves once the request is fully applied to the form —
+ * the side panel offers its "submit" step on that acknowledgement, so it must not come earlier.
  *
- * `fillForm` is deliberately **not** awaited: its `waitFor*` helpers poll without a timeout, so
- * awaiting it could keep the message channel open forever and leave the side panel hanging with
- * no feedback.
+ * `fillForm` **is** awaited. It used not to be, because its `waitFor*` helpers had no timeout;
+ * since #83 every wait has a 20 s deadline, so the message channel can only stay open for a
+ * bounded time. A fill that ends half-done (timeout, stale template id) resolves to `false`
+ * and is answered with `{ ok: false }` — `fillForm` has already told the user via `alert()`.
  *
  * Every `trigger*` call **is** awaited (#124). They are all `async`, so a missing form field
  * surfaces as a rejected promise, not as a synchronous throw — unawaited, those rejections escaped
@@ -45,8 +48,14 @@ export async function handleExchangeRequest(request: ExchangeRequestData): Promi
   }
   // Template
   if (request.mode === "template") {
-    // Not awaited on purpose — see the doc comment above.
-    fillForm(request.templateId, request.timeEntryBillable);
+    const applied = await fillForm(request.templateId, request.timeEntryBillable);
+    if (!applied) {
+      throw new Error("The template was not applied completely - check the bexio form.");
+    }
+  }
+  // Submit — the user's second, deliberate click in the side panel
+  if (request.mode === "submit") {
+    submitMonitoringForm();
   }
   // Re-init the extension
   if (request.mode === "reload") {
