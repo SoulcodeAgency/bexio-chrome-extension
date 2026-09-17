@@ -8,8 +8,9 @@
  * the `chrome.storage.onChanged` subscription.
  */
 import { useContext } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { message as staticMessage } from "antd";
 import App from "~/App";
 import TemplateProvider from "~/TemplateProvider";
 import RefreshTemplatesButton from "~/components/RefreshTemplatesButton/RefreshTemplatesButton";
@@ -63,6 +64,11 @@ function renderProvider() {
 
 describe("RefreshTemplatesButton", () => {
   it("re-reads templates that were added to storage after mount", async () => {
+    // No bridge is mounted here, so the success toast goes through antd's static `message`, which
+    // renders into its own React root. `cleanup()` never unmounts that root: its auto-close timer
+    // fires ~3 s later and queues React work that can run after Vitest has torn down jsdom —
+    // "ReferenceError: window is not defined" in a green run. Stub it, as the other suites do.
+    const successSpy = vi.spyOn(staticMessage, "success").mockImplementation((() => {}) as never);
     await chromeStorageTemplateEntries.saveTemplates([makeTemplate("tmpl1", "Falcon Template")]);
 
     renderProvider();
@@ -81,6 +87,9 @@ describe("RefreshTemplatesButton", () => {
     });
 
     await waitFor(() => expect(screen.getByText("Condor Template")).toBeTruthy());
+    // Also proves the stub caught the toast — should it move to another method, this fails instead
+    // of quietly bringing the stray root back.
+    expect(successSpy).toHaveBeenCalledWith("Templates reloaded");
   });
 });
 
@@ -118,7 +127,11 @@ describe("TemplateProvider — chrome.storage.onChanged", () => {
   it("removes its listener on unmount", async () => {
     const chromeFake = getChromeFake();
     const { unmount } = renderProvider();
-    await waitFor(() => expect(chromeFake.storage.onChanged.__listeners.length).toBe(1));
+    // Let the mount-time template load settle inside act(). Waiting in waitFor() instead lets it
+    // commit outside act, which leaves a passive-effects task on React's real scheduler that runs
+    // after unmount — and after jsdom is gone, if this happens to be the file's last test.
+    await act(async () => {});
+    expect(chromeFake.storage.onChanged.__listeners).toHaveLength(1);
 
     unmount();
 
