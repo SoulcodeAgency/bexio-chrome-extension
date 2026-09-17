@@ -157,13 +157,13 @@ Recommendation: pick one path per release and stick with it.
 
 Five GitHub Actions secrets must be configured in repo settings → Secrets and variables → Actions:
 
-| Secret              | What it is                           | Source                                                                     |
-| ------------------- | ------------------------------------ | -------------------------------------------------------------------------- |
-| `CWS_EXTENSION_ID`  | The CWS listing id                   | `nbmjdligmcfaeebdihmgbdpahdfddlhm` (public)                                |
-| `CWS_PUBLISHER_ID`  | The publisher the listing sits under | Dev dashboard → account switcher; a personal account uses the literal `me` |
-| `CWS_CLIENT_ID`     | OAuth client id                      | Step 3 below                                                               |
-| `CWS_CLIENT_SECRET` | OAuth client secret                  | Step 3 below                                                               |
-| `CWS_REFRESH_TOKEN` | Long-lived OAuth refresh token       | Step 4 below                                                               |
+| Secret              | What it is                           | Source                                                                    |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------------------- |
+| `CWS_EXTENSION_ID`  | The CWS listing id                   | `nbmjdligmcfaeebdihmgbdpahdfddlhm` (public)                               |
+| `CWS_PUBLISHER_ID`  | The publisher the listing sits under | Dev dashboard → **Publisher → Settings**, signed in as the step-1 account |
+| `CWS_CLIENT_ID`     | OAuth client id                      | Step 3 below                                                              |
+| `CWS_CLIENT_SECRET` | OAuth client secret                  | Step 3 below                                                              |
+| `CWS_REFRESH_TOKEN` | Long-lived OAuth refresh token       | Step 4 below                                                              |
 
 Procedure (run once, by the listing owner):
 
