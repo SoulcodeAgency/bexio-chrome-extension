@@ -104,6 +104,9 @@ npm run npm:installProject
 - `npm run build:cleanup` — remove `dist/` and `unpacked/`.
 
 To load the extension locally: build, then Chrome → Extensions → **Load unpacked** → select the `unpacked/` folder.
+For repeated manual testing, `npm run build:test` builds the current checkout (also from a git worktree) into the main
+checkout's `unpacked/` and stamps a test build number (`1.8.2.7`) into its manifest — load that folder once, then just
+reload the extension after each build.
 
 ### Tests and checks
 

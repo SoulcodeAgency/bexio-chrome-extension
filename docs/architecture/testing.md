@@ -64,12 +64,12 @@ deliberately don't add). If you want it for a debugging session:
 
 The root `vitest.config.ts` (via its `test.projects` array) defines four projects. (Vitest 4 deprecated the standalone `vitest.workspace.ts` file in favour of `test.projects`, so there is no workspace file — `vitest.config.ts` is the only test config.)
 
-| Project            | Root                        | Environment | What it tests                                                                                                                                                                                                                                                                              |
-| ------------------ | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `shared`           | `packages/shared`           | `node`      | Storage helpers, template utilities                                                                                                                                                                                                                                                        |
-| `chrome-extension` | `packages/chrome-extension` | `jsdom`     | Selectors, content scripts, form utils                                                                                                                                                                                                                                                     |
-| `sidePanel-import` | `packages/sidePanel-import` | `jsdom`     | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`)                              |
-| `scripts`          | `scripts`                   | `node`      | Repo tooling that belongs to no package — the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review, and the bexio fixture pipeline (`bexio-fixtures/`: scrub + leak check, plus the guard over all committed fixtures) |
+| Project            | Root                        | Environment | What it tests                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------ | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shared`           | `packages/shared`           | `node`      | Storage helpers, template utilities                                                                                                                                                                                                                                                                                                                                       |
+| `chrome-extension` | `packages/chrome-extension` | `jsdom`     | Selectors, content scripts, form utils                                                                                                                                                                                                                                                                                                                                    |
+| `sidePanel-import` | `packages/sidePanel-import` | `jsdom`     | The ManicTime TSV parser (`csvParser.test.ts`), the short-row guards (`importGuards.test.tsx`), the tag → template auto-mapper (`autoMapTemplatesV3.test.ts`) and the parse → import table rendering (`importEntries.test.tsx`, via `@testing-library/react`)                                                                                                             |
+| `scripts`          | `scripts`                   | `node`      | Repo tooling that belongs to no package — the Dependabot PR classifier (`classify-dependabot-update.ts`), whose output decides whether a PR auto-merges without review, the bexio fixture pipeline (`bexio-fixtures/`: scrub + leak check, plus the guard over all committed fixtures), and the version and target-folder helpers of `npm run build:test` (`build-test/`) |
 
 The `sidePanel-import` project has two extra setup details: the `~` alias (that package's Vite
 alias for its `src/`) is mirrored in `vitest.config.ts`, and
@@ -339,9 +339,14 @@ and remains out of scope.
 
 ### Setup
 
-1. Build the extension: `npm run build:project -- -Development`
-2. Open Chrome → `chrome://extensions/` → enable "Developer mode" → "Load unpacked"
-   → select the `unpacked/` directory.
+1. Build the extension: `npm run build:test`, in the checkout that holds the code
+   under test (main checkout or worktree). It always delivers into the **main
+   checkout's** `unpacked/` and prints the version to expect, e.g. `1.8.2.7`.
+2. Once only: Chrome → `chrome://extensions/` → enable "Developer mode" → "Load
+   unpacked" → select `E:\git\soulcode\bexio-chrome-extension\unpacked`. After
+   every later `build:test`, click the extension's reload button instead and
+   check that it shows the printed version. The folder path fixes the extension
+   id, so templates and settings stay.
 3. Log into your bexio account in the same Chrome profile.
 
 ### 5.1 — `monitoring/edit`: Templates block

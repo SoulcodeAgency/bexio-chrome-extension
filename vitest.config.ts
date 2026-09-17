@@ -97,7 +97,8 @@ export default defineConfig({
         test: {
           // Repo tooling that isn't part of any package — the Dependabot PR
           // classifier, whose output decides whether a PR auto-merges without
-          // review, and the bexio fixture pipeline (bexio-fixtures/).
+          // review, the bexio fixture pipeline (bexio-fixtures/), and the
+          // helpers of `npm run build:test` (build-test/).
           name: "scripts",
           root: "./scripts",
           environment: "node",

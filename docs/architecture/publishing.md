@@ -58,7 +58,7 @@ This is not theoretical. Versions **1.4.0 and 1.5.0 contain no user-facing chang
 
 The scope does not save you — `fix(ci):` is still a `fix`. Ask what the commit changes for someone who has the extension installed. If the answer is "nothing", it is not a `fix`.
 
-**Why always-minor:** patch numbers are reserved for local dev builds (`npm run build:devRelease` bumps the patch on your machine so you can tell loaded unpacked builds apart — never commit that bump). The store version is the only version that matters, and it moves in minors. Individual fixes are still listed by name in the changelog under the minor's heading. To go back to standard semver, remove the `versioning` line — the change is not retroactive.
+**Why always-minor:** patch numbers were reserved for local dev builds, which used to bump the patch on your machine so loaded unpacked builds could be told apart. `npm run build:test` now marks test builds with a fourth version part written only into the build output (`1.8.2.7`), so no tracked version file changes for a dev build any more — still never commit a version bump by hand. The store version is the only version that matters, and it moves in minors. Individual fixes are still listed by name in the changelog under the minor's heading. To go back to standard semver, remove the `versioning` line — the change is not retroactive.
 
 **Silent-no-release warning:** if you merge a feature using a non-conventional commit message (or `chore:` by mistake), no Release PR will appear. Look at the message before merging. If you've already merged and want a release anyway, add an empty `feat:` or `fix:` commit to `main` ("nudge commit") — `release-please` will pick it up on the next push.
 

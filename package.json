@@ -5,9 +5,7 @@
   "description": "This extension allows saving and loading of form data as templates within the bexio time tracking page.",
   "type": "module",
   "scripts": {
-    "build:devRelease": "npm run version:patch && npm run build:project -- -Development",
-    "build:devRelease:sidePanelOnly": "npm run build:devRelease -- -IgnoreExtension",
-    "build:devRelease:extensionOnly": "npm run build:devRelease -- -IgnoreSidePanel",
+    "build:test": "node scripts/build-test/build-test.ts",
     "build:project": "powershell -File Build.ps1",
     "build:newExtensionRelease": "npm run build:project -- -createPackage",
     "build:cleanup": "powershell \"Remove-Item -Path dist -Recurse -Force; Remove-Item -Path unpacked -Recurse -Force;\"",
