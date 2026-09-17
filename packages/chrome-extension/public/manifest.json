@@ -7,8 +7,13 @@
   "action": {
     "default_title": "bexio Time Tracking Templates"
   },
-  "permissions": ["storage", "sidePanel"],
-  "host_permissions": ["https://office.bexio.com/*"],
+  "permissions": [
+    "storage",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "https://office.bexio.com/*"
+  ],
   "icons": {
     "16": "assets/logo16.png",
     "32": "assets/logo32.png",
@@ -17,8 +22,12 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["assets/logo_orig.png"],
-      "matches": ["https://office.bexio.com/*"]
+      "resources": [
+        "assets/logo_orig.png"
+      ],
+      "matches": [
+        "https://office.bexio.com/*"
+      ]
     }
   ],
   "background": {
@@ -30,8 +39,12 @@
         "https://office.bexio.com/index.php/monitoring/edit",
         "https://office.bexio.com/index.php/monitoring/edit/id/*"
       ],
-      "js": ["/src/apps/bexioTimetrackingTemplates/index.ts"],
-      "css": ["bexioTimetrackingTemplates.css"]
+      "js": [
+        "/src/apps/bexioTimetrackingTemplates/index.ts"
+      ],
+      "css": [
+        "bexioTimetrackingTemplates.css"
+      ]
     },
     {
       "matches": [
@@ -41,8 +54,12 @@
         "https://office.bexio.com/index.php/pr_project/showPackage/*",
         "https://office.bexio.com/index.php/kb_invoice/show/id/*"
       ],
-      "js": ["/src/apps/bexioProjectList/index.ts"],
-      "css": ["bexioProjectList.css"]
+      "js": [
+        "/src/apps/bexioProjectList/index.ts"
+      ],
+      "css": [
+        "bexioProjectList.css"
+      ]
     }
   ]
 }
