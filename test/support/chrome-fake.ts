@@ -200,6 +200,7 @@ export interface ChromeFake {
     };
     sendMessage: (...args: unknown[]) => void;
     getURL: (path: string) => string;
+    getManifest: () => { version: string };
     lastError?: unknown;
   };
 }
@@ -232,6 +233,11 @@ export function installChromeFake(): ChromeFake {
       // Mirrors chrome.runtime.getURL: turns a packaged asset path into an
       // absolute extension URL. Deterministic so tests can assert on it.
       getURL: (path: string) => `chrome-extension://fake-extension-id/${path}`,
+      // Mirrors chrome.runtime.getManifest. The version is deliberately NOT
+      // package.json's: it is what identifies a loaded build (build:test stamps a
+      // fourth part into the manifest only), so a test reading it must see the
+      // manifest and not silently pass on the fallback.
+      getManifest: () => ({ version: "0.0.0-fake" }),
       // Explicitly present so the guard lets it through: real code reads
       // chrome.runtime.lastError to *check* for an error, and it is undefined
       // whenever there is none.
