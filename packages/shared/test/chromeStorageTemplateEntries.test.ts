@@ -49,3 +49,23 @@ describe("chromeStorageTemplateEntries", () => {
     expect(loaded).toEqual([sample({ id: "u", templateName: "New", keywords: "k" })]);
   });
 });
+
+describe("restoreTemplate", () => {
+  it("re-inserts a deleted entry and returns true", async () => {
+    await chrome.storage.local.set({ entries: [] });
+    const entry = sample({ id: "gone" });
+
+    expect(await te.restoreTemplate(entry)).toBe(true);
+    expect((await te.loadTemplates()).map((e) => e.id)).toEqual(["gone"]);
+  });
+
+  it("is a no-op and returns false when the id already exists", async () => {
+    const entry = sample({ id: "still-there" });
+    await chrome.storage.local.set({ entries: [entry] });
+
+    expect(await te.restoreTemplate(sample({ id: "still-there", templateName: "changed" }))).toBe(false);
+    const stored = await te.loadTemplates();
+    expect(stored).toHaveLength(1);
+    expect(stored[0].templateName).toBe("T");
+  });
+});

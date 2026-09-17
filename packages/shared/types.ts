@@ -61,10 +61,19 @@ export type SubmitFormData = {
 export type ExchangeRequestData = TemplateExchangeData | EntryExchangeData | ReloadExtension | SubmitFormData;
 
 /**
- * The one message that travels the other way, content script → side panel, via
- * `chrome.runtime.sendMessage`. The content script sends it whenever `#MonitoringForm` fires a
- * `submit` event — a click on "Speichern", Enter inside the form, or the side panel's own
- * `SubmitFormData` request. The side panel marks the entry that is waiting on 📤 as booked (✅).
+ * Content script → service worker: open this tab's side panel. Sent by the "open side panel"
+ * button in the injected Templates block via `chrome.runtime.sendMessage`; the worker answers
+ * with `chrome.sidePanel.open`.
+ */
+export type OpenSidePanelRequest = {
+  mode: "openSidePanel";
+};
+
+/**
+ * Content script → side panel, also via `chrome.runtime.sendMessage`. The content script sends it
+ * whenever `#MonitoringForm` fires a `submit` event — a click on "Speichern", Enter inside the
+ * form, or the side panel's own `SubmitFormData` request. The side panel marks the entry that is
+ * waiting on 📤 as booked (✅). The service worker's listener ignores it.
  */
 export type FormSubmittedMessage = {
   mode: "form-submitted";
