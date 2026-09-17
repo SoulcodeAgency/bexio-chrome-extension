@@ -62,6 +62,34 @@ The scope does not save you — `fix(ci):` is still a `fix`. Ask what the commit
 
 **Silent-no-release warning:** if you merge a feature using a non-conventional commit message (or `chore:` by mistake), no Release PR will appear. Look at the message before merging. If you've already merged and want a release anyway, add an empty `feat:` or `fix:` commit to `main` ("nudge commit") — `release-please` will pick it up on the next push.
 
+#### Why merge-committed PRs are listed twice
+
+`release-please` parses **every** commit since the last release, and the branch commit is not the only one carrying the message. A GitHub merge commit looks like this:
+
+```
+Merge pull request #148 from SoulcodeAgency/feat/sidepanel-apply-submit-556974
+
+feat(side-panel): submit the bexio form with a second, deliberate click
+```
+
+The subject is not conventional, so on its own it would be skipped. The **body** is — because the repository's `merge_commit_message` setting is `PR_TITLE`, which copies the PR title in. `release-please` parses it and emits a second changelog line, identical in text, pointing at the merge SHA instead of the branch SHA. 1.9.0's changelog carries eight such pairs (`54b7783`/`783faba`, `a512c04`/`283fa5e`, `56e23d2`/`083c32a`, …).
+
+Squash-merged PRs are unaffected: their subject ends in GitHub's `(#N)` marker, which `release-please` recognises as one commit — that is why `#106`, `#104` and `#119` appear only once.
+
+The permanent fix is the repository setting, which makes the merge commit's body empty:
+
+```bash
+gh api -X PATCH repos/SoulcodeAgency/bexio-chrome-extension -f merge_commit_message=BLANK
+```
+
+Until it is set, pass the body explicitly when landing a PR:
+
+```bash
+gh pr merge <N> --merge --subject "Merge pull request #<N> from SoulcodeAgency/<branch>" --body ""
+```
+
+Neither is retroactive. Duplicates already in the history can only be removed by editing `CHANGELOG.md` on the Release PR branch — and because `release-please` rewrites that file from git on every push to `main`, the edit has to be the **last** thing before merging the Release PR.
+
 ### Forcing a specific version (`Release-As`)
 
 Add a `Release-As: <version>` footer to any commit message and merge it. `release-please` respects it and bumps to exactly that version on the next Release PR. Example:

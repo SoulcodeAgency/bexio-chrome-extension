@@ -10,3 +10,8 @@ coverage
 # (see .claude/settings.json) — only these are local.
 .claude/settings.local.json
 .claude/worktrees/
+
+# graft (MCP code-index server) writes a per-repo cache here. It is local,
+# per-machine state — and its session files record the prompts verbatim, which
+# have no business in a public repository.
+graft/
