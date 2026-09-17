@@ -22,6 +22,20 @@ the page URL:
 | `/index.php/pr_project/showPackage`    | the "Zeiten" tab panel (`getPackageTimesPanel()`) | `observerProjectWorkPackagePage()`                    |
 | `/index.php/kb_invoice/show/id`        | `#jqDialog` (modal) → `.block.list` inside it     | `observeBillingPage()` → `observeBillingModalTable()` |
 
+### `monitoring/list` — opened through bexio's sidebar
+
+The manifest matches `monitoring/list` **and** `monitoring/list/*`. bexio's sidebar link "Zeiten"
+does not open `/index.php/monitoring/list` but `/index.php/monitoring/list/resetListView/1`; the
+server answers that URL directly (no redirect), and bexio then rewrites the address bar to
+`/monitoring/list` through the History API. Chrome matches the two halves of the content-script
+entry at different moments: `bexioProjectList.css` against the URL that was loaded, the script
+(`document_idle`) against the rewritten one. With only the exact `monitoring/list` pattern the
+script ran but the stylesheet did not, so the toggle showed no active option (both buttons white)
+while the conversion itself worked. Checked on live bexio 2026-09-17: loading `/monitoring/list`
+directly styled the active option, the sidebar URL did not. Pinned by `test/manifest.test.ts` and
+the "opened through bexio's sidebar" test in `e2e/extension-behaviour.spec.ts`, which serves the
+fixture at the sidebar URL and rewrites the address the same way.
+
 ### `pr_project/showPackage` — the "Zeiten" tab panel
 
 A work package lists its time entries in the lower jQuery-UI tab widget (`#tabs.listBlock`,

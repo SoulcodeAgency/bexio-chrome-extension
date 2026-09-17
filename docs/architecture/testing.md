@@ -265,7 +265,9 @@ There are two specs, sharing the launch/fixture helpers in `e2e/support.ts`:
   _visible_ in the page title bar of `monitoring/list` (the test adds bexio's
   rule that hides the legacy top navigation, which the fixture ships without).
 - `e2e/extension-behaviour.spec.ts` — behaviour-level (issue #66): the
-  Text | Tooltip toggle round-trip (convert → revert), applying a template through
+  Text | Tooltip toggle round-trip (convert → revert), the toggle's active option
+  when bexio's sidebar opened the list (`serveFixture`'s `inlineScript` stands in
+  for bexio's address rewrite), applying a template through
   the real `fillForm` synthetic-event path, the keyword-aware template filter,
   and the inline Add + manage-mode Delete/Undo flows — dialog-free by design;
   `page.on("dialog")` stays wired to prove no native dialog ever opens.
@@ -391,7 +393,7 @@ all four pages and the work package's panel reload in
 `test/apps/bexioProjectList.test.ts`. What only a real browser shows: how the
 toggle looks next to bexio's own buttons._
 
-1. Navigate to `https://office.bexio.com/index.php/monitoring/list`.
+1. Open the time list through bexio's sidebar (Projekte → Zeiten).
    Confirm a **Text | Tooltip** toggle is visible in the page title bar, directly
    left of the green "Neue Zeiterfassung" button, with "Tooltip" in blue (default).
 2. Click **Text** — confirm tooltip popover icons (`<i rel="popover">`) are

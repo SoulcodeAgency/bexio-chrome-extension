@@ -89,8 +89,10 @@ export const BEXIO_HIDES_LEGACY_TOP_NAVIGATION = ".use-new-nav .lgcy-topbar-nav-
  * Routes `url` to serve the named anonymised bexio fixture instead of hitting
  * the real bexio server. Fixtures that already start with `<html>`/`<!doctype`
  * are served as-is; body-only captures get wrapped in a document skeleton.
+ * Fixtures carry none of bexio's scripts; `inlineScript` stands in for one of
+ * them, run at the end of `<body>` while the page parses.
  */
-export async function serveFixture(page: Page, url: string, fixtureName: string): Promise<void> {
+export async function serveFixture(page: Page, url: string, fixtureName: string, inlineScript?: string): Promise<void> {
   const fixture = readFileSync(path.join(FIXTURES, `${fixtureName}.html`), "utf8");
   let body: string;
   if (fixture.startsWith("<!doctype")) {
@@ -99,6 +101,9 @@ export async function serveFixture(page: Page, url: string, fixtureName: string)
     body = `<!doctype html>${fixture}`;
   } else {
     body = `<!doctype html><html><head><title>t</title></head><body>${fixture}</body></html>`;
+  }
+  if (inlineScript) {
+    body = body.replace("</body>", `<script>${inlineScript}</script></body>`);
   }
   await page.route(url, (route) => route.fulfill({ contentType: "text/html", body }));
 }

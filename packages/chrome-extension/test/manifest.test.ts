@@ -12,11 +12,20 @@ interface Manifest {
   host_permissions?: string[];
   optional_permissions?: string[];
   optional_host_permissions?: string[];
-  content_scripts?: { matches?: string[] }[];
+  content_scripts?: { matches?: string[]; js?: string[]; css?: string[] }[];
   web_accessible_resources?: { resources?: string[]; matches?: string[] }[];
 }
 
 const manifest: Manifest = JSON.parse(readFileSync(MANIFEST, "utf8"));
+
+/**
+ * Chrome's match-pattern rule for the patterns this manifest uses (fixed scheme and host):
+ * `*` in the path matches any run of characters, everything else matches literally.
+ */
+const matchesUrlPattern = (pattern: string, url: string) => {
+  const literal = (part: string) => part.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+  return new RegExp(`^${pattern.split("*").map(literal).join(".*")}$`).test(url);
+};
 
 describe("manifest.json scoping", () => {
   it("requests only the API permissions the extension actually uses", () => {
@@ -47,6 +56,22 @@ describe("manifest.json scoping", () => {
         /^https:\/\/office\.bexio\.com(\/|$)/,
       );
     }
+  });
+
+  it("injects the tooltip content script and its stylesheet on the URL bexio's sidebar opens the time list with", () => {
+    // The sidebar's "Zeiten" link loads /monitoring/list/resetListView/1, and bexio then rewrites
+    // the address to /monitoring/list through the History API. Chrome matches the stylesheet
+    // against the loaded URL but the script against the rewritten one, so a match on
+    // /monitoring/list alone ran the toggle without bexioProjectList.css: no active option shown.
+    const tooltipScript = manifest.content_scripts?.find((cs) =>
+      cs.js?.includes("/src/apps/bexioProjectList/index.ts"),
+    );
+    expect(tooltipScript?.css).toEqual(["bexioProjectList.css"]);
+
+    const matchesSidebarUrl = tooltipScript!.matches!.some((pattern) =>
+      matchesUrlPattern(pattern, "https://office.bexio.com/index.php/monitoring/list/resetListView/1"),
+    );
+    expect(matchesSidebarUrl).toBe(true);
   });
 
   it("exposes web-accessible resources to office.bexio.com only", () => {
