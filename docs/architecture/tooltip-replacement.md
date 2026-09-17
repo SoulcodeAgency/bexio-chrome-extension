@@ -4,8 +4,8 @@
 
 The `bexioProjectList` content script replaces bexio's native popover-style tooltip icons
 (`<i rel="popover" data-content="...">`) with inline readable text. The feature is toggled by
-the `removePopoversSetting` flag (default `false`) and controlled via a "Text mode / Popover mode"
-button injected into the page nav.
+the `removePopoversSetting` flag (default `false`) and controlled via a "Text | Tooltip" toggle
+injected into bexio's page title bar.
 
 ---
 
@@ -15,12 +15,25 @@ The `bexioProjectList` content script is injected on the four `office.bexio.com`
 the manifest's second `content_scripts` block, and its observers and UI injection then branch on
 the page URL:
 
-| Path prefix                            | Element observed                              | Source function                                       |
-| -------------------------------------- | --------------------------------------------- | ----------------------------------------------------- |
-| `/index.php/monitoring/list`           | `#monitoring_content`                         | `observerTimeTrackingPage()`                          |
-| `/index.php/pr_project/listMonitoring` | `.listBlock` (first)                          | `observerProjectPage()`                               |
-| `/index.php/pr_project/showPackage`    | `#ui-id-5`                                    | `observerProjectWorkPackagePage()`                    |
-| `/index.php/kb_invoice/show/id`        | `#jqDialog` (modal) → `.block.list` inside it | `observeBillingPage()` → `observeBillingModalTable()` |
+| Path prefix                            | Element observed                                  | Source function                                       |
+| -------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
+| `/index.php/monitoring/list`           | `#monitoring_content`                             | `observerTimeTrackingPage()`                          |
+| `/index.php/pr_project/listMonitoring` | `.listBlock` (first)                              | `observerProjectPage()`                               |
+| `/index.php/pr_project/showPackage`    | the "Zeiten" tab panel (`getPackageTimesPanel()`) | `observerProjectWorkPackagePage()`                    |
+| `/index.php/kb_invoice/show/id`        | `#jqDialog` (modal) → `.block.list` inside it     | `observeBillingPage()` → `observeBillingModalTable()` |
+
+### `pr_project/showPackage` — the "Zeiten" tab panel
+
+A work package lists its time entries in the lower jQuery-UI tab widget (`#tabs.listBlock`,
+tabs "Aufgaben" / "Zeiten"). jQuery UI gives each panel a generated id (`ui-id-N`, numbered in
+initialisation order), so the id is not stable: the code observed a hard-coded `#ui-id-5` until
+2026-09, when bexio's page had the panel at `#ui-id-4` and the conversion silently stopped
+working there. `selectors/packageTimesPanel.ts` now resolves the panel through its tab link
+(`a[href*='/pr_project/listMonitorings/']` → closest `<li>` → `aria-controls`); the ids exist
+when the content script starts. Checked on the live page (2026-09-17): opening the tab and
+sorting inside it both replace the panel's own children, so the shallow `childList` observer
+on the panel sees every reload. Pinned in `test/apps/bexioProjectList.test.ts`, including a
+case with a renumbered panel id.
 
 ### `kb_invoice/show/id` — the "Zeiten importieren" modal
 
@@ -116,36 +129,53 @@ even/odd row banding. jsdom serialises `#ffe2bc` as `rgb(255, 226, 188)` and `an
 
 ---
 
-## The "Text mode / Popover mode" toggle button
+## The "Text | Tooltip" toggle
 
-`renderHtml.ts` injects the toggle button **once per page load** (guarded by checking for
-`document.getElementById("PopoverTextSwitcher")`):
+`renderHtml.ts` injects the toggle **once per page load** (guarded by checking for
+`document.getElementById("PopoverTextSwitcher")`, and inserted before its first `await`, so two
+overlapping calls cannot both pass that guard):
 
-- **Selector:** `#PopoverTextSwitcher`
-- **Tag:** `<button type="button" id="PopoverTextSwitcher" class="btn btn-info">`
-- **Label:** `"👀 Text mode"` when `removePopoversSetting` is `true`; `"🙈 Popover mode"` when `false`.
-- **Placement:** inserted as a child of a `<li class="nav-item pull-right">` element, appended
-  after `.globalsearch` (the bexio global-search nav item) via `insertAdjacentHTML("afterend", ...)`.
-- **Click handler:** toggles `removePopoversSetting` in storage, updates the button label, and
-  calls `convertPopover()` to immediately apply the new state.
+- **Markup:** bexio's own Bootstrap 2 segmented control —
+  `<div id="PopoverTextSwitcher" class="btn-group" role="group">` with two
+  `<button type="button" class="btn" data-mode="text|tooltip">`, each with a `halflings` icon
+  (`halflings-align-left` / `halflings-info-sign`, the icon bexio uses for the tooltips).
+- **State:** the option matching `removePopoversSetting` has `aria-pressed="true"` (`text` when
+  the setting is `true`), the other one `"false"`. `public/bexioProjectList.css` (declared for
+  this content script in `manifest.json`) paints the pressed option in bexio's link blue
+  (`#00acf0`); everything else is bexio's `.btn` styling.
+- **Placement:** in the page title bar (`.bx-breadcrumb-container .bx-card-title`), wrapped in
+  bexio's `div.bx-flex-block.bx-shrink.bx-flex-align-middle-left` and inserted directly before
+  the block that holds the page's primary action `a.js-first-btn` ("Neue Zeiterfassung",
+  "Neues Projekt", "Neue Rechnung") — `selectors/pageTitleBar.ts`. The title bar is
+  server-rendered on all four pages, so it exists when the content script starts.
+- **Click handler:** a click on the non-pressed option updates `aria-pressed`, stores the new
+  `removePopoversSetting`, and calls `convertPopover()`. A click on the pressed option does nothing.
+- **No title bar:** `renderHtml()` logs a `console.warn` and returns without a toggle; the
+  conversion itself still runs with the stored setting.
 
-**Fragility:** `renderHtml()` crashes at `globalSearchListElement.insertAdjacentHTML(...)`
-with a `TypeError` if no `.globalsearch` element is present — the content script silently
-assumes the full bexio nav bar is there. The `monitoring-list.html` fixture is captured
-from `document.body.outerHTML` precisely so `.globalsearch` is included; the crash is itself
-exercised as a negative test in `test/apps/bexioProjectList.test.ts` (we strip `.globalsearch`
-from the fixture and assert the unhandled rejection surfaces). The Playwright extension-smoke
-test (`e2e/extension-smoke.spec.ts`) covers the success path against the same fixture.
+**History.** Until 2026-09 the toggle was a single `button.btn.btn-info` ("👀 Text mode" /
+"🙈 Popover mode", naming the current state) inserted after `.globalsearch` in bexio's top
+navigation. bexio's sidebar layout keeps that navigation in the markup but hides it with
+`.use-new-nav .lgcy-topbar-nav-office { display: none }` (`use-new-nav` sits on `<html>`), so the
+button was still found by every test and invisible to every user. The e2e smoke test therefore
+adds that rule to the fixture page and asserts the toggle is _visible_
+(`BEXIO_HIDES_LEGACY_TOP_NAVIGATION` in `e2e/support.ts`). The new top bar and sidebar were ruled
+out as places for the toggle: bexio's Angular app draws them in the browser (the server HTML has
+empty `bexio-application-*-root` elements), so they are not guaranteed to exist when the content
+script starts, and the bell next to the search is a third-party Chameleon widget positioned over
+the bar.
 
 ---
 
 ## How to add coverage for a new page
 
-1. Capture the bexio page HTML (`copy(document.documentElement.outerHTML)` in DevTools).
-2. Anonymise and trim it following the conventions in `test/fixtures/bexio/README.md`.
-3. Save it as `packages/chrome-extension/test/fixtures/bexio/<slug>.html`.
+1. Capture the page with the capture script in `test/fixtures/bexio/README.md`.
+2. Add a job for it to `scripts/bexio-fixtures/build.ts` and run `npm run fixtures:build`,
+   which writes `packages/chrome-extension/test/fixtures/bexio/<slug>.html` and its `.md`.
+3. Read through the new fixture for names `anonymise.local.json` does not know yet.
 4. Add a row to the fixture loop in
-   `test/selectors/projectTable_TextCell.test.ts` ("works the same on…" test).
+   `test/selectors/projectTable_TextCell.test.ts` ("works the same on…" test) and to
+   `TOOLTIP_PAGES` in `test/apps/bexioProjectList.test.ts` (toggle placement).
 5. If the page introduces a new observer target, add an `observer*` function in
    `src/apps/bexioProjectList/index.ts`, call it from `observingTableModifications()`, and
    add a test in `test/apps/bexioProjectList.test.ts` that stubs `location.pathname` to the
@@ -155,20 +185,17 @@ test (`e2e/extension-smoke.spec.ts`) covers the success path against the same fi
 
 ## Known issues
 
-- **`renderHtml` crashes without `.globalsearch` in DOM:** `TypeError: Cannot read properties of
-undefined (reading 'insertAdjacentHTML')` — the content script silently assumes the full bexio
-  nav bar is present. The `monitoring-list.html` fixture includes it, so the happy path is
-  covered, but a future bexio redesign that drops/renames `.globalsearch` will break this code.
-  Both the success path and the negative path are pinned in `test/apps/bexioProjectList.test.ts`.
+- **The toggle is out of reach while the invoice modal is open:** on `kb_invoice/show/id` the
+  tooltips being converted are inside the modal "Zeiten importieren", whose overlay covers the page
+  title bar. Switch before opening the modal. (The legacy navigation had the same problem.)
 - **`kb_invoice/show/id` modal table selector is class-order-dependent — but coincidentally works:**
   `observeBillingModalTable` uses `jqDialog.getElementsByClassName("list block")[0]` (with a space —
   a two-class match, not a compound `.list.block` selector). The current bexio markup wraps the
   table in `<div class="block list">` (block first), which still matches because
   `getElementsByClassName` is order-independent. Pinned by the `kb_invoice-show.html` fixture.
-- **`monitoring-list.html` was captured post-conversion:** the raw capture was taken while the
-  extension was active in Text mode (popovers hidden, `.new-popover-text` divs already injected,
-  extension-set `<td>` background-colors present). The committed fixture was **decontaminated**
-  back to the pristine pre-conversion bexio state (divs removed, `<i>`s un-hidden, backgrounds
-  cleared) so `test/utils/convertPopover.test.ts` exercises the real first-render conversion path.
-  See `packages/chrome-extension/test/fixtures/bexio/_raw/__build-fixtures.cjs` (git-ignored) for
-  exactly how the fixtures were produced.
+- **The tooltip fixtures are captured from pages the extension already changed:** the capture
+  runs in a tab where the content script is active (bexio forbids framing the pages, so there is
+  no clean copy to take). The capture script in `test/fixtures/bexio/README.md` undoes the
+  extension's changes on a clone — `.new-popover-text` removed, the icons' `style` and the cells'
+  background colour removed (bexio renders neither), the toggle removed — so
+  `test/utils/convertPopover.test.ts` exercises the real first-render conversion path.

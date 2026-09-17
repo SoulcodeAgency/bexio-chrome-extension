@@ -40,7 +40,8 @@
         "https://office.bexio.com/index.php/pr_project/showPackage/*",
         "https://office.bexio.com/index.php/kb_invoice/show/id/*"
       ],
-      "js": ["/src/apps/bexioProjectList/index.ts"]
+      "js": ["/src/apps/bexioProjectList/index.ts"],
+      "css": ["bexioProjectList.css"]
     }
   ]
 }

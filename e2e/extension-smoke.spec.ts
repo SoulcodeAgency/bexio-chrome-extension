@@ -16,7 +16,7 @@
  * extension-behaviour.spec.ts.
  */
 import { test, expect, type BrowserContext } from "@playwright/test";
-import { launchExtensionContext, serveFixture } from "./support";
+import { BEXIO_HIDES_LEGACY_TOP_NAVIGATION, launchExtensionContext, serveFixture } from "./support";
 
 let context: BrowserContext;
 let extId: string | null = null;
@@ -78,12 +78,13 @@ test("side panel HTML loads and mounts React without errors", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 3: content script injects the #PopoverTextSwitcher ("Text mode") toggle
-// on monitoring/list. The monitoring-list.html fixture is a full-body capture,
-// so `.globalsearch` is present and bexioProjectList/renderHtml.ts can insert
-// its button next to it.
+// Test 3: content script injects the #PopoverTextSwitcher ("Text | Tooltip")
+// toggle on monitoring/list, visibly, in the page title bar. The fixture is a
+// full-body capture of bexio's sidebar layout; it carries no bexio stylesheet,
+// so the one rule that hides the legacy top navigation (where the toggle used
+// to be injected) is added by hand.
 // ---------------------------------------------------------------------------
-test("content script injects #PopoverTextSwitcher on monitoring/list", async () => {
+test("content script injects a visible #PopoverTextSwitcher on monitoring/list", async () => {
   const page = await context.newPage();
 
   const errors: string[] = [];
@@ -92,7 +93,8 @@ test("content script injects #PopoverTextSwitcher on monitoring/list", async () 
   await serveFixture(page, "https://office.bexio.com/index.php/monitoring/list", "monitoring-list");
 
   await page.goto("https://office.bexio.com/index.php/monitoring/list");
-  await expect(page.locator("#PopoverTextSwitcher")).toBeAttached({ timeout: 10_000 });
+  await page.addStyleTag({ content: BEXIO_HIDES_LEGACY_TOP_NAVIGATION });
+  await expect(page.locator(".bx-breadcrumb-container #PopoverTextSwitcher")).toBeVisible({ timeout: 10_000 });
 
   expect(errors, `unexpected page errors:\n${errors.join("\n")}`).toEqual([]);
 

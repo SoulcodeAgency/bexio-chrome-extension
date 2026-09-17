@@ -46,8 +46,8 @@ Clicking the extension icon on the bexio time tracking page opens the extension'
 bexio hides some cell content behind small tooltip icons. Because that content is often important, the extension can
 replace those icons with the real text.
 
-On the supported pages a **"Text mode / Popover mode"** button is placed in the top right corner next to the
-"Quick find". With "Text mode" enabled, tooltips are automatically replaced with their content on:
+On the supported pages a **Text | Tooltip** toggle sits in the page title bar, left of the page's main button (e.g.
+"Neue Zeiterfassung"). With **Text** selected, tooltips are automatically replaced with their content on:
 
 - Projects → Time tracking
 - Projects → Projects → Project XY → Times

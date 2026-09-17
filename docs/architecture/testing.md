@@ -22,7 +22,7 @@ get caught early.
 The Playwright layer is not part of `npm test` and requires a built `unpacked/` plus a one-time
 `npx playwright install chromium`. CI runs it as its own step (see Section 7). It has two specs:
 `extension-smoke.spec.ts` (do the content scripts inject, does the side panel mount) and
-`extension-behaviour.spec.ts` (issue #66: text-mode toggle round-trip, template apply, template
+`extension-behaviour.spec.ts` (issue #66: Text | Tooltip toggle round-trip, template apply, template
 filter, the inline Add and manage-mode Delete/Undo flows).
 
 ---
@@ -261,10 +261,11 @@ the npm script made the test fail on the Linux CI runner with
 There are two specs, sharing the launch/fixture helpers in `e2e/support.ts`:
 
 - `e2e/extension-smoke.spec.ts` — injection-level: template UI appears on
-  `monitoring/edit`, the side panel mounts, the "Text mode" toggle appears
-  on `monitoring/list`.
+  `monitoring/edit`, the side panel mounts, the "Text | Tooltip" toggle is
+  _visible_ in the page title bar of `monitoring/list` (the test adds bexio's
+  rule that hides the legacy top navigation, which the fixture ships without).
 - `e2e/extension-behaviour.spec.ts` — behaviour-level (issue #66): the
-  text-mode toggle round-trip (convert → revert), applying a template through
+  Text | Tooltip toggle round-trip (convert → revert), applying a template through
   the real `fillForm` synthetic-event path, the keyword-aware template filter,
   and the inline Add + manage-mode Delete/Undo flows — dialog-free by design;
   `page.on("dialog")` stays wired to prove no native dialog ever opens.
@@ -377,19 +378,24 @@ and the side-panel button (item 9) are manual-only._
    import)") klicken → das Side Panel öffnet sich für diesen Tab. Ist es schon
    offen, passiert nichts.
 
-### 5.2 — `monitoring/list` + project/package tabs: Text-mode toggle
+### 5.2 — `monitoring/list` + project/package tabs: Text | Tooltip toggle
 
 _Automated (on fixtures): items 1–3 — the toggle round-trip on
-`monitoring/list` — in `extension-behaviour.spec.ts`. The project/package
-tabs (item 4) are still manual-only._
+`monitoring/list` — in `extension-behaviour.spec.ts`; the toggle's placement on
+all four pages and the work package's panel reload in
+`test/apps/bexioProjectList.test.ts`. What only a real browser shows: how the
+toggle looks next to bexio's own buttons._
 
 1. Navigate to `https://office.bexio.com/index.php/monitoring/list`.
-   Confirm a **"Text mode"** toggle button appears in the page header.
-2. Click the toggle — confirm tooltip popover icons (`<i rel="popover">`) are
-   replaced by inline text.
-3. Click the toggle again — confirm the page reverts to the original popover icons.
-4. Repeat on a project's Times tab (`pr_project/listMonitoring/...`) and a
-   work-package's Times tab (`pr_project/showPackage/...`).
+   Confirm a **Text | Tooltip** toggle is visible in the page title bar, directly
+   left of the green "Neue Zeiterfassung" button, with "Tooltip" in blue (default).
+2. Click **Text** — confirm tooltip popover icons (`<i rel="popover">`) are
+   replaced by inline text and "Text" turns blue.
+3. Click **Tooltip** — confirm the page reverts to the original popover icons.
+4. Repeat on a project's "Zeiten" tab (`pr_project/listMonitoring/...`, toggle
+   next to "Neues Projekt") and on a work package (`pr_project/showPackage/...`):
+   there, open the lower "Zeiten" tab, then sort by a column — the notes must be
+   converted after both.
 
 ### 5.3 — Side panel: Templates and Import tabs
 
@@ -430,8 +436,10 @@ and item 6 is manual for its visual half only._
 ### 5.4 — `kb_invoice` tracked-time tooltip (`kb_invoice/show/id/*`)
 
 On an invoice detail page, navigate **Positionen → "Weitere Positionen" →
-"Zeit/Leistung"** to open the "Zeiten importieren" modal. Toggle "Text mode" via
-the `#PopoverTextSwitcher` button in the bexio nav — the info-icon popovers in
-the modal table should turn into inline text and the rows should pick up the
-alternating background colours. Toggle back and confirm the modal reverts. The
-fixture `kb_invoice-show.html` covers the same DOM under `test/fixtures/bexio/`.
+"Zeit/Leistung"** to open the "Zeiten importieren" modal (on a draft invoice —
+issued ones do not offer it). With **Text** selected in the toggle next to "Neue
+Rechnung" — select it _before_ opening the modal, whose overlay covers the title
+bar — the info-icon popovers in the modal table should turn into inline text and
+the rows should pick up the alternating background colours. Close the modal,
+select **Tooltip**, reopen it and confirm the icons are back. The fixture
+`kb_invoice-show.html` covers the same DOM under `test/fixtures/bexio/`.
