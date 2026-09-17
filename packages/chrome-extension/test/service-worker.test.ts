@@ -19,9 +19,13 @@ type OnMessageListener = (message: unknown, sender: { tab?: Tab }) => void;
 const setOptionsCalls: SetOptionsCall[] = [];
 const createCalls: { url: string }[] = [];
 const openCalls: { tabId: number }[] = [];
+const queryCalls: { url?: string }[] = [];
+let queryResult: Tab[] = [];
 let onUpdated: OnUpdatedListener | undefined;
 let onActionClicked: ((tab: Tab) => void) | undefined;
 let onMessage: OnMessageListener | undefined;
+let onInstalled: (() => Promise<void>) | undefined;
+let onStartup: (() => Promise<void>) | undefined;
 
 const globals = globalThis as unknown as Record<string, unknown>;
 const originalChrome = globals.chrome;
@@ -48,6 +52,10 @@ beforeAll(async () => {
       create: (options: { url: string }) => {
         createCalls.push(options);
       },
+      query: async (query: { url?: string }) => {
+        queryCalls.push(query);
+        return queryResult;
+      },
       onUpdated: {
         addListener: (fn: OnUpdatedListener) => {
           onUpdated = fn;
@@ -58,6 +66,16 @@ beforeAll(async () => {
       onMessage: {
         addListener: (fn: OnMessageListener) => {
           onMessage = fn;
+        },
+      },
+      onInstalled: {
+        addListener: (fn: () => Promise<void>) => {
+          onInstalled = fn;
+        },
+      },
+      onStartup: {
+        addListener: (fn: () => Promise<void>) => {
+          onStartup = fn;
         },
       },
     },
@@ -73,12 +91,16 @@ beforeEach(() => {
   setOptionsCalls.length = 0;
   createCalls.length = 0;
   openCalls.length = 0;
+  queryCalls.length = 0;
+  queryResult = [];
 });
 
 describe("service worker side-panel gating", () => {
   it("registers the listeners it needs", () => {
     expect(typeof onUpdated).toBe("function");
     expect(typeof onActionClicked).toBe("function");
+    expect(typeof onInstalled).toBe("function");
+    expect(typeof onStartup).toBe("function");
   });
 
   it("opens the bexio time tracking page when the toolbar icon is clicked", () => {
@@ -107,6 +129,42 @@ describe("service worker side-panel gating", () => {
     // missing url must therefore disable the panel, not skip the update.
     await onUpdated!(7, { status: "complete" }, { id: 7 });
     expect(setOptionsCalls).toEqual([{ tabId: 7, enabled: false }]);
+  });
+});
+
+describe("service worker side-panel enabling for tabs that already exist", () => {
+  // `chrome.tabs.onUpdated` only fires when a tab navigates. A bexio monitoring
+  // tab that is already open when the extension is installed, loaded unpacked
+  // or reloaded would therefore never get its side panel enabled — so the
+  // worker also sweeps the existing tabs on install and on browser startup.
+  const monitoringTabs: Tab[] = [
+    { id: 3, url: "https://office.bexio.com/index.php/monitoring/list" },
+    { id: 9, url: "https://office.bexio.com/index.php/monitoring/edit/id/42" },
+  ];
+
+  it.each([
+    ["onInstalled", () => onInstalled!()],
+    ["onStartup", () => onStartup!()],
+  ])("%s queries the open bexio monitoring tabs and enables the panel on each", async (_name, fire) => {
+    queryResult = monitoringTabs;
+    await fire();
+    expect(queryCalls).toEqual([{ url: "https://office.bexio.com/index.php/monitoring*" }]);
+    expect(setOptionsCalls).toEqual([
+      { tabId: 3, path: "/sidePanel-import/index.html", enabled: true },
+      { tabId: 9, path: "/sidePanel-import/index.html", enabled: true },
+    ]);
+  });
+
+  it("does nothing when no bexio monitoring tab is open", async () => {
+    await onInstalled!();
+    expect(queryCalls).toHaveLength(1);
+    expect(setOptionsCalls).toEqual([]);
+  });
+
+  it("skips a queried tab that has no id", async () => {
+    queryResult = [{ url: "https://office.bexio.com/index.php/monitoring/list" }, monitoringTabs[0]];
+    await onInstalled!();
+    expect(setOptionsCalls).toEqual([{ tabId: 3, path: "/sidePanel-import/index.html", enabled: true }]);
   });
 });
 

@@ -121,7 +121,8 @@ extending that file.
 
 The one test that needs those members —
 `packages/chrome-extension/test/service-worker.test.ts`, which imports
-`public/service_worker.js` to drive its `chrome.tabs.onUpdated` side-panel gating — swaps
+`public/service_worker.js` to drive its side-panel gating (the `chrome.tabs.onUpdated` path and the
+`chrome.runtime.onInstalled`/`onStartup` sweep over `chrome.tabs.query`) — swaps
 `globalThis.chrome` for its own local stub in `beforeAll` (before the import, because the worker
 registers its listeners at module-evaluation time) and restores it in `afterAll`. Keep new
 `chrome.*` surface out of the shared fake unless more than one test needs it.
