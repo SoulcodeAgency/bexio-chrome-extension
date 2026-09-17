@@ -72,23 +72,34 @@ Merge pull request #148 from SoulcodeAgency/feat/sidepanel-apply-submit-556974
 feat(side-panel): submit the bexio form with a second, deliberate click
 ```
 
-The subject is not conventional, so on its own it would be skipped. The **body** is — because the repository's `merge_commit_message` setting is `PR_TITLE`, which copies the PR title in. `release-please` parses it and emits a second changelog line, identical in text, pointing at the merge SHA instead of the branch SHA. 1.9.0's changelog carries eight such pairs (`54b7783`/`783faba`, `a512c04`/`283fa5e`, `56e23d2`/`083c32a`, …).
+The subject is not conventional, so on its own it would be skipped. The **body** is — because the repository's `merge_commit_message` setting is `PR_TITLE`, which copies the PR title in. `release-please` parses it and emits a second changelog line, identical in text, pointing at the merge SHA instead of the branch SHA. 1.9.0's changelog carried nine such pairs (`54b7783`/`783faba`, `283fa5e`/`a512c04`, `083c32a`/`56e23d2`, …) before they were removed by hand.
 
 Squash-merged PRs are unaffected: their subject ends in GitHub's `(#N)` marker, which `release-please` recognises as one commit — that is why `#106`, `#104` and `#119` appear only once.
 
-The permanent fix is the repository setting, which makes the merge commit's body empty:
+##### No repository setting fixes this
 
-```bash
-gh api -X PATCH repos/SoulcodeAgency/bexio-chrome-extension -f merge_commit_message=BLANK
-```
+The obvious idea — make the merge commit's body empty by default — is not available. GitHub accepts only three combinations of `merge_commit_title` / `merge_commit_message`, and rejects anything else with `invalid_merge_commit_setting_combo` (HTTP 422):
 
-Until it is set, pass the body explicitly when landing a PR:
+| `merge_commit_title` | `merge_commit_message` | Merge commit                                      | Duplicate?                                                    |
+| -------------------- | ---------------------- | ------------------------------------------------- | ------------------------------------------------------------- |
+| `MERGE_MESSAGE`      | `PR_TITLE`             | `Merge pull request #N from …` + PR title as body | **yes** — this is the current setting, and the body is parsed |
+| `PR_TITLE`           | `PR_BODY`              | PR title as subject + description as body         | **yes** — the subject itself is conventional                  |
+| `PR_TITLE`           | `BLANK`                | PR title as subject, no body                      | **yes** — same, the subject is conventional                   |
+| `MERGE_MESSAGE`      | `BLANK`                | what we actually want                             | **rejected by GitHub**                                        |
+
+That the third row still duplicates is not a guess: `e06f6c2` is a merge commit on `main` with a conventional subject and an empty body, and it produced its own changelog line.
+
+##### What does work: spell out the merge message
+
+`gh` overrides the repository default per merge, and that combination _is_ allowed at merge time:
 
 ```bash
 gh pr merge <N> --merge --subject "Merge pull request #<N> from SoulcodeAgency/<branch>" --body ""
 ```
 
-Neither is retroactive. Duplicates already in the history can only be removed by editing `CHANGELOG.md` on the Release PR branch — and because `release-please` rewrites that file from git on every push to `main`, the edit has to be the **last** thing before merging the Release PR.
+Verified on #154: the merge commit `c14b2c4` produced no changelog line, while its branch commit `ab3538e` did. Use this for every PR — it is the only mechanism, so it is in the conventions list in `CLAUDE.md` as well.
+
+It is not retroactive. Duplicates already in the history can only be removed by editing `CHANGELOG.md` on the Release PR branch — and because `release-please` rewrites that file from git on every push to `main`, the edit has to be the **last** thing before merging the Release PR.
 
 ### Forcing a specific version (`Release-As`)
 
