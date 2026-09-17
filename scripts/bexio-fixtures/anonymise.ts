@@ -43,6 +43,15 @@ export function scrubDom(document: Document): void {
     element.setAttribute("data-content", value.replace(EMAIL, "team.member@example.com"));
   }
 
+  // Inline event handlers are bexio's JavaScript, which the fixtures do not ship (its <script>
+  // blocks are dropped at capture). They also carried CSRF tokens, and GitHub's CodeQL analyses
+  // them as this repository's code (js/xss-through-dom on `f.action = selectedDropdown.val()`).
+  for (const element of Array.from(document.querySelectorAll("*"))) {
+    for (const attribute of Array.from(element.attributes)) {
+      if (/^on/i.test(attribute.name)) element.removeAttribute(attribute.name);
+    }
+  }
+
   // bexio's hidden support form carries the user's name and a live access token (JWT)
   const hiddenFormValues: Record<string, string> = { firstname: "Jane", lastname: "Doe", token: "TEST_ACCESS_TOKEN" };
   for (const [name, value] of Object.entries(hiddenFormValues)) {

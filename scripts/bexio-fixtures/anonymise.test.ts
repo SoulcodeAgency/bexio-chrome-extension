@@ -83,6 +83,13 @@ describe("scrubDom", () => {
     );
   });
 
+  it("drops bexio's inline event handlers, which CodeQL analyses as code of this repository", () => {
+    const document = scrub(
+      `<button onclick="f.action = selectedDropdown.val(); f.submit()" class="btn">Go</button><select onchange="toggle()"></select>`,
+    );
+    expect(document.body.innerHTML).toBe(`<button class="btn">Go</button><select></select>`);
+  });
+
   it("blanks the name and the access token in bexio's hidden support form", () => {
     const document = scrub(
       `<input name="firstname" value="Real"><input name="lastname" value="Person"><input name="token" value="${JWT}">`,
