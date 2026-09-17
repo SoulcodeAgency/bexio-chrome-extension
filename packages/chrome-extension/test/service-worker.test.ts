@@ -14,10 +14,14 @@ interface SetOptionsCall {
 type Tab = { id?: number; url?: string };
 type OnUpdatedListener = (tabId: number, info: Record<string, unknown>, tab: Tab) => Promise<void>;
 
+type OnMessageListener = (message: unknown, sender: { tab?: Tab }) => void;
+
 const setOptionsCalls: SetOptionsCall[] = [];
 const createCalls: { url: string }[] = [];
+const openCalls: { tabId: number }[] = [];
 let onUpdated: OnUpdatedListener | undefined;
 let onActionClicked: ((tab: Tab) => void) | undefined;
+let onMessage: OnMessageListener | undefined;
 
 const globals = globalThis as unknown as Record<string, unknown>;
 const originalChrome = globals.chrome;
@@ -36,6 +40,9 @@ beforeAll(async () => {
       setOptions: async (options: SetOptionsCall) => {
         setOptionsCalls.push(options);
       },
+      open: async (options: { tabId: number }) => {
+        openCalls.push(options);
+      },
     },
     tabs: {
       create: (options: { url: string }) => {
@@ -44,6 +51,13 @@ beforeAll(async () => {
       onUpdated: {
         addListener: (fn: OnUpdatedListener) => {
           onUpdated = fn;
+        },
+      },
+    },
+    runtime: {
+      onMessage: {
+        addListener: (fn: OnMessageListener) => {
+          onMessage = fn;
         },
       },
     },
@@ -58,6 +72,7 @@ afterAll(() => {
 beforeEach(() => {
   setOptionsCalls.length = 0;
   createCalls.length = 0;
+  openCalls.length = 0;
 });
 
 describe("service worker side-panel gating", () => {
@@ -92,5 +107,24 @@ describe("service worker side-panel gating", () => {
     // missing url must therefore disable the panel, not skip the update.
     await onUpdated!(7, { status: "complete" }, { id: 7 });
     expect(setOptionsCalls).toEqual([{ tabId: 7, enabled: false }]);
+  });
+});
+
+describe("service worker open-side-panel relay", () => {
+  it("registers the message listener", () => {
+    expect(typeof onMessage).toBe("function");
+  });
+
+  it("opens the side panel for the sender's tab when the content script asks", () => {
+    onMessage!({ mode: "openSidePanel" }, { tab: { id: 42 } });
+    // Asserted right after the call, before any microtask: sidePanel.open() only
+    // works inside the click's user gesture, which an `await` in the worker would lose.
+    expect(openCalls).toEqual([{ tabId: 42 }]);
+  });
+
+  it("ignores other messages and requests that do not come from a tab", () => {
+    onMessage!({ mode: "template", templateId: "x" }, { tab: { id: 42 } });
+    onMessage!({ mode: "openSidePanel" }, {});
+    expect(openCalls).toEqual([]);
   });
 });
