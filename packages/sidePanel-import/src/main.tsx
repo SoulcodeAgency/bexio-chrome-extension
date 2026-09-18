@@ -2,8 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.scss";
-import * as packageInfo from "../../../package.json";
 import { loadedVersion } from "./utils/loadedVersion";
+import { BUILD_DATE } from "./utils/buildDate";
 import { App as AntdApp, ConfigProvider, theme } from "antd";
 import MessageApiBridge from "./components/MessageApiBridge";
 const copyrightSymbol = "\u00A9";
@@ -36,7 +36,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         </a>
         {" - "}
         <a href="https://chromewebstore.google.com/u/2/detail/nbmjdligmcfaeebdihmgbdpahdfddlhm" target="_blank">
-          Version {loadedVersion()} - {packageInfo.date}
+          Version {loadedVersion()} - {BUILD_DATE}
         </a>
       </div>
     </div>
