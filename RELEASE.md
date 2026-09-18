@@ -15,16 +15,18 @@ The short version:
 
 It runs on **every push to `main`** and reads the commit messages since the last release.
 
-| Commit starts with                                                          | What happens                        |
-| --------------------------------------------------------------------------- | ----------------------------------- |
-| `feat:` or `fix:` (scoped too, e.g. `fix(side-panel):`)                     | the Release PR is opened or updated |
-| `chore:`, `docs:`, `test:`, `refactor:`, `style:`, `ci:`, `build:`, `perf:` | nothing — no release                |
-| anything else                                                               | nothing — and nothing warns you     |
+| Commit starts with                                                   | What happens                                                    |
+| -------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `feat:`, `fix:`, `perf:`, `revert:`, `refactor:`, `build:`, `chore:` | the Release PR is opened or updated, the commit is in the notes |
+| `ci:`, `docs:`, `test:`, `style:`                                    | nothing — no release, not in the changelog                      |
+| anything else                                                        | nothing — and nothing warns you                                 |
 
+- The rule behind the table: a Release PR exists whenever the changelog would not be empty. Which types count is set in `release-please-config.json` → `changelog-sections`; the four with `"hidden": true` are the ones that stay silent. A scope changes nothing (`fix(ci):` is a `fix`), and Dependabot's `chore(deps):` commits count too.
 - There is only ever **one** Release PR, titled `chore(main): release <version>`. New changes on `main` land in that same PR.
 - Its diff: the new version in `package.json`, `manifest.json` and `.release-please-manifest.json`, plus the new section in `CHANGELOG.md`.
 - **Every release is a minor bump** — `1.9.0` → `1.10.0` → `1.11.0`. For a major, put `Release-As: 2.0.0` in a commit body. Test builds are told apart by a fourth version part that `npm run build:test` writes into the build output only, so no tracked version ever changes for them.
-- **No Release PR open** means there has been no `feat:` and no `fix:` since the last release. That is the normal state right after a release.
+- **No Release PR open** means every commit since the last release was `ci:`, `docs:`, `test:` or `style:`. That is the normal state right after a release.
+- An open Release PR is not an obligation to ship. One that lists only `chore(deps):` bumps can simply wait for the next real change.
 - `feat:` and `fix:` are reserved for changes that **reach the user**. A fix to CI, tests or docs is `ci:`, `test:` or `docs:` — otherwise a build without any change goes to the store (that is how 1.4.0 and 1.5.0 came about).
 
 ### Step 1 — Land a change on `main`
@@ -93,7 +95,7 @@ The `release-please` workflow then runs on `main` and does the rest: pushes the 
 
 | Symptom                                                  | Cause and fix                                                                                                                                                                |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| No Release PR appears after merging a change             | The commit was not a `feat:`/`fix:`. To release anyway, land an empty `fix:` or `feat:` commit on `main`.                                                                    |
+| No Release PR appears after merging a change             | The commit had a hidden type (`ci:`, `docs:`, `test:`, `style:`) or no conventional prefix. To release anyway, land an empty `fix:` or `feat:` commit on `main`.             |
 | The GitHub Release exists, the store has the old version | The `publish` job failed. Read its log, fix the cause, then catch up: `gh workflow run publish-chrome-web-store.yml -f tag=<version> -f publish=true`                        |
 | `Input required and not supplied: <name>`                | The upload action had a major bump and requires a new input. Read the action's `action.yml`, add the input to the workflow (as a `ci:` commit), then catch up on the upload. |
 | `401`, `403` or `invalid_grant` from Google              | A secret is wrong or the refresh token was revoked. See `docs/architecture/publishing.md` → "One-time setup".                                                                |

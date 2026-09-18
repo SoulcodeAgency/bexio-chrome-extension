@@ -40,19 +40,22 @@ New commits to `main` cause `release-please` to **amend the same PR** — it doe
 
 **Every store release is a minor bump** — `1.3.5` → `1.4.0` → `1.5.0` → … This is set by `"versioning": "always-bump-minor"` in `release-please-config.json`. Commit types decide _whether_ a release happens and how the changelog is grouped; they no longer decide the size of the bump.
 
-| Commit prefix                                                               | Effect                                                                                                                            |
-| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `feat: …`, `feat(scope): …`                                                 | release, listed under "Features"                                                                                                  |
-| `fix: …`, `fix(scope): …`                                                   | release, listed under "Bug Fixes"                                                                                                 |
-| `feat!: …`, `fix!: …`, or any commit with a `BREAKING CHANGE:` footer       | release, flagged as breaking in the changelog — still a minor bump. Use `Release-As: 2.0.0` if a breaking change deserves a major |
-| `chore:`, `docs:`, `test:`, `refactor:`, `style:`, `ci:`, `build:`, `perf:` | no release                                                                                                                        |
-| Anything not starting with a recognized prefix                              | no release (silent)                                                                                                               |
+| Commit prefix                                                         | Effect                                                                                                                            |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `feat: …`, `feat(scope): …`                                           | release, listed under "Features"                                                                                                  |
+| `fix: …`, `fix(scope): …`                                             | release, listed under "Bug Fixes"                                                                                                 |
+| `feat!: …`, `fix!: …`, or any commit with a `BREAKING CHANGE:` footer | release, flagged as breaking in the changelog — still a minor bump. Use `Release-As: 2.0.0` if a breaking change deserves a major |
+| `perf:`, `revert:`, `refactor:`, `build:`, `chore:`                   | release, listed under their own heading ("Build System", "Miscellaneous Chores", …)                                               |
+| `ci:`, `docs:`, `test:`, `style:`                                     | no release, not in the changelog                                                                                                  |
+| Anything not starting with a recognized prefix                        | no release (silent)                                                                                                               |
+
+**The actual rule is "is the changelog empty?", not "is there a `feat` or a `fix`?".** `release-please` builds the release notes for the pending commits and skips the Release PR only when they come out empty (`changelogEmpty` in its `strategies/base.ts`, logged as "No user facing commits found"). What ends up in the notes is decided by `changelog-sections` in `release-please-config.json`: this repo lists eleven types and marks four of them — `ci`, `docs`, `style`, `test` — as `"hidden": true`. Every other type opens or updates the Release PR. **1.7.0 is the proof:** its changelog holds nothing but two `build(deps):` commits. Dependabot's `chore(deps):` commits count as well, so a Release PR listing only dependency bumps is normal — an open Release PR is an offer, not an obligation to ship.
 
 Scoped variants (`fix(release):`, `feat(side-panel):`) work identically to their unscoped form. Note that scope does **not** exempt a commit from triggering a release: `fix(test):` is still a `fix` and will open a Release PR.
 
 #### The rule: `fix:` means users got something fixed
 
-`feat:` and `fix:` are reserved for changes that reach the shipped extension. Everything that only touches how the repo is built, tested or documented uses `ci:`, `test:`, `docs:`, `build:` or `chore:` — those still show up in git history, but they do not push a build to the Chrome Web Store.
+`feat:` and `fix:` are reserved for changes that reach the shipped extension. Everything that only touches how the repo is tested, documented or run in CI uses `test:`, `docs:` or `ci:` — those still show up in git history, but they never open a Release PR. `build:` and `chore:` sit in between: they do open one (see above) and are listed in the notes, which is right for a bundler or dependency upgrade that changes the shipped files, and wrong for repo housekeeping.
 
 This is not theoretical. Versions **1.4.0 and 1.5.0 contain no user-facing change whatsoever**: they exist because a CI fix and a changelog-encoding fix were committed as `fix(test):`, `fix(changelog):` and `fix(ci):`. Every one of them opened a Release PR, and merging those PRs published a store build identical in behaviour to 1.3.5.
 
@@ -60,7 +63,7 @@ The scope does not save you — `fix(ci):` is still a `fix`. Ask what the commit
 
 **Why always-minor:** patch numbers were reserved for local dev builds, which used to bump the patch on your machine so loaded unpacked builds could be told apart. `npm run build:test` now marks test builds with a fourth version part written only into the build output (`1.8.2.7`), so no tracked version file changes for a dev build any more — still never commit a version bump by hand. The store version is the only version that matters, and it moves in minors. Individual fixes are still listed by name in the changelog under the minor's heading. To go back to standard semver, remove the `versioning` line — the change is not retroactive.
 
-**Silent-no-release warning:** if you merge a feature using a non-conventional commit message (or `chore:` by mistake), no Release PR will appear. Look at the message before merging. If you've already merged and want a release anyway, add an empty `feat:` or `fix:` commit to `main` ("nudge commit") — `release-please` will pick it up on the next push.
+**Silent-no-release warning:** if you merge a feature using a non-conventional commit message (or a hidden type such as `docs:` by mistake), no Release PR will appear. Look at the message before merging. If you've already merged and want a release anyway, add an empty `feat:` or `fix:` commit to `main` ("nudge commit") — `release-please` will pick it up on the next push.
 
 #### Why merge-committed PRs are listed twice
 
