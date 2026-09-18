@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.9.0...1.10.0) (2026-09-18)
+
+
+### Features
+
+* sort date columns newest first, with an opt-in "Newest first" toggle ([ce43a1a](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/ce43a1ab890e6c15f8e97d9def3277ca224c3258))
+
+
+### Bug Fixes
+
+* stamp the "last update" date at build time instead of in package.json ([e660603](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/e660603274b8916319bd20c90df129ad5af643e4))
+
 ## [1.9.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.8.0...1.9.0) (2026-09-17)
 
 
