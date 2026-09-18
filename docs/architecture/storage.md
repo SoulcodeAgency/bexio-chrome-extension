@@ -16,6 +16,7 @@ All storage access goes through the primitives in `packages/shared/chromeStorage
 | `"applyNotesSetting"`           | `boolean`                                  | `true`                     | `chromeStorageSettings.ts`        |
 | `"uppercaseFirstLetterSetting"` | `boolean`                                  | `true`                     | `chromeStorageSettings.ts`        |
 | `"removePopoversSetting"`       | `boolean`                                  | `false`                    | `chromeStorageSettings.ts`        |
+| `"autoDateSortSetting"`         | `boolean`                                  | `false`                    | `chromeStorageSettings.ts`        |
 | `"activeTabId"`                 | `string \| undefined`                      | `undefined`                | `chromeStorageSettings.ts`        |
 | `"importData"`                  | `string[][]` (rows of column values)       | `[]`                       | — (raw `chromeStorage`)           |
 | `"importHeader"`                | `string[]`                                 | `[]`                       | — (raw `chromeStorage`)           |

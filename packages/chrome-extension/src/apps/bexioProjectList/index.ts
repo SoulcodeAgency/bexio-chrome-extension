@@ -1,22 +1,37 @@
 import renderHtml from "./renderHtml";
+import renderDateSortToggle from "./renderDateSortToggle";
 import convertPopover from "../../utils/convertPopover";
-import { getPackageTimesPanel } from "../../selectors/packageTimesPanel";
+import { autoSortByDate, preferDescendingDateSort } from "../../utils/dateSort";
+import { getPackageTasksPanel, getPackageTimesPanel } from "../../selectors/packageTabPanels";
+import { getProjectTimesList } from "../../selectors/projectTimesList";
+import { getTimeTrackingList } from "../../selectors/timeTrackingList";
 
 const observerOptions = { attributes: false, childList: true, subtree: false };
 
 /**
- * Bootstraps the extension on the current page: injects the "Text | Tooltip" toggle
- * via `renderHtml()` and performs the initial popover conversion via
- * `convertPopover()`.
+ * Everything the extension does to a bexio table. Runs for the initial render and again from the
+ * observers below, because bexio replaces the table on every sort, paging and filter change.
+ */
+function onTableRendered() {
+  convertPopover();
+  preferDescendingDateSort();
+  autoSortByDate();
+}
+
+/**
+ * Bootstraps the extension on the current page: injects the "Text | Tooltip" toggle via
+ * `renderHtml()`, the "Newest first" toggle via `renderDateSortToggle()` and gives the tables
+ * their initial treatment via `onTableRendered()`.
  *
- * Both calls are fire-and-forget (not awaited) because this function is invoked at
+ * The calls are fire-and-forget (not awaited) because this function is invoked at
  * module-evaluation time, where top-level `await` is not available. A page without
- * bexio's title bar gets no toggle (`renderHtml()` logs a warning); the conversion
- * still runs.
+ * bexio's title bar gets no toggles (`renderHtml()` logs a warning); the tables are
+ * still handled.
  */
 export async function initializeExtension() {
   renderHtml();
-  convertPopover(); // convert already for the initial load
+  renderDateSortToggle(); // after renderHtml(): both insert left of the primary action button
+  onTableRendered(); // handle the initial load already
 }
 
 /**
@@ -51,29 +66,29 @@ function observerTimeTrackingPage() {
   // Time tracking view
   if (location.pathname.startsWith("/index.php/monitoring/list")) {
     // Create an observer which runs the extension code
-    const monitoring_List_TargetNode = document.getElementById("monitoring_content");
+    const monitoring_List_TargetNode = getTimeTrackingList();
     if (monitoring_List_TargetNode) {
-      createObserverWithCallback(convertPopover).observe(monitoring_List_TargetNode, observerOptions);
+      createObserverWithCallback(onTableRendered).observe(monitoring_List_TargetNode, observerOptions);
     }
   }
 }
 
 function observerProjectPage() {
   // Project view
-  if (location.pathname.startsWith("/index.php/pr_project/listMonitoring")) {
-    const prProject_listMonitoring_TargetNode = document.getElementsByClassName("listBlock")[0];
-    if (prProject_listMonitoring_TargetNode) {
-      createObserverWithCallback(convertPopover).observe(prProject_listMonitoring_TargetNode, observerOptions);
-    }
+  const prProject_listMonitoring_TargetNode = getProjectTimesList();
+  if (prProject_listMonitoring_TargetNode) {
+    createObserverWithCallback(onTableRendered).observe(prProject_listMonitoring_TargetNode, observerOptions);
   }
 }
 
 function observerProjectWorkPackagePage() {
-  // Work package view: bexio (re)loads the "Zeiten" tab panel's children on tab open, sort and paging
+  // Work package view: bexio (re)loads a tab panel's children on tab open, sort and paging. The
+  // "Aufgaben" panel has no notes to convert, but a due date column, and is filled after we ran.
   if (location.pathname.startsWith("/index.php/pr_project/showPackage")) {
-    const packageTimesPanel = getPackageTimesPanel();
-    if (packageTimesPanel) {
-      createObserverWithCallback(convertPopover).observe(packageTimesPanel, observerOptions);
+    for (const panel of [getPackageTimesPanel(), getPackageTasksPanel()]) {
+      if (panel) {
+        createObserverWithCallback(onTableRendered).observe(panel, observerOptions);
+      }
     }
   }
 }
@@ -95,8 +110,8 @@ function observeBillingModalTable() {
   // converted all of the modal's tooltips.)
   const jqDialog = document.getElementById("jqDialog")!;
   const modalTable = jqDialog.getElementsByClassName("list block")[0];
-  createObserverWithCallback(convertPopover).observe(modalTable, observerOptions);
-  convertPopover(); // Convert the initial modal
+  createObserverWithCallback(onTableRendered).observe(modalTable, observerOptions);
+  onTableRendered(); // Handle the initial modal
 }
 
 // We need to watch for changes in the table, if the table is reloaded, we need to reinitialize the extension

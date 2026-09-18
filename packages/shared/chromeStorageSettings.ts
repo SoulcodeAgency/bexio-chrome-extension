@@ -3,6 +3,7 @@ export const applyNotesKey = "applyNotesSetting";
 export const activeTabIdKey = "activeTabId";
 export const removePopoversKey = "removePopoversSetting";
 export const uppercaseFirstLetterKey = "uppercaseFirstLetterSetting";
+export const autoDateSortKey = "autoDateSortSetting";
 
 export async function loadApplyNotesSetting(): Promise<boolean> {
   const loadedSetting = await load<boolean>(applyNotesKey);
@@ -35,4 +36,12 @@ export async function loadRemovePopoversSetting(): Promise<boolean> {
 }
 export async function saveRemovePopoversSetting(removePopoversSetting: boolean): Promise<any> {
   return save<boolean>(removePopoversSetting, removePopoversKey);
+}
+
+export async function loadAutoDateSortSetting(): Promise<boolean> {
+  const loadedSetting = await load<boolean>(autoDateSortKey);
+  return loadedSetting ?? false;
+}
+export async function saveAutoDateSortSetting(autoDateSortSetting: boolean): Promise<any> {
+  return save<boolean>(autoDateSortSetting, autoDateSortKey);
 }

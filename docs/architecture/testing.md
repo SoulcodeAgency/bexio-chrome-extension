@@ -267,7 +267,10 @@ There are two specs, sharing the launch/fixture helpers in `e2e/support.ts`:
 - `e2e/extension-behaviour.spec.ts` — behaviour-level (issue #66): the
   Text | Tooltip toggle round-trip (convert → revert), the toggle's active option
   when bexio's sidebar opened the list (`serveFixture`'s `inlineScript` stands in
-  for bexio's address rewrite), applying a template through
+  for bexio's address rewrite), the date column's sort link turned to descending
+  and the "Newest first" toggle sorting through a click handler that runs in the
+  page's world (`inlineScript` again, standing in for bexio's delegated `.ajxl`
+  handler — see `list-sorting.md`), applying a template through
   the real `fillForm` synthetic-event path, the keyword-aware template filter,
   and the inline Add + manage-mode Delete/Undo flows — dialog-free by design;
   `page.on("dialog")` stays wired to prove no native dialog ever opens.
@@ -403,6 +406,40 @@ toggle looks next to bexio's own buttons._
    next to "Neues Projekt") and on a work package (`pr_project/showPackage/...`):
    there, open the lower "Zeiten" tab, then sort by a column — the notes must be
    converted after both.
+
+### 5.2b — all four list pages: date sorting and the "Newest first" toggle
+
+_Automated (on fixtures): the link rewrite on all four pages, every condition of
+the automatic sort and the toggle in `test/utils/dateSort.test.ts` and
+`test/apps/bexioProjectList.test.ts`; in real Chrome, with a stand-in for bexio's
+click handler, in `extension-behaviour.spec.ts`. What only real bexio shows: that
+bexio's own handler reloads the list, and that the sort survives what it should._
+
+1. With **Newest first** off (not blue): open the time list through bexio's
+   sidebar (Projekte → Zeiten). The list is unsorted (no arrow next to "Datum").
+   Click **Datum** once — the newest entries are on top, arrow pointing down.
+2. Click **Datum** again — oldest first (bexio's own toggle still works). Click
+   **Text** — sorted by text; then **Datum** once — newest first again.
+3. Click **Newest first** — it turns blue. Open the list through the sidebar
+   again: it reloads **once** on its own (bexio's loading mask) and ends up
+   sorted by date, newest first. It must not keep reloading.
+4. Sort by another column, then switch the filter tab ("Heute", "Alle"): the
+   chosen sort stays, nothing is sorted on its own.
+5. Click **Newest first** again — no longer blue, the list stays as it is; the
+   next visit through the sidebar is unsorted again.
+6. On a project's "Zeiten" tab (`pr_project/listMonitoring/...`): the same
+   **Newest first** toggle, next to "Neues Projekt". Off: the first click on
+   **Datum** sorts newest first. On: the list reloads once on arrival and is
+   sorted by date, newest first — also after a plain page reload (F5), because
+   bexio forgets this list's sort on every page load.
+7. On a work package (`pr_project/showPackage/...`), toggle on: the "Aufgaben"
+   tab is **not** sorted on its own, but its first click on the due date column
+   sorts descending. Open the "Zeiten" tab — it reloads once and is sorted by
+   date, newest first. Switch to "Aufgaben" and back: still sorted, no reload.
+8. On a draft invoice (`kb_invoice/show/id/...`), toggle on (switch it before
+   opening the modal): Positionen → "Weitere Positionen" → "Zeit/Leistung". The
+   list reloads once and is sorted newest first. Close the modal and open it
+   again — sorted again, again with exactly one reload.
 
 ### 5.3 — Side panel: Templates and Import tabs
 
