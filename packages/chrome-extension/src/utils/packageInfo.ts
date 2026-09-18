@@ -22,4 +22,5 @@ function loadedVersion(): string {
 }
 
 export const VERSION = loadedVersion();
-export const DATE = packageInfo.date ?? "Jan 4, 2024";
+// `typeof` rather than `??`: under Vitest the identifier is not defined at all (see buildDate.d.ts).
+export const DATE = typeof __BUILD_DATE__ === "string" ? __BUILD_DATE__ : "unknown";

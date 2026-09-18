@@ -3,7 +3,6 @@ import fs from "fs-extra";
 const packageJson = JSON.parse(fs.readFileSync("./package.json", "utf8"));
 
 const manifestFile = "./packages/chrome-extension/public/manifest.json";
-const packageJsonFile = "./package.json";
 const releasePleaseManifestFile = "./.release-please-manifest.json";
 
 // Read the manifest.json file
@@ -37,19 +36,3 @@ if (fs.existsSync(releasePleaseManifestFile)) {
 } else {
   console.warn(`Skipped: ${releasePleaseManifestFile} not found.`);
 }
-
-// Update date in package.json
-const packageJsonContent = fs.readFileSync(packageJsonFile, "utf8");
-const updatedPackageJson = packageJsonContent.replace(
-  /"date": ".*?"/g,
-  `"date": "${new Date().toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })}"`,
-);
-
-// Write the updated manifest.json file
-fs.writeFileSync(packageJsonFile, updatedPackageJson, "utf8");
-
-console.log("package.json date updated successfully!");

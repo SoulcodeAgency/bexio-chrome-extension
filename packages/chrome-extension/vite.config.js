@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import { crx } from "@crxjs/vite-plugin";
 import { basename, dirname } from "node:path";
 import manifest from "./public/manifest.json";
+import { buildDate } from "../../scripts/build-date/buildDate";
 
 // Rolldown (Vite 8) derives emitFile refIds from the chunk `name` alone, so the two
 // content scripts — both emitted by @crxjs/vite-plugin as name "index.ts" — collide
@@ -36,6 +37,9 @@ function withUniqueChunkNames(plugins) {
 
 export default ({ mode }) => {
   return defineConfig({
+    // The "last update" date shown in the Templates block. Stamped here because a build happens
+    // on every release path - see scripts/build-date/buildDate.ts.
+    define: { __BUILD_DATE__: JSON.stringify(buildDate()) },
     build: {
       assetsDir: "", // otherwise the scripts will be placed into the named assetsDir folder
       rollupOptions: {
