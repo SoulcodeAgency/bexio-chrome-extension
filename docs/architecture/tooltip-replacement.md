@@ -15,12 +15,12 @@ The `bexioProjectList` content script is injected on the four `office.bexio.com`
 the manifest's second `content_scripts` block, and its observers and UI injection then branch on
 the page URL:
 
-| Path prefix                            | Element observed                                  | Source function                                       |
-| -------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
-| `/index.php/monitoring/list`           | `#monitoring_content`                             | `observerTimeTrackingPage()`                          |
-| `/index.php/pr_project/listMonitoring` | `.listBlock` (first)                              | `observerProjectPage()`                               |
-| `/index.php/pr_project/showPackage`    | the "Zeiten" tab panel (`getPackageTimesPanel()`) | `observerProjectWorkPackagePage()`                    |
-| `/index.php/kb_invoice/show/id`        | `#jqDialog` (modal) → `.block.list` inside it     | `observeBillingPage()` → `observeBillingModalTable()` |
+| Path prefix                            | Element observed                                                         | Source function                                       |
+| -------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------- |
+| `/index.php/monitoring/list`           | `#monitoring_content`                                                    | `observerTimeTrackingPage()`                          |
+| `/index.php/pr_project/listMonitoring` | `.listBlock` (first)                                                     | `observerProjectPage()`                               |
+| `/index.php/pr_project/showPackage`    | the "Zeiten" and "Aufgaben" tab panels (`selectors/packageTabPanels.ts`) | `observerProjectWorkPackagePage()`                    |
+| `/index.php/kb_invoice/show/id`        | `#jqDialog` (modal) → `.block.list` inside it                            | `observeBillingPage()` → `observeBillingModalTable()` |
 
 ### `monitoring/list` — opened through bexio's sidebar
 
@@ -42,12 +42,14 @@ A work package lists its time entries in the lower jQuery-UI tab widget (`#tabs.
 tabs "Aufgaben" / "Zeiten"). jQuery UI gives each panel a generated id (`ui-id-N`, numbered in
 initialisation order), so the id is not stable: the code observed a hard-coded `#ui-id-5` until
 2026-09, when bexio's page had the panel at `#ui-id-4` and the conversion silently stopped
-working there. `selectors/packageTimesPanel.ts` now resolves the panel through its tab link
+working there. `selectors/packageTabPanels.ts` now resolves the panel through its tab link
 (`a[href*='/pr_project/listMonitorings/']` → closest `<li>` → `aria-controls`); the ids exist
 when the content script starts. Checked on the live page (2026-09-17): opening the tab and
 sorting inside it both replace the panel's own children, so the shallow `childList` observer
 on the panel sees every reload. Pinned in `test/apps/bexioProjectList.test.ts`, including a
-case with a renumbered panel id.
+case with a renumbered panel id. The "Aufgaben" panel (`getPackageTasksPanel()`) is observed the same
+way — it has no notes to convert, but a due date column for `list-sorting.md`, and bexio fills it
+by AJAX only after the content script ran.
 
 ### `kb_invoice/show/id` — the "Zeiten importieren" modal
 
@@ -68,7 +70,7 @@ of the actual class order; in the current capture the wrapper is `class="block l
 
 `observingTableModifications()` (called once at module load) sets up a `MutationObserver` on the
 page-specific container element for each matching path. Each observer is created via
-`createObserverWithCallback(convertPopover)` and configured with
+`createObserverWithCallback(onTableRendered)` and configured with
 `{ attributes: false, childList: true, subtree: false }`.
 
 **Why observers are needed:** bexio re-renders its monitoring/project tables in place via its own
@@ -76,6 +78,10 @@ AJAX pagination and filtering — the initial `convertPopover()` call covers the
 subsequent table updates replace `childList` children of the container. The observer fires once
 per mutation batch (checking `mutation.type === "childList"`) and calls `convertPopover()` again
 to re-apply the conversion on the fresh rows.
+
+The observers' callback is `onTableRendered()`, which also re-applies the date column sorting on
+the fresh table — that feature shares this content script and its observers and is documented in
+`list-sorting.md`.
 
 ---
 
