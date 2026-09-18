@@ -5,12 +5,23 @@
   margin-right: 10px;
 }
 
-/* The id keeps these rules ahead of bexio's `.btn:hover` / `.btn:active` states. */
-#PopoverTextSwitcher .btn[aria-pressed="true"] {
+/* "Newest first" toggle next to it, on the time tracking list only
+   (bexioProjectList/renderDateSortToggle.ts). */
+#AutoDateSortToggle {
+  margin-right: 10px;
+}
+
+/* The ids keep these rules ahead of bexio's `.btn:hover` / `.btn:active` states. */
+#PopoverTextSwitcher .btn[aria-pressed="true"],
+#AutoDateSortToggle[aria-pressed="true"] {
   background: #00acf0; /* bexio's link blue ("Heute", "Filtern"), measured 2026-09-17 */
   border-color: #00acf0;
-  color: #fff;
+  color: #fff; /* the halflings icon is a font glyph and follows `color` */
   text-shadow: none;
   box-shadow: none;
-  cursor: default; /* the halflings icon is a font glyph and follows `color` */
+}
+
+/* A pressed "Text | Tooltip" option does nothing on click; a pressed "Newest first" switches off. */
+#PopoverTextSwitcher .btn[aria-pressed="true"] {
+  cursor: default;
 }

@@ -53,6 +53,23 @@ describe("chromeStorageSettings", () => {
     });
   });
 
+  describe("loadAutoDateSortSetting", () => {
+    it("returns false when nothing is stored (default)", async () => {
+      expect(await settings.loadAutoDateSortSetting()).toBe(false);
+    });
+
+    it("round-trips a saved value", async () => {
+      await settings.saveAutoDateSortSetting(true);
+      expect(await settings.loadAutoDateSortSetting()).toBe(true);
+    });
+
+    it("writes under the 'autoDateSortSetting' storage key", async () => {
+      await settings.saveAutoDateSortSetting(true);
+      const raw = await chrome.storage.local.get("autoDateSortSetting");
+      expect(raw).toEqual({ autoDateSortSetting: true });
+    });
+  });
+
   describe("loadActiveTabId", () => {
     it("returns undefined when nothing is stored (default)", async () => {
       expect(await settings.loadActiveTabId()).toBeUndefined();

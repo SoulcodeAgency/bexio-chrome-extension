@@ -136,6 +136,239 @@ describe("bexioProjectList content script", () => {
     });
   });
 
+  describe("date column sorting", () => {
+    const getDateLinks = () =>
+      Array.from(document.querySelectorAll("thead th a[href*='DATE/o/']")).map((link) => link.getAttribute("href")!);
+
+    // Stands in for bexio's delegated `.ajxl` click handler (see test/utils/dateSort.test.ts).
+    let requestedByClick: string[];
+    const bexioAjaxLinkHandler = (event: MouseEvent) => {
+      const link = (event.target as Element).closest("a.ajxl");
+      if (link) {
+        event.preventDefault();
+        requestedByClick.push(link.getAttribute("href")!);
+      }
+    };
+    beforeEach(() => {
+      requestedByClick = [];
+      document.addEventListener("click", bexioAjaxLinkHandler);
+    });
+    afterEach(() => {
+      document.removeEventListener("click", bexioAjaxLinkHandler);
+    });
+
+    it.each([
+      { fixture: "monitoring-list", pathname: "/index.php/monitoring/list", dateColumns: 1 },
+      {
+        fixture: "pr_project-listMonitoring",
+        pathname: "/index.php/pr_project/listMonitoring/id/99999",
+        dateColumns: 1,
+      },
+      {
+        fixture: "pr_project-showPackage",
+        pathname: "/index.php/pr_project/showPackage/packageId/99999",
+        dateColumns: 2,
+      },
+      { fixture: "kb_invoice-show", pathname: "/index.php/kb_invoice/show/id/99999", dateColumns: 1 },
+    ])("points the date columns of $fixture to descending on load", async ({ fixture, pathname, dateColumns }) => {
+      stubPathname(pathname);
+      loadFixture(fixture);
+
+      await importEntry();
+      await settle();
+
+      expect(getDateLinks()).toHaveLength(dateColumns);
+      expect(getDateLinks().filter((href) => !href.endsWith("/o/desc"))).toEqual([]);
+    });
+
+    it("points the date column to descending again when bexio replaces the time tracking list", async () => {
+      stubPathname("/index.php/monitoring/list");
+      loadFixture("monitoring-list");
+      const list = document.getElementById("monitoring_content")!;
+      const freshListHtml = list.innerHTML;
+
+      await importEntry();
+      await settle();
+      // bexio's `.ajxl` handler: `$.get(href, (html) => $lfContent.replaceWith(html))`
+      list.innerHTML = freshListHtml;
+      await settle();
+
+      expect(getDateLinks()).toEqual([
+        "/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.DATE/o/desc",
+      ]);
+    });
+
+    it("sorts the time tracking list by date, newest first, while the setting is on", async () => {
+      await chrome.storage.local.set({ autoDateSortSetting: true });
+      stubPathname("/index.php/monitoring/list");
+      loadFixture("monitoring-list");
+
+      await importEntry();
+      await settle();
+
+      expect(requestedByClick).toEqual([
+        "/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.DATE/o/desc",
+      ]);
+    });
+
+    it("never sorts on its own while the setting is off (the default)", async () => {
+      stubPathname("/index.php/monitoring/list");
+      loadFixture("monitoring-list");
+
+      await importEntry();
+      await settle();
+
+      expect(requestedByClick).toEqual([]);
+    });
+
+    // Unlike the time tracking list, bexio forgets this list's sort on every page load.
+    it("sorts a project's time list by date, newest first, while the setting is on", async () => {
+      await chrome.storage.local.set({ autoDateSortSetting: true });
+      stubPathname("/index.php/pr_project/listMonitoring/projectId/99999");
+      loadFixture("pr_project-listMonitoring");
+
+      await importEntry();
+      await settle();
+
+      expect(requestedByClick).toEqual([
+        "/index.php/filter/sort/f/PrMonitoringFilter/m/pr_project/a/listMonitoring_197/v/monitoring.DATE/o/desc",
+      ]);
+    });
+
+    it("sorts a work package's time entries, and leaves its tasks alone", async () => {
+      await chrome.storage.local.set({ autoDateSortSetting: true });
+      stubPathname("/index.php/pr_project/showPackage/packageId/99999");
+      loadFixture("pr_project-showPackage");
+
+      await importEntry();
+      await settle();
+
+      expect(requestedByClick).toEqual([
+        "/index.php/filter/sort/f/PrMonitoringFilter/m/pr_project/a/listMonitorings_164/v/monitoring.DATE/o/desc",
+      ]);
+    });
+
+    // Live bexio (2026-09-18): the 'Aufgaben' panel is filled by AJAX after the content script ran.
+    it("points the tasks' due date to descending when bexio fills the work package's 'Aufgaben' panel", async () => {
+      stubPathname("/index.php/pr_project/showPackage/packageId/99999");
+      loadFixture("pr_project-showPackage");
+      const tasksPanel = document.getElementById("ui-id-2")!;
+      const freshPanelHtml = tasksPanel.innerHTML;
+      tasksPanel.innerHTML = "";
+
+      await importEntry();
+      await settle();
+      tasksPanel.innerHTML = freshPanelHtml;
+      await settle();
+
+      expect(tasksPanel.querySelector("thead th a[href*='/v/task.FINISH_DATE/']")?.getAttribute("href")).toBe(
+        "/index.php/filter/sort/f/PrTaskFilter/m/pr_project/a/listTasks_164/v/task.FINISH_DATE/o/desc",
+      );
+    });
+
+    it("sorts the invoice's 'Zeiten importieren' list", async () => {
+      await chrome.storage.local.set({ autoDateSortSetting: true });
+      stubPathname("/index.php/kb_invoice/show/id/99999");
+      loadFixture("kb_invoice-show");
+
+      await importEntry();
+      await settle();
+
+      expect(requestedByClick).toEqual([
+        "/index.php/filter/sort/f/KbInvoiceMonitoringFilter/m/kb_invoice/a/importMonitorings/v/monitoring.DATE/o/desc",
+      ]);
+    });
+
+    describe("'Newest first' toggle", () => {
+      const DATE_DESCENDING = "/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.DATE/o/desc";
+      const getDateSortToggle = () => document.getElementById("AutoDateSortToggle");
+      const openTimeTrackingList = async () => {
+        stubPathname("/index.php/monitoring/list");
+        loadFixture("monitoring-list");
+        await importEntry();
+        await settle();
+      };
+
+      it.each([
+        { fixture: "monitoring-list", pathname: "/index.php/monitoring/list", primaryAction: "Neue Zeiterfassung" },
+        {
+          fixture: "pr_project-listMonitoring",
+          pathname: "/index.php/pr_project/listMonitoring/projectId/99999",
+          primaryAction: "Neues Projekt",
+        },
+        {
+          fixture: "pr_project-showPackage",
+          pathname: "/index.php/pr_project/showPackage/packageId/99999",
+          primaryAction: "Neues Projekt",
+        },
+        { fixture: "kb_invoice-show", pathname: "/index.php/kb_invoice/show/id/99999", primaryAction: "Neue Rechnung" },
+      ])(
+        "sits in the title bar of $fixture, between 'Text | Tooltip' and '$primaryAction'",
+        async ({ fixture, pathname, primaryAction }) => {
+          stubPathname(pathname);
+          loadFixture(fixture);
+
+          await importEntry();
+          await settle();
+
+          expect(getDateSortToggle()).not.toBeNull();
+          const block = getDateSortToggle()!.closest(".bx-flex-block");
+          expect(block?.closest(".bx-breadcrumb-container .bx-card-title")).toBeInstanceOf(HTMLElement);
+          expect(block?.previousElementSibling?.querySelector("#PopoverTextSwitcher")).not.toBeNull();
+          expect(block?.nextElementSibling?.querySelector(".js-first-btn")?.textContent?.trim()).toBe(primaryAction);
+        },
+      );
+
+      it("renders only once when the content script runs its setup again", async () => {
+        await openTimeTrackingList();
+        const { initializeExtension } = await importEntry();
+
+        await initializeExtension();
+        await settle();
+
+        expect(document.querySelectorAll("#AutoDateSortToggle")).toHaveLength(1);
+      });
+
+      it("is not pressed while the setting is off (the default)", async () => {
+        await openTimeTrackingList();
+
+        expect(getDateSortToggle()?.getAttribute("aria-pressed")).toBe("false");
+      });
+
+      it("is pressed while the setting is on", async () => {
+        await chrome.storage.local.set({ autoDateSortSetting: true });
+
+        await openTimeTrackingList();
+
+        expect(getDateSortToggle()?.getAttribute("aria-pressed")).toBe("true");
+      });
+
+      it("switching it on stores the setting and sorts the unsorted list right away", async () => {
+        await openTimeTrackingList();
+
+        getDateSortToggle()!.click();
+        await settle();
+
+        expect(await chrome.storage.local.get("autoDateSortSetting")).toEqual({ autoDateSortSetting: true });
+        expect(getDateSortToggle()?.getAttribute("aria-pressed")).toBe("true");
+        expect(requestedByClick).toEqual([DATE_DESCENDING]);
+      });
+
+      it("switching it off stores the setting and leaves the list as it is", async () => {
+        await chrome.storage.local.set({ autoDateSortSetting: true });
+        await openTimeTrackingList();
+        requestedByClick.length = 0; // the automatic sort of the page load
+
+        getDateSortToggle()!.click();
+        await settle();
+
+        expect(await chrome.storage.local.get("autoDateSortSetting")).toEqual({ autoDateSortSetting: false });
+        expect(getDateSortToggle()?.getAttribute("aria-pressed")).toBe("false");
+        expect(requestedByClick).toEqual([]);
+      });
+    });
+  });
+
   describe("work package page (pr_project/showPackage)", () => {
     // Verified on the live page: opening the 'Zeiten' tab and sorting/paging inside it both
     // replace the children of the jQuery-UI tab panel.

@@ -6,6 +6,8 @@
  *
  * - the "Text | Tooltip" toggle round-trip on monitoring/list (bexioProjectList),
  *   and its active option when bexio's sidebar opened the page
+ * - the date column's sort link turned to descending, and the "Newest first"
+ *   toggle sorting through a page-world click handler (isolated world → page)
  * - applying a template on monitoring/edit (the fragile fillForm +
  *   synthetic-event path through src/utils/trigger*.ts)
  * - the template filter input (names, keywords, empty state, reset)
@@ -199,6 +201,71 @@ test("Text | Tooltip toggle shows its active option when opened through bexio's 
   await expect(activeOption).toBeAttached({ timeout: 10_000 });
   // Only bexioProjectList.css marks the active option; without it both options look alike.
   await expect(activeOption).toHaveCSS("background-color", "rgb(0, 172, 240)");
+
+  expect(errors, `unexpected page errors:\n${errors.join("\n")}`).toEqual([]);
+
+  await page.close();
+});
+
+// ---------------------------------------------------------------------------
+// Test 1c: date column sorting on monitoring/list
+// ---------------------------------------------------------------------------
+test("date column points to descending, and 'Newest first' sorts through bexio's own click handler", async () => {
+  const page = await context.newPage();
+
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+
+  // Stands in for bexio's delegated jQuery handler (`$(document).on("click", ".lf_content.ajxon
+  // .ajxl", …)`, read on live bexio 2026-09-18): it takes the click over and loads the link's
+  // href, read at click time. It runs in the page's world, the content script in an isolated one —
+  // so a recorded request proves that the extension's synthetic click crosses that boundary.
+  const bexioAjaxLinkHandler = `
+    window.__sortRequests = [];
+    document.addEventListener("click", function (event) {
+      var link = event.target.closest(".lf_content.ajxon .ajxl");
+      if (!link) return;
+      event.preventDefault();
+      window.__sortRequests.push(link.getAttribute("href"));
+    });`;
+  const sortRequests = () => page.evaluate(() => (window as unknown as { __sortRequests: string[] }).__sortRequests);
+  const DATE_DESCENDING = "/index.php/filter/sort/f/MonitoringFilter/m/monitoring/a/list/v/monitoring.DATE/o/desc";
+
+  await serveFixture(
+    page,
+    "https://office.bexio.com/index.php/monitoring/list",
+    "monitoring-list",
+    bexioAjaxLinkHandler,
+  );
+  await page.goto("https://office.bexio.com/index.php/monitoring/list");
+
+  const toggle = page.locator("#AutoDateSortToggle");
+  try {
+    // The fixture is unsorted: bexio's link says `/o/asc`, the extension turns it around.
+    await expect(page.locator("thead th a[href*='/v/monitoring.DATE/']")).toHaveAttribute("href", DATE_DESCENDING, {
+      timeout: 10_000,
+    });
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(await sortRequests()).toEqual([]); // off by default: nothing is sorted on its own
+
+    // Switching it on sorts right away …
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(toggle).toHaveCSS("background-color", "rgb(0, 172, 240)");
+    await expect.poll(sortRequests).toEqual([DATE_DESCENDING]);
+
+    // … and from then on every time the list arrives unsorted, without any click.
+    await page.reload();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
+    await expect.poll(sortRequests).toEqual([DATE_DESCENDING]);
+  } finally {
+    // The setting lives in the context's chrome.storage, which the following tests share.
+    if ((await toggle.getAttribute("aria-pressed").catch(() => null)) === "true") {
+      await toggle.click();
+      await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    }
+  }
 
   expect(errors, `unexpected page errors:\n${errors.join("\n")}`).toEqual([]);
 
