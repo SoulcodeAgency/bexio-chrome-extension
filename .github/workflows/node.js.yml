@@ -36,6 +36,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # A green run takes about 3 minutes. Without a limit a hung step keeps the
+    # job alive for GitHub's default of 6 hours — PR #166's run sat in
+    # `apt-get update` for over 20 minutes before it was cancelled by hand.
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v7
@@ -45,6 +49,8 @@ jobs:
           node-version-file: .nvmrc
           cache: "npm"
       - name: Install Xvfb
+        # Usually done in under 10 seconds; fail fast when the apt mirror hangs.
+        timeout-minutes: 5
         # Xvfb is needed by the Playwright extension-smoke step: MV3 service
         # workers do not surface in Playwright's headless mode, so the e2e
         # tests run headed inside a virtual display (see docs/architecture/testing.md).
