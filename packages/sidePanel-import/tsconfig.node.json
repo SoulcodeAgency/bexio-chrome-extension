@@ -9,6 +9,9 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
+    /* vite.config.ts imports `buildDate.ts` with its extension, which Vite's
+       `configLoader: 'native'` (Node's own loader) requires. */
+    "allowImportingTsExtensions": true,
     "types": ["node"]
   },
   "include": ["vite.config.ts"]
