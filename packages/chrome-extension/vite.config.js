@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { crx } from "@crxjs/vite-plugin";
-import manifest from "./public/manifest.json";
-import { buildDate } from "../../scripts/build-date/buildDate";
+import manifest from "./public/manifest.json" with { type: "json" };
+import { buildDate } from "../../scripts/build-date/buildDate.ts";
 
 export default ({ mode }) => {
   return defineConfig({

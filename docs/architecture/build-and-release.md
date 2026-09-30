@@ -120,6 +120,8 @@ Both `unpacked/` and `dist/` are git-ignored.
 
 Both packages build with **Vite 8**, which bundles with **Rolldown** internally (Vite ≤ 7 used Rollup for bundling and esbuild for transforms; Vite 8 has no esbuild dependency at all). The `rollupOptions` keys in both configs are still honoured — Rolldown accepts them as compatible aliases.
 
+**Both configs load under `configLoader: 'native'`**, which Vite plans to make the default. That loader skips bundling and hands the config to Node itself (type stripping for `vite.config.ts`), so the configs stick to what Node's ESM loader accepts: relative imports carry their file extension (`buildDate.ts`, hence `allowImportingTsExtensions` in `sidePanel-import/tsconfig.node.json`), JSON imports carry `with { type: "json" }`, and paths are resolved from `import.meta.dirname`, not `__dirname` (undefined in ESM — Vite's compatibility warning does not flag it, the native build just fails). Check a config change with `npx vite build --configLoader native` in the package folder; the default loader then prints no `(!) Your Vite config uses features that are unsupported by configLoader: 'native'` warning.
+
 ### `chrome-extension` build (`packages/chrome-extension/vite.config.js`)
 
 - Uses [`@crxjs/vite-plugin`](https://crxjs.dev/) which reads the source `manifest.json` and performs several transformations: it rewrites `content_scripts[].js` entry paths from `.ts` source files to the built `.js` output names, and injects HMR glue in development mode.

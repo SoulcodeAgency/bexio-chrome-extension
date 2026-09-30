@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { buildDate } from "../../scripts/build-date/buildDate";
+import { buildDate } from "../../scripts/build-date/buildDate.ts";
 
 // https://vitejs.dev/config/
 // The callback form of defineConfig types `mode` from Vite's own ConfigEnv —
@@ -14,9 +14,9 @@ export default defineConfig(({ mode }) => {
     base: "/sidePanel-import/",
     resolve: {
       alias: {
-        "~": path.resolve(__dirname, "src"),
-        react: path.resolve(__dirname, "../../node_modules/react"),
-        "react-dom": path.resolve(__dirname, "../../node_modules/react-dom"),
+        "~": path.resolve(import.meta.dirname, "src"),
+        react: path.resolve(import.meta.dirname, "../../node_modules/react"),
+        "react-dom": path.resolve(import.meta.dirname, "../../node_modules/react-dom"),
       },
       dedupe: ["react", "react-dom"],
     },
@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => {
     server: {
       fs: {
         strict: false,
-        allow: [path.resolve(__dirname, "../shared")],
+        allow: [path.resolve(import.meta.dirname, "../shared")],
       },
     },
   };
