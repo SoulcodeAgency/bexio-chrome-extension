@@ -296,11 +296,6 @@ describe("bexioProjectList content script", () => {
           pathname: "/index.php/pr_project/listMonitoring/projectId/99999",
           primaryAction: "Neues Projekt",
         },
-        {
-          fixture: "pr_project-showPackage",
-          pathname: "/index.php/pr_project/showPackage/packageId/99999",
-          primaryAction: "Neues Projekt",
-        },
         { fixture: "kb_invoice-show", pathname: "/index.php/kb_invoice/show/id/99999", primaryAction: "Neue Rechnung" },
       ])(
         "sits in the title bar of $fixture, between 'Text | Tooltip' and '$primaryAction'",
@@ -318,6 +313,19 @@ describe("bexioProjectList content script", () => {
           expect(block?.nextElementSibling?.querySelector(".js-first-btn")?.textContent?.trim()).toBe(primaryAction);
         },
       );
+
+      it("is not offered on a work package page, whose time entries are a new grid now (#168)", async () => {
+        // The captured fixture predates bexio's switch: its "Zeiten" tab still has the old list. Live,
+        // that tab is the new grid, which sorts by date, descending, on its own.
+        stubPathname("/index.php/pr_project/showPackage/packageId/99999");
+        loadFixture("pr_project-showPackage");
+
+        await importEntry();
+        await settle();
+
+        expect(getDateSortToggle()).toBeNull();
+        expect(document.getElementById("PopoverTextSwitcher")).not.toBeNull();
+      });
 
       it("renders only once when the content script runs its setup again", async () => {
         await openTimeTrackingList();

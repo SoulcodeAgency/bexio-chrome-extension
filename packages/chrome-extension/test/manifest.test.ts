@@ -12,7 +12,7 @@ interface Manifest {
   host_permissions?: string[];
   optional_permissions?: string[];
   optional_host_permissions?: string[];
-  content_scripts?: { matches?: string[]; js?: string[]; css?: string[] }[];
+  content_scripts?: { matches?: string[]; js?: string[]; css?: string[]; world?: string }[];
   web_accessible_resources?: { resources?: string[]; matches?: string[] }[];
 }
 
@@ -87,6 +87,24 @@ describe("manifest.json scoping", () => {
     it.each(NEW_UI_URLS)("injects the templates script (time entry modal) on %s", (url) => {
       const script = scriptFor("/src/apps/bexioTimetrackingTemplates/index.ts");
       expect(script!.matches!.some((pattern) => matchesUrlPattern(pattern, url))).toBe(true);
+    });
+
+    it.each(NEW_UI_URLS)("injects the remarks script and the MAIN-world grid script on %s", (url) => {
+      for (const entry of ["/src/apps/bexioProjectList/index.ts", "/src/apps/bexioGridColumns/index.iife.ts"]) {
+        expect(
+          scriptFor(entry)!.matches!.some((pattern) => matchesUrlPattern(pattern, url)),
+          entry,
+        ).toBe(true);
+      }
+    });
+
+    it("runs the grid column script in the page's MAIN world, as a self-contained IIFE", () => {
+      // ag-grid's API hangs off a page-JS expando (`__agComponent`) that the isolated world cannot see.
+      // crxjs builds `*.iife.ts` entries without its ESM loader, which needs chrome.runtime.getURL —
+      // an API the MAIN world does not have.
+      const script = scriptFor("/src/apps/bexioGridColumns/index.iife.ts");
+      expect(script?.world).toBe("MAIN");
+      expect(script?.css).toBeUndefined();
     });
 
     it("keeps the templates script (and its onMessage listener) to one entry per page", () => {
