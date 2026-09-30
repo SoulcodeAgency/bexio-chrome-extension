@@ -11,6 +11,13 @@ to synthetic DOM events in a specific sequence. This layer encapsulates that
 synthetic-event recipe so the rest of the extension can call one function per
 field.
 
+> **bexio's new time tracking (#168).** Since 2026-09 bexio's menu opens an Angular page,
+> `/index.php/time-tracking`, where entries are created in a dialog. This document describes the
+> old `monitoring/edit` form, which is still served and still supported. The dialog has its own
+> adapter (`src/utils/timeEntryModal/`, `src/selectors/timeEntryModal.ts`); `fillForm`, `onMessage`,
+> `readCurrentFormValues` and the form-submitted report dispatch to it on pages without
+> `#MonitoringForm`. See [`new-time-tracking-ui.md`](new-time-tracking-ui.md).
+
 ---
 
 ## Field map
@@ -186,15 +193,18 @@ awaits `openBexioTimeTrackingPage()` (in production builds only —
 The function queries the active tab of the last focused window and:
 
 - resolves right away if that tab is already on the plain
-  `https://office.bexio.com/index.php/monitoring/edit` URL. `/edit/id/<id>` is
-  deliberately **not** treated as "already there": that form edits an _existing_
-  time entry, so we navigate to a fresh one instead;
+  `https://office.bexio.com/index.php/monitoring/edit` URL, or on any page of bexio's new time
+  tracking (`isNewUiTimeTrackingUrl` — the content script opens a fresh dialog there itself, #168).
+  `/edit/id/<id>` is deliberately **not** treated as "already there": that form edits an
+  _existing_ time entry, so we navigate to a fresh one instead;
+- navigates to `https://office.bexio.com/index.php/time-tracking` (`BEXIO_TIME_TRACKING`), the page
+  bexio's menu opens since 2026-09;
 - otherwise registers a `chrome.tabs.onUpdated` listener, calls
   `chrome.tabs.update(tabId, { url })`, and resolves when **that tab id** reports
   `status === "complete"` on a URL that `isTimeTrackingPageUrl` accepts. That
   predicate mirrors the manifest's content-script patterns
-  (`…/monitoring/edit` and `…/monitoring/edit/id/*`, fragment ignored) — matching
-  anything wider would resolve on a page where the content script does not run;
+  (`…/monitoring/edit`, `…/monitoring/edit/id/*` and the new UI's pages, fragment ignored) —
+  matching anything wider would resolve on a page where the content script does not run;
 - waits a further 500 ms so bexio can finish rendering, then resolves `true`;
 - rejects if there is no tab, if `chrome.tabs.update` fails, or after
   `NAVIGATION_TIMEOUT_MS` (15 s) — an expired session redirecting to the login
@@ -208,9 +218,9 @@ content script is not there to receive the message). Pinned in
 `packages/sidePanel-import/test/openBexioTimeTrackingPage.test.ts`.
 
 **Note:** the service worker independently gates the side panel on
-`office.bexio.com/index.php/monitoring*` (`public/service_worker.js`), which is
-wider than the edit form — the side panel is visible on the monitoring list too,
-which is exactly why this navigation step exists.
+`office.bexio.com/index.php/monitoring*` and the new UI's pages (`SIDE_PANEL_URL_PREFIXES` in
+`public/service_worker.js`), which is wider than the pages with a form — the side panel is visible
+on the old monitoring list too, which is exactly why this navigation step exists.
 
 ---
 

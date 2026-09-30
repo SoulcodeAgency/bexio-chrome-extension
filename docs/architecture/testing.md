@@ -258,7 +258,7 @@ the npm script made the test fail on the Linux CI runner with
 
 ## 7. Playwright e2e layer — implementation notes
 
-There are two specs, sharing the launch/fixture helpers in `e2e/support.ts`:
+There are three specs, sharing the launch/fixture helpers in `e2e/support.ts`:
 
 - `e2e/extension-smoke.spec.ts` — injection-level: template UI appears on
   `monitoring/edit`, the side panel mounts, the "Text | Tooltip" toggle is
@@ -274,6 +274,11 @@ There are two specs, sharing the launch/fixture helpers in `e2e/support.ts`:
   the real `fillForm` synthetic-event path, the keyword-aware template filter,
   and the inline Add + manage-mode Delete/Undo flows — dialog-free by design;
   `page.on("dialog")` stays wired to prove no native dialog ever opens.
+- `e2e/new-time-tracking-ui.spec.ts` — bexio's new time tracking (#168) on the **synthetic**
+  fixtures: the Templates column's real layout next to the dialog's form (the pane beats its inline
+  `max-width: 720px`), applying a template through a page-world stand-in for Angular Material's
+  `mat-select`, and the grid's remarks as text with the MAIN-world script writing the widened
+  column definitions into a page-world stand-in for ag-grid's API. See `new-time-tracking-ui.md`.
 
 Both use `chromium.launchPersistentContext` with `--load-extension=<unpacked>`
 flags because Chrome extensions can only be loaded into a persistent context,
@@ -507,6 +512,32 @@ is why the button is clicked rather than focused (`docs/architecture/form-layer.
 
 **Known limit** (`form-layer.md`): the submit event fires before the POST, so a
 server-side rejection still reads as booked. Clicking ✅ resets the row by hand.
+
+### 5.6 — bexio's new time tracking (`/index.php/time-tracking`, #168)
+
+The automated tests run on synthetic fixtures (`*.synthetic.html`) and stand-ins for Angular
+Material and ag-grid, so this section is the only check against bexio's real components.
+
+1. Open "Projekte → Zeiten" from bexio's menu, then "Zeit erfassen". The dialog is wider, the
+   Templates column sits right of the form, bexio's form keeps its width and nothing overlaps.
+   Hover "Templates" — its title shows the build version.
+2. Apply a template with contact, project, work package and person. Every field is set, Projekt
+   and Arbeitspaket once they are enabled, Ansprechpartner even when the template stores the name
+   as "Firstname Lastname". The loader disappears; "verrechenbar" follows the template.
+3. **Save one real test entry dated today** after typing nothing yourself: apply a ManicTime entry
+   from the side panel (▶️), then 📤. The entry must appear in the list with the date, the
+   duration, the remarks and "verrechenbar" as applied — the proof that bexio's Angular model took
+   the synthetic values, the duration above all. The row turns ✅. Delete the entry.
+4. With "Zeiterfassung bearbeiten" open (kebab → "Bearbeiten"), ▶️ in the side panel must refuse
+   with a message; a template may still be applied there.
+5. "+" in the Templates column saves the dialog's values as a template; ↻ updates one.
+6. Remarks: switch "Text" next to "Spalten". The remarks column widens, the remarks show as text
+   (three lines, a dotted underline where cut; hover shows the rest over the rows below). Scroll,
+   page, filter and hide a column through "Spalten" — the texts stay right and the widths stay.
+   "Tooltip" restores the icons and bexio's widths. Repeat on a project's "Zeiten" tab and a work
+   package's time tracking tab (there the toggle in the title bar drives it).
+7. No "Newest first" toggle on these pages. The old `monitoring/edit` (typed URL) and the invoice's
+   "Zeiten importieren" modal still work as in 5.1 and 5.5.
 
 ### 5.5 — `kb_invoice` tracked-time tooltip (`kb_invoice/show/id/*`)
 

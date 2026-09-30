@@ -8,9 +8,14 @@ newest ones. The `bexioProjectList` content script changes that in two steps:
 
 1. **Link rewrite (always on, all four pages):** the sort link of every _unsorted_ date column
    points to descending, so the first click shows the newest entries.
-2. **"Newest first" toggle (opt-in, all four pages):** when on, every list of time entries is sorted
+2. **"Newest first" toggle (opt-in):** when on, every list of time entries is sorted
    by date descending on its own whenever it arrives unsorted — the time tracking list, a project's
    and a work package's "Zeiten" tab, and the invoice's "Zeiten importieren" modal.
+
+Since 2026-09 bexio's menu opens its new time tracking (`/index.php/time-tracking`, #168), and a
+project's and a work package's time tab are the new grid, too. Those grids sort by date, descending,
+by default, so nothing here applies to them and the toggle is not shown there (see "The 'Newest
+first' toggle" below). The old pages this document describes are still served.
 
 Code: `src/utils/dateSort.ts` (`preferDescendingDateSort`, `autoSortByDate`),
 `src/selectors/sortLinks.ts`, `src/apps/bexioProjectList/renderDateSortToggle.ts`; the observers
@@ -147,7 +152,11 @@ stores the setting; switching it **on** sorts the list right away, switching it 
 as it is. The click listener is attached after the stored state is shown, so a click always flips
 what the user sees.
 
-Rendered on all four pages, like "Text | Tooltip", and one setting serves them all. On the invoice
+Rendered on `monitoring/list`, `pr_project/listMonitoring` and the invoice page; one setting serves
+them all. **Not** on a work package page and not on the pages of bexio's new time tracking (#168):
+their time entries are listed by the new grid, which sorts by date, descending, on its own
+(`sortBy=date:desc`, header `aria-sort=descending`). The link rewrite still runs on a work package
+page, for the "Aufgaben" tab's due date. On the invoice
 page the list only exists once the modal is open, and the modal's overlay covers the title bar — so
 the toggle has to be switched before opening it (same limitation as "Text | Tooltip").
 

@@ -7,6 +7,11 @@ The `bexioProjectList` content script replaces bexio's native popover-style tool
 the `removePopoversSetting` flag (default `false`) and controlled via a "Text | Tooltip" toggle
 injected into bexio's page title bar.
 
+bexio's new time tracking grids (`/index.php/time-tracking`, a project's and a work package's time
+tab — #168) have no popover icons; their remarks are converted by `convertGridRemarks` from the
+icons' `aria-label`, with a toggle next to the grid's "Spalten" button and a MAIN-world script that
+widens the column. That part is documented in [`new-time-tracking-ui.md`](new-time-tracking-ui.md).
+
 ---
 
 ## Which bexio pages the content script matches
@@ -37,6 +42,10 @@ the "opened through bexio's sidebar" test in `e2e/extension-behaviour.spec.ts`, 
 fixture at the sidebar URL and rewrites the address the same way.
 
 ### `pr_project/showPackage` — the "Zeiten" tab panel
+
+> Since 2026-09 live bexio shows this tab as the new grid (`#tab-time-tracking`, #168); the old
+> panel below is what the captured fixture has. The "Aufgaben" tab is still the old one. The page's
+> title-bar toggle now also drives the grid's remarks.
 
 A work package lists its time entries in the lower jQuery-UI tab widget (`#tabs.listBlock`,
 tabs "Aufgaben" / "Zeiten"). jQuery UI gives each panel a generated id (`ui-id-N`, numbered in
