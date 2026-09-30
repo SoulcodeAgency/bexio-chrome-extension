@@ -9,9 +9,15 @@ import { toggleDisplayLoader } from "./loader";
 import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
 import { WaitForTimeoutError } from "./pollUntil";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
+import { getLoader } from "../selectors/selectors";
+import { hasMonitoringForm } from "../selectors/timeEntryModal";
+import { fillEditorModal } from "./timeEntryModal/editorModal";
 
 /**
- * Fills the bexio monitoring-edit form with the template identified by `id`.
+ * Fills the bexio monitoring-edit form with the template identified by `id` — or, on a page of
+ * bexio's new time tracking (no `#MonitoringForm`, #168), the time entry dialog via
+ * `fillEditorModal`, which opens one when none is open. Everything around the field writes (loader,
+ * stale id, timeout) is shared; the loader is only shown where the Templates block injected one.
  *
  * Orchestration order (see `docs/architecture/form-layer.md` for details):
  * 1. `toggleDisplayLoader()` — show the loader overlay.
@@ -58,7 +64,12 @@ import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
  */
 // Fill form
 async function fillForm(id: string, timeEntryBillable?: boolean): Promise<boolean> {
-  toggleDisplayLoader();
+  const isMonitoringForm = hasMonitoringForm();
+  // The old page always has the loader (renderHtml injects it before any fill can start). In the
+  // new UI it lives in the Templates column of the dialog, which is not there when the side panel
+  // fills a dialog it has yet to open.
+  const showLoader = isMonitoringForm || getLoader() !== null;
+  if (showLoader) toggleDisplayLoader();
   let entry: TemplateEntry | undefined;
   let timeout: WaitForTimeoutError | undefined;
 
@@ -68,7 +79,9 @@ async function fillForm(id: string, timeEntryBillable?: boolean): Promise<boolea
 
     // A missing entry is handled after the loader is gone (see below), so that the
     // alert() does not pop up over a still-visible overlay.
-    if (entry) {
+    if (entry && !isMonitoringForm) {
+      await fillEditorModal(entry, timeEntryBillable);
+    } else if (entry) {
       const {
         contact = null,
         work = null,
@@ -108,7 +121,8 @@ async function fillForm(id: string, timeEntryBillable?: boolean): Promise<boolea
     // changed bexio markup, a missing save button, a select2 widget that is gone - and
     // without this the overlay would stay on screen forever (#73). Errors other than a
     // WaitForTimeoutError are not swallowed: they keep propagating to the caller.
-    toggleDisplayLoader(false);
+    // The dialog - and the loader in it - may be gone by now in the new UI.
+    if (isMonitoringForm || getLoader() !== null) toggleDisplayLoader(false);
   }
 
   // The caller's id can be stale: the side panel (or this page's button list) may still

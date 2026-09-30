@@ -37,7 +37,11 @@
     {
       "matches": [
         "https://office.bexio.com/index.php/monitoring/edit",
-        "https://office.bexio.com/index.php/monitoring/edit/id/*"
+        "https://office.bexio.com/index.php/monitoring/edit/id/*",
+        "https://office.bexio.com/index.php/time-tracking*",
+        "https://office.bexio.com/index.php/pr_project/show/id/*",
+        "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/*",
+        "https://office.bexio.com/index.php/pr_project/showPackage/*"
       ],
       "js": [
         "/src/apps/bexioTimetrackingTemplates/index.ts"

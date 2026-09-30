@@ -74,6 +74,30 @@ describe("manifest.json scoping", () => {
     expect(matchesSidebarUrl).toBe(true);
   });
 
+  describe("bexio's new Angular time tracking (#168)", () => {
+    const NEW_UI_URLS = [
+      "https://office.bexio.com/index.php/time-tracking",
+      "https://office.bexio.com/index.php/time-tracking?sortBy=date:desc&filter=all&filterBy=",
+      "https://office.bexio.com/index.php/pr_project/show/id/12",
+      "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/projectId/12",
+      "https://office.bexio.com/index.php/pr_project/showPackage/packageId/34",
+    ];
+    const scriptFor = (entry: string) => manifest.content_scripts?.find((cs) => cs.js?.includes(entry));
+
+    it.each(NEW_UI_URLS)("injects the templates script (time entry modal) on %s", (url) => {
+      const script = scriptFor("/src/apps/bexioTimetrackingTemplates/index.ts");
+      expect(script!.matches!.some((pattern) => matchesUrlPattern(pattern, url))).toBe(true);
+    });
+
+    it("keeps the templates script (and its onMessage listener) to one entry per page", () => {
+      // Two copies of the listener would each apply a side-panel request once.
+      const templateScripts = (manifest.content_scripts ?? []).filter((cs) =>
+        cs.js?.some((js) => js.includes("bexioTimetrackingTemplates")),
+      );
+      expect(templateScripts).toHaveLength(1);
+    });
+  });
+
   it("exposes web-accessible resources to office.bexio.com only", () => {
     // A resource readable from `https://*/*` lets any site probe
     // chrome-extension://<id>/<resource> and fingerprint the visitor as a user

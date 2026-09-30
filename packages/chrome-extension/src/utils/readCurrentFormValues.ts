@@ -3,6 +3,8 @@ import { contactField } from "../selectors/contactField";
 import { workField, statusField, contactPersonField, projectField, packageField } from "../selectors/selectors";
 import readTextFromSelect2 from "./readTextFromSelect2";
 import trimAll from "./trimAll";
+import { hasMonitoringForm } from "../selectors/timeEntryModal";
+import { readEditorModalValues } from "./timeEntryModal/editorModal";
 
 export type TemplateFormValues = {
   work: string;
@@ -19,8 +21,12 @@ export type TemplateFormValues = {
  *
  * Same module-load quirk as `src/selectors/*`: the field elements are captured
  * at import time, so tests must load the fixture before importing this module.
+ *
+ * On a page of bexio's new time tracking (no `#MonitoringForm`, #168) it reads the open time
+ * entry dialog instead.
  */
 export async function readCurrentFormValues(): Promise<TemplateFormValues> {
+  if (!hasMonitoringForm()) return readEditorModalValues();
   const work = await readTextFromSelect2(workField);
   const status = await readTextFromSelect2(statusField);
 

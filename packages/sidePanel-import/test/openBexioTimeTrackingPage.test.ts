@@ -12,6 +12,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import openBexioTimeTrackingPage, {
   BEXIO_MONITORING_TIMETRACKING,
+  BEXIO_TIME_TRACKING,
   NAVIGATION_TIMEOUT_MS,
   isTimeTrackingPageUrl,
 } from "~/utils/openBexioTimeTrackingPage";
@@ -46,6 +47,18 @@ describe("isTimeTrackingPageUrl", () => {
     // Not a content-script match either (the plain pattern has no trailing `*`).
     expect(isTimeTrackingPageUrl(`${BEXIO_MONITORING_TIMETRACKING}Something`)).toBe(false);
   });
+
+  it("accepts the pages of bexio's new time tracking UI (#168)", () => {
+    expect(isTimeTrackingPageUrl(BEXIO_TIME_TRACKING)).toBe(true);
+    expect(isTimeTrackingPageUrl(`${BEXIO_TIME_TRACKING}?sortBy=date:desc&filter=all&filterBy=`)).toBe(true);
+    expect(isTimeTrackingPageUrl("https://office.bexio.com/index.php/pr_project/show/id/12")).toBe(true);
+    expect(
+      isTimeTrackingPageUrl("https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/projectId/12"),
+    ).toBe(true);
+    expect(isTimeTrackingPageUrl("https://office.bexio.com/index.php/pr_project/showPackage/packageId/34")).toBe(true);
+
+    expect(isTimeTrackingPageUrl("https://office.bexio.com/index.php/pr_project/list")).toBe(false);
+  });
 });
 
 describe("openBexioTimeTrackingPage", () => {
@@ -67,13 +80,33 @@ describe("openBexioTimeTrackingPage", () => {
     expect(listenerCount()).toBe(0);
   });
 
+  it("resolves immediately on a page of the new UI — the content script opens the modal itself", async () => {
+    tabs().__queryResult = [{ id: 1, url: `${BEXIO_TIME_TRACKING}?sortBy=date:desc&filter=all&filterBy=` }];
+
+    await expect(openBexioTimeTrackingPage()).resolves.toBe(true);
+
+    expect(tabs().__updates).toHaveLength(0);
+  });
+
+  it("navigates away from an old /edit/id page, which edits an existing entry", async () => {
+    tabs().__queryResult = [{ id: 42, url: `${BEXIO_MONITORING_TIMETRACKING}/id/7` }];
+
+    const state = track(openBexioTimeTrackingPage());
+    await vi.advanceTimersByTimeAsync(0);
+    expect(tabs().__updates).toEqual([{ tabId: 42, properties: { url: BEXIO_TIME_TRACKING } }]);
+
+    tabs().__emitUpdated(42, { status: "complete" }, { id: 42, url: BEXIO_TIME_TRACKING });
+    await vi.advanceTimersByTimeAsync(500);
+    expect(state.status).toBe("resolved");
+  });
+
   it("navigates the active tab and resolves once that tab has loaded the form", async () => {
     tabs().__queryResult = [{ id: 42, url: "https://office.bexio.com/index.php/monitoring/list" }];
 
     const state = track(openBexioTimeTrackingPage());
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(tabs().__updates).toEqual([{ tabId: 42, properties: { url: BEXIO_MONITORING_TIMETRACKING } }]);
+    expect(tabs().__updates).toEqual([{ tabId: 42, properties: { url: BEXIO_TIME_TRACKING } }]);
     expect(listenerCount()).toBe(1);
 
     tabs().__emitUpdated(42, { status: "complete" }, { id: 42, url: BEXIO_MONITORING_TIMETRACKING });

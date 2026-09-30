@@ -18,7 +18,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import TableCellTrackingDay from "~/components/ImportEntries/TableCellTrackingDay";
-import { BEXIO_MONITORING_TIMETRACKING } from "~/utils/openBexioTimeTrackingPage";
+import { BEXIO_MONITORING_TIMETRACKING, BEXIO_TIME_TRACKING } from "~/utils/openBexioTimeTrackingPage";
 import { getChromeFake } from "../../../test/support/chrome-fake";
 
 const tabs = () => getChromeFake().tabs;
@@ -67,13 +67,13 @@ describe("TableCellTrackingDay — applying from a page other than the form", ()
 
     await clickApply();
 
-    expect(tabs().__updates).toEqual([{ tabId: 42, properties: { url: BEXIO_MONITORING_TIMETRACKING } }]);
+    expect(tabs().__updates).toEqual([{ tabId: 42, properties: { url: BEXIO_TIME_TRACKING } }]);
     // The entry must not be applied while the form is still loading — that is
     // exactly the state in which no content script answers.
     expect(onButtonClick).not.toHaveBeenCalled();
 
     await act(async () => {
-      tabs().__emitUpdated(42, { status: "complete" }, { id: 42, url: BEXIO_MONITORING_TIMETRACKING });
+      tabs().__emitUpdated(42, { status: "complete" }, { id: 42, url: BEXIO_TIME_TRACKING });
       // openBexioTimeTrackingPage's render grace period.
       await vi.advanceTimersByTimeAsync(500);
     });

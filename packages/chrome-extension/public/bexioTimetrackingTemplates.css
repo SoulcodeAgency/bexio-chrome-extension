@@ -320,3 +320,95 @@ button.template-button.template-button--active::before {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ── bexio's new time entry dialog (#168, apps/bexioTimetrackingTemplates/editorModalColumn.ts) ──
+   The Templates block is a column to the right of bexio's form. The dialog pane carries an inline
+   `max-width: 720px`; the class rule below wins over it with !important. bexio's form keeps its
+   720px, the column takes the rest and scrolls on its own. bexio's old stylesheet (`.btn`,
+   `.row-fluid`) is not on these pages, so the block brings its own control styles. */
+.cdk-overlay-pane.soulcode-modal-pane {
+  max-width: min(1160px, 96vw) !important;
+  width: min(1160px, 96vw) !important;
+}
+
+.soulcode-modal-with-templates {
+  display: flex !important;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.soulcode-modal-with-templates > .soulcode-modal-form {
+  flex: 0 1 720px;
+  min-width: 0;
+}
+
+#SoulcodeExtensionModalColumn {
+  flex: 1 1 340px;
+  min-width: 260px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px 20px 20px 16px;
+  border-left: 1px solid #e3e8ec;
+  background: #fbfcfd;
+  font-size: 13px;
+}
+
+.template-panel--modal > hr {
+  display: none;
+}
+
+.template-panel--modal .template-panel-header {
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.template-panel--modal h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.template-panel--modal .template-search-filter {
+  width: 150px;
+}
+
+.template-panel--modal .btn {
+  border: 1px solid #c3cdd6;
+  border-radius: 4px;
+  background: #fff;
+  color: #2c3540;
+  padding: 4px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.template-panel--modal .btn:hover {
+  background: #f2f5f8;
+}
+
+.template-panel--modal .btn-info {
+  border-color: var(--soulcodeBlue);
+  background: var(--soulcodeBlue);
+  color: #fff;
+}
+
+.template-panel--modal .btn-info:hover {
+  background: #2a669c;
+}
+
+.template-panel--modal input[type="search"],
+.template-panel--modal input[type="text"] {
+  border: 1px solid #c3cdd6;
+  border-radius: 4px;
+  background: #fff;
+  font: inherit;
+  height: 34px;
+  box-sizing: border-box;
+}
+
+/* The filter's padding leaves room for its icons (see .template-search-filter). */
+.template-panel--modal input[type="text"] {
+  padding: 0 8px;
+}

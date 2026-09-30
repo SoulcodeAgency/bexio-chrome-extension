@@ -1,24 +1,35 @@
-const BEXIO_MONITORING_TIMETRACKING = "https://office.bexio.com/index.php/monitoring/edit";
-const BEXIO_MONITORING_LIST = "https://office.bexio.com/index.php/monitoring/list";
-const BEXIO_MONITORING_SIDEBAR = "https://office.bexio.com/index.php/monitoring";
+// bexio's time tracking since 2026-09: the Angular list, where new entries are created in a modal.
+// The menu's "Projekte → Zeiten" opens it.
+const BEXIO_TIME_TRACKING = "https://office.bexio.com/index.php/time-tracking";
 const SIDE_PANEL_PATH = "/sidePanel-import/index.html";
+
+// The pages whose content script can fill a time entry, as URL prefixes. The old
+// `monitoring/*` pages are still served (just no longer linked from the menu); the others host
+// the new time entry modal. Keep in sync with the templates content script in manifest.json.
+const SIDE_PANEL_URL_PREFIXES = [
+  "https://office.bexio.com/index.php/monitoring",
+  BEXIO_TIME_TRACKING,
+  "https://office.bexio.com/index.php/pr_project/show/id/",
+  "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/",
+  "https://office.bexio.com/index.php/pr_project/showPackage/",
+];
 
 // Clicking extension icon will open the browser on the bexio time tracking page
 chrome.action.onClicked.addListener((tab) => {
-  chrome.tabs.create({ url: BEXIO_MONITORING_TIMETRACKING });
+  chrome.tabs.create({ url: BEXIO_TIME_TRACKING });
 });
 
 // Allows users to open the side panel by clicking on the action toolbar icon
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
 
-// Enables the side panel for a tab on a bexio monitoring page, disables it
+// Enables the side panel for a tab on a bexio time tracking page, disables it
 // everywhere else. The extension holds no broad "tabs" permission, only a host
 // permission for office.bexio.com. Chrome therefore populates `tab.url` for
 // bexio tabs only — for every other tab it is `undefined`. A missing url
 // consequently means "not a bexio tab", which must disable the side panel
 // rather than bail out.
 async function configureSidePanel(tabId, url) {
-  if (url && url.startsWith(BEXIO_MONITORING_SIDEBAR)) {
+  if (url && SIDE_PANEL_URL_PREFIXES.some((prefix) => url.startsWith(prefix))) {
     await chrome.sidePanel.setOptions({
       tabId,
       path: SIDE_PANEL_PATH,
@@ -44,7 +55,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 // The url filter is a match pattern; it only matches tabs the extension has
 // host access to, which is exactly the bexio tabs we care about.
 async function enableSidePanelOnOpenMonitoringTabs() {
-  const tabs = await chrome.tabs.query({ url: `${BEXIO_MONITORING_SIDEBAR}*` });
+  const tabs = await chrome.tabs.query({ url: SIDE_PANEL_URL_PREFIXES.map((prefix) => `${prefix}*`) });
   for (const tab of tabs) {
     if (tab.id === undefined) continue;
     await configureSidePanel(tab.id, tab.url);

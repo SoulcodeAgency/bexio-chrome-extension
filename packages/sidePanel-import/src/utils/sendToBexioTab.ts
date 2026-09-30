@@ -8,7 +8,8 @@ import { getMessageApi } from "~/utils/messageApi";
  * Chrome rejects `chrome.tabs.sendMessage` with "Could not establish connection. Receiving end
  * does not exist." whenever the active tab has no content script. That is a normal situation: the
  * service worker enables the side panel on every `monitoring*` page, but the message listener only
- * exists on `monitoring/edit*`. Instead of letting that become an invisible unhandled rejection,
+ * exists on `monitoring/edit*` and the pages of bexio's new time tracking (`time-tracking`, a
+ * project, a work package). Instead of letting that become an invisible unhandled rejection,
  * this helper reports it to the user through an antd `message` toast and returns a result the
  * caller can branch on.
  */
@@ -18,7 +19,8 @@ export const NO_EXTENSION_APIS_MESSAGE =
 
 export const NO_ACTIVE_TAB_MESSAGE = "No active browser tab found. Click into the bexio window and try again.";
 
-export const NO_CONTENT_SCRIPT_MESSAGE = "Open the bexio time-tracking page (monitoring/edit) first, then try again.";
+export const NO_CONTENT_SCRIPT_MESSAGE =
+  "Open bexio's time tracking (Projekte → Zeiten) first, then try again. If it is open, reload the page.";
 
 export type SendToBexioTabResult = { ok: true; tabId: number } | { ok: false; error: string };
 
