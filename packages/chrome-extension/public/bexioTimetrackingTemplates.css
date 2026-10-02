@@ -352,6 +352,7 @@ button.template-button.template-button--active::before {
   flex: 0 0 300px;
   width: 300px;
   contain: size;
+  overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
   padding: 16px 14px;
@@ -416,10 +417,20 @@ button.template-button.template-button--active::before {
   gap: 3px;
 }
 
+#SoulcodeExtensionTemplates.template-panel--modal .template-chip {
+  min-width: 0;
+}
+
+/* bexio's button rules reset overflow, which turns the ellipsis off and lets a long name widen the
+   column (seen live: "Soulcode-Momo (…)" put a horizontal scrollbar under the list). */
 #SoulcodeExtensionTemplates.template-panel--modal button.template-button {
+  min-width: 0;
   padding: 4px 26px 4px 8px;
   font: inherit;
   line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #SoulcodeExtensionTemplates.template-panel--modal .btn {
