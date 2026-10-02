@@ -145,11 +145,20 @@ the old `/edit/id/…` page.
 A `MutationObserver` on `document.body` (one `querySelectorAll` per mutation batch) calls
 `renderHtml` for every dialog that opens, into a `#SoulcodeExtensionModalColumn` inserted right after
 `.time-entries-dialog--editor`. Classes do the layout (`bexioTimetrackingTemplates.css`): the pane
-(`.soulcode-modal-pane`) is widened past its inline `max-width: 720px` with `!important`, the dialog
-surface becomes a row, bexio's form keeps `flex: 0 1 720px`, the column takes the rest and scrolls
-on its own. The panel carries `template-panel--modal`, which styles its buttons and inputs itself —
-bexio's old `.btn` / `.row-fluid` stylesheet is not on these pages. Keydowns in the column stop
-propagating: Escape in the filter would otherwise close the dialog.
+(`.soulcode-modal-pane`) is widened past its inline `max-width: 720px` to 1020px with `!important`,
+the dialog surface becomes a row, bexio's form keeps `flex: 0 1 720px`, the column gets a fixed
+300px and lists the templates in one column. `contain: size` keeps the column's content out of the
+dialog's height: the column is as tall as bexio's form and scrolls on its own. The panel carries
+`template-panel--modal`, which styles its heading, toolbar, buttons and inputs itself — bexio's old
+`.btn` / `.row-fluid` stylesheet is not on these pages.
+
+bexio styles the dialog through rules like `.ngBx h2` (the pane carries `ngBx`), and its stylesheet
+comes after the content script's, so a rule of equal specificity loses. The first version lost every
+tie — the surface stayed a column (Templates below the form), the heading rendered at 56px, the `<hr>`
+showed (seen live 2026-10-02). Every dialog rule is therefore anchored on `#SoulcodeExtensionTemplates`
+/ `#SoulcodeExtensionModalColumn` or carries `!important`; keep it that way when adding one.
+
+Keydowns in the column stop propagating: Escape in the filter would otherwise close the dialog.
 
 ---
 
