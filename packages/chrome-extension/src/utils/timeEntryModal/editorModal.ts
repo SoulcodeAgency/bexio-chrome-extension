@@ -10,7 +10,8 @@ import {
   ModalSelectKey,
   readModalSelectText,
 } from "../../selectors/timeEntryModal";
-import pollUntil from "../pollUntil";
+import pollUntil, { WaitForTimeoutError } from "../pollUntil";
+import { CONTACT_PROJECTS_REQUEST, RequestWatch, watchRequests } from "./bexioRequests";
 import type { TemplateFormValues } from "../readCurrentFormValues";
 import { setModalBillable, setModalDate, setModalDuration, setModalRemarks } from "./modalFields";
 import selectMatOption from "./selectMatOption";
@@ -49,10 +50,32 @@ export async function ensureEditorModal({ allowEdit }: { allowEdit: boolean }): 
   return modal;
 }
 
+/** How long a changed Kontakt may take to load its projects before the fill goes on regardless. */
+export const CONTACT_PROJECTS_WAIT_MS = 5_000;
+
+/**
+ * Waits until bexio has loaded the projects of the contact just picked (see `bexioRequests.ts` for
+ * why a project picked earlier breaks Arbeitspaket). Never fails the fill: without an observer, or
+ * when bexio's API path changed and nothing matches, it goes on after at most
+ * {@link CONTACT_PROJECTS_WAIT_MS} — the behaviour before this wait existed.
+ */
+async function waitForContactProjects(watch: RequestWatch, since: number): Promise<void> {
+  if (!watch.available) return;
+  await pollUntil(
+    "bexio to load the contact's projects",
+    () => watch.finishedSince(since),
+    50,
+    CONTACT_PROJECTS_WAIT_MS,
+  ).catch((error: unknown) => {
+    if (!(error instanceof WaitForTimeoutError)) throw error;
+  });
+}
+
 /**
  * Applies a template in the order the dialog's dependencies need:
  * Tätigkeit, Status, Kontakt → Projekt (enabled once a contact is set) → Arbeitspaket (enabled once
  * a project is set; skipped when the template has none) → Ansprechpartner → verrechenbar.
+ * After a changed Kontakt the project waits for bexio to load that contact's projects.
  * `timeEntryBillable` (a ManicTime entry's flag) wins over the template's `billable`, which defaults
  * to `true` — the same rule as the old form.
  */
@@ -62,7 +85,15 @@ export async function fillEditorModal(entry: TemplateEntry, timeEntryBillable?: 
 
   await selectMatOption("activity", work);
   await selectMatOption("status", status);
-  await selectMatOption("contact", contact);
+  const contactProjects = watchRequests(CONTACT_PROJECTS_REQUEST);
+  try {
+    const contactPickedAt = performance.now();
+    if ((await selectMatOption("contact", contact)) && project) {
+      await waitForContactProjects(contactProjects, contactPickedAt);
+    }
+  } finally {
+    contactProjects.stop();
+  }
   await selectMatOption("project", project);
   await selectMatOption("work-package", entry.package ?? null);
   await selectMatOption("sub-contact", contactPerson);

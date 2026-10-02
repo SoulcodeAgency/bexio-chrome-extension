@@ -129,7 +129,19 @@ still matches by substring only.
 enabled) → Arbeitspaket (skipped when the template has none) → Ansprechpartner → verrechenbar
 (`timeEntryBillable ?? billable`, `billable` defaulting to `true`, as in the old form) → focus the
 save button. Stale ids, timeouts and the loader are handled by `fillForm` for both UIs; the loader
-only shows where the Templates column already injected one.
+only shows where the Templates column already injected one, and only for a fill that runs longer
+than `DIALOG_LOADER_DELAY_MS` (800ms, no view transition) — a dialog fill usually takes 0.4–3s, and
+the old page's instant overlay flashed up for each one. The old page keeps its instant loader.
+
+**Kontakt → Projekt waits for bexio's request.** Picking a contact makes bexio load its projects
+(`/2.0/timesheet/views/contacts/<id>/projects`), but the Projekt field keeps offering the list it had
+before until the answer arrives — the last dialog's list, on a second opening. A project picked from
+it is reset when the answer comes and set again without its work packages being loaded, so
+Arbeitspaket stays disabled and the fill times out after 20s (reproduced live 2026-10-02, about one
+fill in two for "Soulcode - Innovation"). After a _changed_ contact the fill therefore waits until a
+`PerformanceObserver` has seen that request finish (`utils/timeEntryModal/bexioRequests.ts`), at most
+`CONTACT_PROJECTS_WAIT_MS` (5s), and goes on regardless after that — a renamed API path costs 5s, not
+the fill. Nothing in the DOM marks the answer's arrival, hence the request.
 
 ### Opening a dialog (`ensureEditorModal`)
 

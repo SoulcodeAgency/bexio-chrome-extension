@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getChromeFake } from "../../../../test/support/chrome-fake";
 import { loadFixture } from "../support/load-fixture";
 import { installFakeMatSelects } from "../support/fakeMatSelect";
+import { removeResourceObserver } from "../support/fakeResourceObserver";
 import type { TemplateEntry } from "@bexio-chrome-extension/shared/types";
 
 const TEMPLATE: TemplateEntry = {
@@ -51,9 +52,12 @@ beforeEach(async () => {
   document.body.innerHTML = "";
   loadFixture("time-tracking-modal.synthetic");
   await chrome.storage.local.set({ entries: [TEMPLATE] });
+  // No wait for bexio's contact → projects request (test/utils/timeEntryModal.test.ts covers it).
+  removeResourceObserver();
 });
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   resetWatchers.forEach((reset) => reset());
   resetWatchers = [];
 });

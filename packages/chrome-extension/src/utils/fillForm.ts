@@ -5,11 +5,10 @@ import { workFieldID, statusFieldID, contactPersonID, projectFieldID, packageFie
 import triggerCheckbox from "./triggerCheckbox";
 import triggerContactField from "./triggerContactField";
 import triggerField from "./triggerField";
-import { toggleDisplayLoader } from "./loader";
+import { DIALOG_LOADER_DELAY_MS, showLoaderAfter, toggleDisplayLoader } from "./loader";
 import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
 import { WaitForTimeoutError } from "./pollUntil";
 import { TemplateEntry } from "@bexio-chrome-extension/shared/types";
-import { getLoader } from "../selectors/selectors";
 import { hasMonitoringForm } from "../selectors/timeEntryModal";
 import { fillEditorModal } from "./timeEntryModal/editorModal";
 
@@ -20,7 +19,8 @@ import { fillEditorModal } from "./timeEntryModal/editorModal";
  * stale id, timeout) is shared; the loader is only shown where the Templates block injected one.
  *
  * Orchestration order (see `docs/architecture/form-layer.md` for details):
- * 1. `toggleDisplayLoader()` — show the loader overlay.
+ * 1. `toggleDisplayLoader()` — show the loader overlay (in the new UI only after
+ *    `DIALOG_LOADER_DELAY_MS`, via `showLoaderAfter`).
  * 2. Load templates from `chrome.storage.local`; find the entry by `id`.
  * 3. `triggerField(workFieldID, work)` — `null` if absent (legacy templates saved
  *    before the field existed); `triggerField` then leaves the field untouched.
@@ -65,11 +65,17 @@ import { fillEditorModal } from "./timeEntryModal/editorModal";
 // Fill form
 async function fillForm(id: string, timeEntryBillable?: boolean): Promise<boolean> {
   const isMonitoringForm = hasMonitoringForm();
-  // The old page always has the loader (renderHtml injects it before any fill can start). In the
-  // new UI it lives in the Templates column of the dialog, which is not there when the side panel
-  // fills a dialog it has yet to open.
-  const showLoader = isMonitoringForm || getLoader() !== null;
-  if (showLoader) toggleDisplayLoader();
+  // The old page always has the loader (renderHtml injects it before any fill can start) and shows
+  // it at once. In the new UI it lives in the Templates column of the dialog, which is not there when
+  // the side panel fills a dialog it has yet to open, and it only shows for a fill that takes longer
+  // than DIALOG_LOADER_DELAY_MS — most are done before.
+  let hideLoader: () => void;
+  if (isMonitoringForm) {
+    toggleDisplayLoader();
+    hideLoader = () => toggleDisplayLoader(false);
+  } else {
+    hideLoader = showLoaderAfter(DIALOG_LOADER_DELAY_MS);
+  }
   let entry: TemplateEntry | undefined;
   let timeout: WaitForTimeoutError | undefined;
 
@@ -121,8 +127,8 @@ async function fillForm(id: string, timeEntryBillable?: boolean): Promise<boolea
     // changed bexio markup, a missing save button, a select2 widget that is gone - and
     // without this the overlay would stay on screen forever (#73). Errors other than a
     // WaitForTimeoutError are not swallowed: they keep propagating to the caller.
-    // The dialog - and the loader in it - may be gone by now in the new UI.
-    if (isMonitoringForm || getLoader() !== null) toggleDisplayLoader(false);
+    // The dialog - and the loader in it - may be gone by now in the new UI; hideLoader checks.
+    hideLoader();
   }
 
   // The caller's id can be stale: the side panel (or this page's button list) may still

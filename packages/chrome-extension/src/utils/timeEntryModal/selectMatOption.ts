@@ -45,21 +45,23 @@ function closePanel(select: HTMLElement, panel: HTMLElement | null) {
  *    {@link SEARCH_FALLBACK_AFTER_MS}, the value's first word goes into the search box,
  * 4. click that option and wait until the field shows it.
  *
- * Does nothing for an empty value, and nothing when the field already shows the value.
+ * Does nothing for an empty value, and nothing when the field already shows the value. Resolves
+ * with whether it picked an option — `fillEditorModal` waits for bexio's follow-up request only
+ * after a change.
  *
  * Every wait goes through `pollUntil`, so a field that never appears or enables rejects with a
  * `WaitForTimeoutError`. So does a value that is not among the loaded options for
  * `VALUE_WAIT_BUDGET_MS` — the template no longer fits (a deleted project, another contact) —
  * after closing the panel again. `fillForm` reports both to the user.
  */
-export async function selectMatOption(key: ModalSelectKey, value: string | null | undefined): Promise<void> {
-  if (value == null || value.trim() === "") return;
+export async function selectMatOption(key: ModalSelectKey, value: string | null | undefined): Promise<boolean> {
+  if (value == null || value.trim() === "") return false;
   const label = MODAL_SELECT_LABELS[key];
 
   const select = await pollUntil(`the "${label}" field to appear`, () => getModalSelect(key));
   await pollUntil(`the "${label}" field to become enabled`, () => isModalSelectEnabled(select));
 
-  if (matchOption(readModalSelectText(select), value) === "exact") return;
+  if (matchOption(readModalSelectText(select), value) === "exact") return false;
 
   getModalSelectTrigger(select).click();
   const panel = await pollUntil(`the "${label}" options to open`, () => getLiveSelectPanel(select));
@@ -104,6 +106,7 @@ export async function selectMatOption(key: ModalSelectKey, value: string | null 
     () =>
       normalizeOptionText(readModalSelectText(select)) === chosen && select.getAttribute("aria-expanded") !== "true",
   );
+  return true;
 }
 
 export default selectMatOption;

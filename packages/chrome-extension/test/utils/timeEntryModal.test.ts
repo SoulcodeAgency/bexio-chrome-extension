@@ -10,6 +10,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "../support/load-fixture";
 import { installFakeMatSelects, FakeMatSelectOptions } from "../support/fakeMatSelect";
+import { installFakeResourceObserver, removeResourceObserver } from "../support/fakeResourceObserver";
 import {
   getCreateTimeEntryButton,
   getEditorModalTitle,
@@ -37,6 +38,7 @@ import {
 } from "../../src/utils/timeEntryModal/modalFields";
 import {
   applyEntryToEditorModal,
+  CONTACT_PROJECTS_WAIT_MS,
   EDIT_MODAL_OPEN_MESSAGE,
   ensureEditorModal,
   fillEditorModal,
@@ -92,10 +94,14 @@ async function settle<T>(promise: Promise<T>, ms = 30_000): Promise<T> {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  // Node's own PerformanceObserver accepts "resource" too; the tests about bexio's requests install
+  // a fake one instead.
+  removeResourceObserver();
 });
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe("time entry dialog selectors", () => {
@@ -333,6 +339,65 @@ describe("fillEditorModal", () => {
 
     expect(log.some((entry) => entry.includes("work-package"))).toBe(false);
     expect(getModalBillableToggle()!.checked).toBe(true);
+  });
+
+  it("picks the project only once bexio has loaded the projects of a changed contact", async () => {
+    const requests = installFakeResourceObserver();
+    const { log } = setup();
+
+    const fill = fillEditorModal(TEMPLATE);
+    await vi.advanceTimersByTimeAsync(2_000);
+    const selects = () => log.filter((entry) => entry.startsWith("select:"));
+    expect(selects().at(-1)).toBe("select:contact:Muster AG");
+    expect(requests.connected).toBe(1);
+
+    requests.finishRequest("https://office.bexio.com/2.0/timesheet/views/contacts/6/projects?limit=500");
+    await settle(fill);
+
+    expect(selects().slice(3)).toEqual([
+      "select:project:Muster AG - Website",
+      "select:work-package:Umsetzung",
+      "select:sub-contact:Beispiel Erika",
+    ]);
+    expect(requests.connected).toBe(0);
+  });
+
+  it("ignores requests that are not the changed contact's projects", async () => {
+    const requests = installFakeResourceObserver();
+    const { log } = setup();
+
+    const fill = fillEditorModal(TEMPLATE);
+    await vi.advanceTimersByTimeAsync(2_000);
+    requests.finishRequest("https://office.bexio.com/2.0/timesheet/views/projects/6/work-packages");
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(log.some((entry) => entry.startsWith("select:project:"))).toBe(false);
+    await settle(fill);
+  });
+
+  it("goes on after CONTACT_PROJECTS_WAIT_MS when bexio's request never shows, without failing the fill", async () => {
+    installFakeResourceObserver();
+    const { log } = setup();
+
+    const fill = fillEditorModal(TEMPLATE);
+    await vi.advanceTimersByTimeAsync(2_000 + CONTACT_PROJECTS_WAIT_MS);
+    await settle(fill);
+
+    expect(log).toContain("select:project:Muster AG - Website");
+  });
+
+  it("does not wait when the contact was already set", async () => {
+    const requests = installFakeResourceObserver();
+    const { log } = setup();
+    await settle(selectMatOption("contact", "Muster AG"));
+    log.length = 0;
+
+    const fill = fillEditorModal(TEMPLATE);
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect(log).toContain("select:project:Muster AG - Website");
+    expect(requests.connected).toBe(0);
+    await settle(fill);
   });
 
   it("defaults billable to true for templates saved without it", async () => {
