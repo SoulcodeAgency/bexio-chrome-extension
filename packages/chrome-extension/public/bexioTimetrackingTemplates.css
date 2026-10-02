@@ -320,3 +320,154 @@ button.template-button.template-button--active::before {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ── bexio's new time entry dialog (#168, apps/bexioTimetrackingTemplates/editorModalColumn.ts) ──
+   The Templates block is a narrow column to the right of bexio's form. The dialog pane carries an
+   inline `max-width: 720px`; the class rule below wins over it with !important. bexio's form keeps
+   its 720px, the column gets a fixed 300px and scrolls on its own instead of making the dialog
+   taller (`contain: size` keeps its content out of the dialog's height).
+
+   bexio styles the dialog through rules like `.ngBx h2`, and its stylesheet comes after this one,
+   so a rule of equal specificity loses (verified live 2026-10-02: the surface stayed a column, the
+   heading rendered at 56px). Every rule here is therefore anchored on an id or carries !important.
+   bexio's old stylesheet (`.btn`, `.row-fluid`) is not on these pages, so the block brings its
+   own control styles. */
+.cdk-overlay-pane.soulcode-modal-pane {
+  max-width: min(1020px, 96vw) !important;
+  width: min(1020px, 96vw) !important;
+}
+
+.soulcode-modal-with-templates {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+}
+
+.soulcode-modal-with-templates > .soulcode-modal-form {
+  flex: 0 1 720px !important;
+  min-width: 0;
+}
+
+#SoulcodeExtensionModalColumn {
+  flex: 0 0 300px;
+  width: 300px;
+  contain: size;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 16px 14px;
+  border-left: 1px solid #e3e8ec;
+  background: #fbfcfd;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal > hr {
+  display: none;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .template-panel-header {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0;
+  border: none;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: #2c3540;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal #SoulcodeExtensionActions {
+  flex: 1 1 100%;
+  gap: 4px;
+  margin: 0;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .template-search-filter {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal #SoulcodeExtensionActions .search-input,
+#SoulcodeExtensionTemplates.template-panel--modal #SoulcodeExtensionActions .template-icon-button {
+  height: 30px;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal #SoulcodeExtensionActions .template-icon-button {
+  width: 30px;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .template-icon {
+  width: 16px;
+  height: 16px;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .template-toolbar-separator {
+  margin: 0 2px;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal #bexioTimetrackingTemplates-entries {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3px;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .template-chip {
+  min-width: 0;
+}
+
+/* bexio's button rules reset overflow, which turns the ellipsis off and lets a long name widen the
+   column (seen live: "Soulcode-Momo (…)" put a horizontal scrollbar under the list). */
+#SoulcodeExtensionTemplates.template-panel--modal button.template-button {
+  min-width: 0;
+  padding: 4px 26px 4px 8px;
+  font: inherit;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .btn {
+  border: 1px solid #c3cdd6;
+  border-radius: 4px;
+  background: #fff;
+  color: #2c3540;
+  padding: 4px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .btn:hover {
+  background: #f2f5f8;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .btn-info {
+  border-color: var(--soulcodeBlue);
+  background: var(--soulcodeBlue);
+  color: #fff;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal .btn-info:hover {
+  background: #2a669c;
+}
+
+#SoulcodeExtensionTemplates.template-panel--modal input[type="search"],
+#SoulcodeExtensionTemplates.template-panel--modal input[type="text"] {
+  border: 1px solid #c3cdd6;
+  border-radius: 4px;
+  background: #fff;
+  font: inherit;
+  height: 30px;
+  box-sizing: border-box;
+}
+
+/* The filter's padding leaves room for its icons (see .template-search-filter). */
+#SoulcodeExtensionTemplates.template-panel--modal input[type="text"] {
+  padding: 0 8px;
+}

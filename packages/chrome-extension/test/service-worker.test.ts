@@ -19,7 +19,7 @@ type OnMessageListener = (message: unknown, sender: { tab?: Tab }) => void;
 const setOptionsCalls: SetOptionsCall[] = [];
 const createCalls: { url: string }[] = [];
 const openCalls: { tabId: number }[] = [];
-const queryCalls: { url?: string }[] = [];
+const queryCalls: { url?: string | string[] }[] = [];
 let queryResult: Tab[] = [];
 let onUpdated: OnUpdatedListener | undefined;
 let onActionClicked: ((tab: Tab) => void) | undefined;
@@ -52,7 +52,7 @@ beforeAll(async () => {
       create: (options: { url: string }) => {
         createCalls.push(options);
       },
-      query: async (query: { url?: string }) => {
+      query: async (query: { url?: string | string[] }) => {
         queryCalls.push(query);
         return queryResult;
       },
@@ -105,7 +105,8 @@ describe("service worker side-panel gating", () => {
 
   it("opens the bexio time tracking page when the toolbar icon is clicked", () => {
     onActionClicked!({ id: 1 });
-    expect(createCalls).toEqual([{ url: "https://office.bexio.com/index.php/monitoring/edit" }]);
+    // bexio's menu ("Projekte → Zeiten") opens the new Angular list since 2026-09 (#168).
+    expect(createCalls).toEqual([{ url: "https://office.bexio.com/index.php/time-tracking" }]);
   });
 
   it.each([
@@ -113,6 +114,13 @@ describe("service worker side-panel gating", () => {
     "https://office.bexio.com/index.php/monitoring/list",
     "https://office.bexio.com/index.php/monitoring/edit",
     "https://office.bexio.com/index.php/monitoring/edit/id/42",
+    // bexio's new Angular time tracking (#168): the list and the project / work package pages
+    // that open the time entry modal
+    "https://office.bexio.com/index.php/time-tracking",
+    "https://office.bexio.com/index.php/time-tracking?sortBy=date:desc&filter=all&filterBy=",
+    "https://office.bexio.com/index.php/pr_project/show/id/12",
+    "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/projectId/12",
+    "https://office.bexio.com/index.php/pr_project/showPackage/packageId/34",
   ])("enables the side panel on %s", async (url) => {
     await onUpdated!(7, { status: "complete" }, { id: 7, url });
     expect(setOptionsCalls).toEqual([{ tabId: 7, path: "/sidePanel-import/index.html", enabled: true }]);
@@ -148,7 +156,17 @@ describe("service worker side-panel enabling for tabs that already exist", () =>
   ])("%s queries the open bexio monitoring tabs and enables the panel on each", async (_name, fire) => {
     queryResult = monitoringTabs;
     await fire();
-    expect(queryCalls).toEqual([{ url: "https://office.bexio.com/index.php/monitoring*" }]);
+    expect(queryCalls).toEqual([
+      {
+        url: [
+          "https://office.bexio.com/index.php/monitoring*",
+          "https://office.bexio.com/index.php/time-tracking*",
+          "https://office.bexio.com/index.php/pr_project/show/id/*",
+          "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/*",
+          "https://office.bexio.com/index.php/pr_project/showPackage/*",
+        ],
+      },
+    ]);
     expect(setOptionsCalls).toEqual([
       { tabId: 3, path: "/sidePanel-import/index.html", enabled: true },
       { tabId: 9, path: "/sidePanel-import/index.html", enabled: true },

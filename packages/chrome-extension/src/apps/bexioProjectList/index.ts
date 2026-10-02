@@ -5,6 +5,9 @@ import { autoSortByDate, preferDescendingDateSort } from "../../utils/dateSort";
 import { getPackageTasksPanel, getPackageTimesPanel } from "../../selectors/packageTabPanels";
 import { getProjectTimesList } from "../../selectors/projectTimesList";
 import { getTimeTrackingList } from "../../selectors/timeTrackingList";
+import { isNewGridPage, mayShowNewGrid } from "../../selectors/timeTrackingGrid";
+import convertGridRemarks from "../../utils/convertGridRemarks";
+import renderGridNotesToggle from "./renderGridNotesToggle";
 
 const observerOptions = { attributes: false, childList: true, subtree: false };
 
@@ -27,10 +30,18 @@ function onTableRendered() {
  * module-evaluation time, where top-level `await` is not available. A page without
  * bexio's title bar gets no toggles (`renderHtml()` logs a warning); the tables are
  * still handled.
+ *
+ * Pages of bexio's new time tracking (#168) have none of the old tables and no title bar; their
+ * grids are handled by `observeTimeTrackingGrids()`. "Newest first" is not offered where the time
+ * entries are listed by a new grid (a work package page, too): those grids sort by date,
+ * descending, on their own.
  */
 export async function initializeExtension() {
+  if (isNewGridPage()) return;
   renderHtml();
-  renderDateSortToggle(); // after renderHtml(): both insert left of the primary action button
+  if (!mayShowNewGrid()) {
+    renderDateSortToggle(); // after renderHtml(): both insert left of the primary action button
+  }
   onTableRendered(); // handle the initial load already
 }
 
@@ -114,8 +125,33 @@ function observeBillingModalTable() {
   onTableRendered(); // Handle the initial modal
 }
 
+/**
+ * The new grids (#168) render after this script ran, render rows lazily and recycle them on scroll,
+ * paging and filtering — including updating a recycled row's remark icon in place. So one observer
+ * on the body (child lists and `aria-label`s) runs the grid pass, at most once per animation frame.
+ * The pass also places the grid's own "Text | Tooltip" toggle once its "Spalten" button exists —
+ * unless the page still has the old toggle in its title bar (a work package), which then drives
+ * both.
+ */
+function observeTimeTrackingGrids() {
+  if (!mayShowNewGrid()) return;
+  let scheduled = false;
+  const onGridRendered = () => {
+    scheduled = false;
+    void convertGridRemarks();
+    if (!document.getElementById("PopoverTextSwitcher")) void renderGridNotesToggle();
+  };
+  new MutationObserver(() => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(onGridRendered);
+  }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-label"] });
+  onGridRendered();
+}
+
 // We need to watch for changes in the table, if the table is reloaded, we need to reinitialize the extension
 function observingTableModifications() {
+  observeTimeTrackingGrids();
   observerTimeTrackingPage();
   observerProjectPage();
   observerProjectWorkPackagePage();

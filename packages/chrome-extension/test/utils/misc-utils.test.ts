@@ -113,6 +113,56 @@ describe("toggleDisplayLoader", () => {
   });
 });
 
+describe("showLoaderAfter (bexio's new time entry dialog, #168)", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("never shows the loader for a fill that ends before the delay", async () => {
+    vi.useFakeTimers();
+    loadFixture("monitoring-edit");
+    const { showLoaderAfter } = await import("@bexio-chrome-extension/chrome-extension/src/utils/loader");
+    const loader = document.getElementById("SoulcodeExtensionLoader") as HTMLElement;
+    loader.style.display = "none";
+
+    const hide = showLoaderAfter(800);
+    await vi.advanceTimersByTimeAsync(799);
+    hide();
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(loader.style.display).toBe("none");
+  });
+
+  it("shows the loader once the delay has passed, without a view transition, and hides it again", async () => {
+    vi.useFakeTimers();
+    loadFixture("monitoring-edit");
+    const startViewTransition = vi.fn();
+    (document as unknown as { startViewTransition: unknown }).startViewTransition = startViewTransition;
+    const { showLoaderAfter } = await import("@bexio-chrome-extension/chrome-extension/src/utils/loader");
+    const loader = document.getElementById("SoulcodeExtensionLoader") as HTMLElement;
+
+    const hide = showLoaderAfter(800);
+    await vi.advanceTimersByTimeAsync(800);
+    expect(loader.style.display).toBe("flex");
+    hide();
+
+    expect(loader.style.display).toBe("none");
+    expect(startViewTransition).not.toHaveBeenCalled();
+    delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
+  });
+
+  it("does nothing when the loader is gone by then (the dialog closed)", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = "";
+    const { showLoaderAfter } = await import("@bexio-chrome-extension/chrome-extension/src/utils/loader");
+
+    const hide = showLoaderAfter(800);
+    await vi.advanceTimersByTimeAsync(800);
+
+    expect(() => hide()).not.toThrow();
+  });
+});
+
 // ─── pressEnter ──────────────────────────────────────────────────────────────
 
 describe("pressEnter", () => {

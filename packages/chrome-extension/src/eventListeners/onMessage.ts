@@ -12,6 +12,14 @@ import triggerCheckbox from "../utils/triggerCheckbox";
 import { billableCheckbox } from "../selectors/billableCheckbox";
 import { initializeExtension } from "../apps/bexioTimetrackingTemplates/index";
 import { submitMonitoringForm } from "../utils/submitMonitoringForm";
+import { hasMonitoringForm } from "../selectors/timeEntryModal";
+import { applyEntryToEditorModal, submitEditorModal } from "../utils/timeEntryModal/editorModal";
+
+/** The notes to write for an entry, after the "apply notes" and "capitalize" settings; `undefined` for none. */
+async function notesToApply(notes: string | undefined): Promise<string | undefined> {
+  if (notes === undefined || !(await loadApplyNotesSetting())) return undefined;
+  return (await loadUppercaseFirstLetterSetting()) ? capitalizeFirstLetter(notes) : notes;
+}
 
 /**
  * Dispatches one side-panel request. Resolves once the request is fully applied to the form —
@@ -27,8 +35,26 @@ import { submitMonitoringForm } from "../utils/submitMonitoringForm";
  * this function's promise chain and the listener below answered `{ ok: true }` for an entry that
  * was never applied. The three cheap field writes go through `Promise.all` rather than one `await`
  * each so that all three are still attempted when one of them fails, as they were before.
+ *
+ * On a page of bexio's new time tracking (no `#MonitoringForm`, #168) an entry and a submit go to
+ * the time entry dialog instead (`timeEntryModal/editorModal.ts`); a template goes there through
+ * `fillForm`, which dispatches itself.
  */
 export async function handleExchangeRequest(request: ExchangeRequestData): Promise<void> {
+  // New UI: the time entry dialog
+  if (request.mode === "time+duration" && !hasMonitoringForm()) {
+    await applyEntryToEditorModal({
+      date: request.date,
+      duration: request.duration,
+      billable: request.billable,
+      notes: await notesToApply(request.notes),
+    });
+    return;
+  }
+  if (request.mode === "submit" && !hasMonitoringForm()) {
+    submitEditorModal();
+    return;
+  }
   // Time + Duration + Description
   if (request.mode === "time+duration") {
     await Promise.all([

@@ -1,0 +1,52 @@
+<div class="bexio-page">
+  <bexio-page-heading>
+    <h1>Zeiten</h1>
+    <button type="button" class="Button Button--primary"><span class="Button-label">Zeit erfassen</span></button>
+  </bexio-page-heading>
+  <bexio-time-tracking-grid>
+    <div class="GridToolbar">
+      <button type="button" class="Button Button--secondary">Filtern</button>
+      <button type="button" class="Button Button--secondary">Spalten (8/9)</button>
+    </div>
+    <ag-grid-angular class="ag-theme-bexio">
+      <div class="ag-root-wrapper ag-layout-normal">
+        <div class="ag-header" role="presentation">
+          <div class="ag-header-row" role="row">
+            <div class="ag-header-cell" col-id="date" aria-sort="descending" role="columnheader">Datum</div>
+            <div class="ag-header-cell" col-id="activity" role="columnheader">Tätigkeit</div>
+            <div class="ag-header-cell" col-id="text" role="columnheader">Bemerkungen</div>
+          </div>
+        </div>
+        <div class="ag-body-viewport" role="presentation">
+          <div class="ag-center-cols-container" role="rowgroup">
+            <div class="ag-row ag-row-even" row-index="0" role="row" style="height: 56px; transform: translateY(0px)">
+              <div class="ag-cell" col-id="date" role="gridcell">30.09.2026<br />Von: 09:00 Bis: 11:30</div>
+              <div class="ag-cell" col-id="activity" role="gridcell">Entwicklung</div>
+              <div class="ag-cell" col-id="text" role="gridcell">
+                <bexio-time-entry-remarks-cell-renderer>
+                  <fa-icon class="ng-fa-icon" aria-label="Kickoff vorbereitet &amp; Agenda verschickt" role="img"><svg viewBox="0 0 512 512"></svg></fa-icon>
+                </bexio-time-entry-remarks-cell-renderer>
+              </div>
+            </div>
+            <div class="ag-row ag-row-odd" row-index="1" role="row" style="height: 56px; transform: translateY(56px)">
+              <div class="ag-cell" col-id="date" role="gridcell">29.09.2026<br />Von: 13:00 Bis: 17:00</div>
+              <div class="ag-cell" col-id="activity" role="gridcell">Beratung</div>
+              <div class="ag-cell" col-id="text" role="gridcell">
+                <bexio-time-entry-remarks-cell-renderer>
+                  <fa-icon class="ng-fa-icon" aria-label="Workshop Teil 1&#10;Workshop Teil 2&#10;Protokoll &lt;b&gt;nicht&lt;/b&gt; HTML" role="img"><svg viewBox="0 0 512 512"></svg></fa-icon>
+                </bexio-time-entry-remarks-cell-renderer>
+              </div>
+            </div>
+            <div class="ag-row ag-row-even" row-index="2" role="row" style="height: 56px; transform: translateY(112px)">
+              <div class="ag-cell" col-id="date" role="gridcell">29.09.2026<br />Von: 08:00 Bis: 09:00</div>
+              <div class="ag-cell" col-id="activity" role="gridcell">Beratung</div>
+              <div class="ag-cell" col-id="text" role="gridcell">
+                <bexio-time-entry-remarks-cell-renderer></bexio-time-entry-remarks-cell-renderer>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ag-grid-angular>
+  </bexio-time-tracking-grid>
+</div>

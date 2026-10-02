@@ -25,3 +25,94 @@
 #PopoverTextSwitcher .btn[aria-pressed="true"] {
   cursor: default;
 }
+
+/* ── bexio's new time tracking grids (#168, utils/convertGridRemarks.ts) ──
+   ag-grid rows are 56px high and cannot grow per row (the grid uses the infinite row model), so
+   a remark gets three lines of 15px; a longer one is marked and expands on hover as a floating box
+   over the rows below it. */
+.soulcode-grid-remarks-host {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.soulcode-grid-remarks {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 15px;
+}
+
+.soulcode-grid-remarks--clipped {
+  cursor: default;
+  border-bottom: 1px dotted #8a95a0; /* the "more" marker */
+}
+
+/* The hovered clipped remark and every box between it and the row must not clip it. */
+.ag-row:has(.soulcode-grid-remarks--clipped:hover) {
+  z-index: 10;
+}
+
+.ag-row:has(.soulcode-grid-remarks--clipped:hover) .ag-cell,
+.ag-row:has(.soulcode-grid-remarks--clipped:hover) .ag-cell-wrapper,
+.ag-row:has(.soulcode-grid-remarks--clipped:hover) .ag-cell-value {
+  overflow: visible !important;
+}
+
+.soulcode-grid-remarks--clipped:hover {
+  position: absolute;
+  top: 4px;
+  left: -6px;
+  right: -6px;
+  z-index: 10;
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: none;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 4px 6px;
+  border: 1px solid #c3cdd6;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(20, 40, 60, 0.18);
+}
+
+/* The grid's own "Text | Tooltip" toggle, left of its "Spalten" button
+   (bexioProjectList/renderGridNotesToggle.ts). The new pages do not load bexio's old `.btn`. */
+#GridNotesTextSwitcher {
+  display: inline-flex;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+#GridNotesTextSwitcher button {
+  border: 1px solid #c3cdd6;
+  background: #fff;
+  color: #2c3540;
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#GridNotesTextSwitcher button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+#GridNotesTextSwitcher button:last-child {
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+}
+
+#GridNotesTextSwitcher button[aria-pressed="true"] {
+  background: #00acf0;
+  border-color: #00acf0;
+  color: #fff;
+  cursor: default;
+}

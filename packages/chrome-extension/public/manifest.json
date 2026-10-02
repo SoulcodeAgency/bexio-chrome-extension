@@ -37,7 +37,11 @@
     {
       "matches": [
         "https://office.bexio.com/index.php/monitoring/edit",
-        "https://office.bexio.com/index.php/monitoring/edit/id/*"
+        "https://office.bexio.com/index.php/monitoring/edit/id/*",
+        "https://office.bexio.com/index.php/time-tracking*",
+        "https://office.bexio.com/index.php/pr_project/show/id/*",
+        "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/*",
+        "https://office.bexio.com/index.php/pr_project/showPackage/*"
       ],
       "js": [
         "/src/apps/bexioTimetrackingTemplates/index.ts"
@@ -52,7 +56,10 @@
         "https://office.bexio.com/index.php/monitoring/list/*",
         "https://office.bexio.com/index.php/pr_project/listMonitoring/*",
         "https://office.bexio.com/index.php/pr_project/showPackage/*",
-        "https://office.bexio.com/index.php/kb_invoice/show/id/*"
+        "https://office.bexio.com/index.php/kb_invoice/show/id/*",
+        "https://office.bexio.com/index.php/time-tracking*",
+        "https://office.bexio.com/index.php/pr_project/show/id/*",
+        "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/*"
       ],
       "js": [
         "/src/apps/bexioProjectList/index.ts"
@@ -60,6 +67,18 @@
       "css": [
         "bexioProjectList.css"
       ]
+    },
+    {
+      "matches": [
+        "https://office.bexio.com/index.php/time-tracking*",
+        "https://office.bexio.com/index.php/pr_project/show/id/*",
+        "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/*",
+        "https://office.bexio.com/index.php/pr_project/showPackage/*"
+      ],
+      "js": [
+        "/src/apps/bexioGridColumns/index.iife.ts"
+      ],
+      "world": "MAIN"
     }
   ]
 }

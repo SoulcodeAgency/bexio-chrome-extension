@@ -2,7 +2,7 @@
 
 _We do not track any of your data, period._
 
-1. We do only inject code when you are visiting the bexio time tracking website: <https://office.bexio.com/index.php/monitoring/edit>
+1. We do only inject code when you are visiting bexio's time tracking pages on <https://office.bexio.com>: the time tracking (`/index.php/time-tracking` and the older `/index.php/monitoring/…` pages), project and work package pages (for their time lists and the time entry dialog), and invoice pages (for their time import)
 1. We do not track any usage of the extension - that includes form data, tabs, windows, popup opens, etc
 1. We do not track any websites, website usage, etc
 1. We do not transfer any data to any 3rd party servers

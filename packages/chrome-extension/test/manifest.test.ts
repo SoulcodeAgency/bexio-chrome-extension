@@ -12,7 +12,7 @@ interface Manifest {
   host_permissions?: string[];
   optional_permissions?: string[];
   optional_host_permissions?: string[];
-  content_scripts?: { matches?: string[]; js?: string[]; css?: string[] }[];
+  content_scripts?: { matches?: string[]; js?: string[]; css?: string[]; world?: string }[];
   web_accessible_resources?: { resources?: string[]; matches?: string[] }[];
 }
 
@@ -72,6 +72,48 @@ describe("manifest.json scoping", () => {
       matchesUrlPattern(pattern, "https://office.bexio.com/index.php/monitoring/list/resetListView/1"),
     );
     expect(matchesSidebarUrl).toBe(true);
+  });
+
+  describe("bexio's new Angular time tracking (#168)", () => {
+    const NEW_UI_URLS = [
+      "https://office.bexio.com/index.php/time-tracking",
+      "https://office.bexio.com/index.php/time-tracking?sortBy=date:desc&filter=all&filterBy=",
+      "https://office.bexio.com/index.php/pr_project/show/id/12",
+      "https://office.bexio.com/index.php/pr_project/listTimeTrackingSpa/projectId/12",
+      "https://office.bexio.com/index.php/pr_project/showPackage/packageId/34",
+    ];
+    const scriptFor = (entry: string) => manifest.content_scripts?.find((cs) => cs.js?.includes(entry));
+
+    it.each(NEW_UI_URLS)("injects the templates script (time entry modal) on %s", (url) => {
+      const script = scriptFor("/src/apps/bexioTimetrackingTemplates/index.ts");
+      expect(script!.matches!.some((pattern) => matchesUrlPattern(pattern, url))).toBe(true);
+    });
+
+    it.each(NEW_UI_URLS)("injects the remarks script and the MAIN-world grid script on %s", (url) => {
+      for (const entry of ["/src/apps/bexioProjectList/index.ts", "/src/apps/bexioGridColumns/index.iife.ts"]) {
+        expect(
+          scriptFor(entry)!.matches!.some((pattern) => matchesUrlPattern(pattern, url)),
+          entry,
+        ).toBe(true);
+      }
+    });
+
+    it("runs the grid column script in the page's MAIN world, as a self-contained IIFE", () => {
+      // ag-grid's API hangs off a page-JS expando (`__agComponent`) that the isolated world cannot see.
+      // crxjs builds `*.iife.ts` entries without its ESM loader, which needs chrome.runtime.getURL —
+      // an API the MAIN world does not have.
+      const script = scriptFor("/src/apps/bexioGridColumns/index.iife.ts");
+      expect(script?.world).toBe("MAIN");
+      expect(script?.css).toBeUndefined();
+    });
+
+    it("keeps the templates script (and its onMessage listener) to one entry per page", () => {
+      // Two copies of the listener would each apply a side-panel request once.
+      const templateScripts = (manifest.content_scripts ?? []).filter((cs) =>
+        cs.js?.some((js) => js.includes("bexioTimetrackingTemplates")),
+      );
+      expect(templateScripts).toHaveLength(1);
+    });
   });
 
   it("exposes web-accessible resources to office.bexio.com only", () => {

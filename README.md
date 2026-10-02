@@ -18,7 +18,9 @@ Install it from the Chrome Web Store:
 Clicking the extension icon brings you to the bexio time tracking page.
 
 - On the time tracking page you can save the current form data as a template.
-- Saved templates appear as buttons below the form — one click fills the form automatically.
+- Saved templates appear as buttons next to the time entry dialog ("Zeit erfassen") — below the form on bexio's
+  older `monitoring/edit` page — and one click fills the form automatically.
+- Remarks in the time lists can be shown as text instead of tooltip icons.
 - Templates can be deleted again, and filtered if you have many of them.
 
 ### Side panel (browser)

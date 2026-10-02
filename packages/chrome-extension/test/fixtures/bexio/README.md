@@ -25,6 +25,14 @@ the Playwright specs in `e2e/`.
 | `monitoring-edit.html`                | `monitoring/edit` (new time entry)                                                            | `copy()` snippet (below)     |
 | `monitoring-edit-filled.html`         | `monitoring/edit/id/<id>` (existing entry)                                                    | `copy()` snippet             |
 | `monitoring-edit.tinymce-iframe.html` | the description field's TinyMCE iframe on `monitoring/edit`                                   | `copy()` snippet             |
+| `time-tracking-modal.synthetic.html`  | `time-tracking` → "Zeit erfassen" (new UI dialog, empty)                                      | **hand-built**, not captured |
+| `time-tracking-grid.synthetic.html`   | `time-tracking` (new UI grid, three rows)                                                     | **hand-built**, not captured |
+
+The two `*.synthetic.html` fixtures for bexio's new time tracking (#168) are **not captures**: they
+were built by hand from the read-only probe recorded in the issue, and their `.md` files say what is
+known and what is assumed. Replace them with captures when possible — the dialog lives in
+`.cdk-overlay-container`, which the capture script below empties, so it needs an option to keep the
+overlay first.
 
 ## Capturing the tooltip pages (full body)
 

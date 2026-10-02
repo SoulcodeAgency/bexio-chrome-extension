@@ -1,0 +1,148 @@
+<div class="bexio-page">
+  <bexio-page-heading>
+    <h1>Zeiten</h1>
+    <button type="button" class="Button Button--primary"><span class="Button-label">Zeit erfassen</span></button>
+  </bexio-page-heading>
+  <bexio-time-tracking-grid>
+    <ag-grid-angular class="ag-theme-bexio"><div class="ag-root-wrapper"></div></ag-grid-angular>
+  </bexio-time-tracking-grid>
+  <bexio-modal-container><bexio-time-entry-editor-modal></bexio-time-entry-editor-modal></bexio-modal-container>
+</div>
+<div class="cdk-overlay-container">
+  <div class="cdk-overlay-backdrop cdk-overlay-dark-backdrop cdk-overlay-backdrop-showing"></div>
+  <div class="cdk-global-overlay-wrapper" dir="ltr" style="justify-content: center; align-items: center">
+    <div class="cdk-overlay-pane mat-mdc-dialog-panel" style="max-width: 720px; position: static">
+      <mat-dialog-container tabindex="-1" class="mat-mdc-dialog-container mdc-dialog cdk-dialog-container mdc-dialog--open" role="dialog" aria-modal="true">
+        <div class="mdc-dialog__container">
+          <div class="mat-mdc-dialog-surface mdc-dialog__surface">
+            <div class="time-entries-dialog time-entries-dialog--editor">
+              <header class="time-entries-dialog__header">
+                <h2 class="time-entries-dialog__title">Neue Zeiterfassung</h2>
+                <bexio-icon-button><button type="submit" class="IconButton size-md"></button></bexio-icon-button>
+              </header>
+              <div class="time-entries-dialog__body">
+                <div class="time-entries-modal__row time-entries-modal__row--datetime">
+                  <mat-form-field class="mat-mdc-form-field">
+                    <mat-label>Datum</mat-label>
+                    <bexio-simple-datepicker>
+                      <input class="mat-mdc-input-element mat-datepicker-input" type="text" value="30.09.2026" />
+                    </bexio-simple-datepicker>
+                  </mat-form-field>
+                  <mat-form-field class="mat-mdc-form-field">
+                    <mat-label>Dauer</mat-label>
+                    <bexio-time-entry-hh-mm-input>
+                      <input data-for-test="time-entry-editor-duration" class="mat-mdc-input-element" type="text" maxlength="5" placeholder="hh:mm" value="" />
+                    </bexio-time-entry-hh-mm-input>
+                  </mat-form-field>
+                  <mat-form-field class="mat-mdc-form-field">
+                    <mat-label>Start</mat-label>
+                    <bexio-time-entry-hh-mm-input>
+                      <input data-for-test="time-entry-editor-start" class="mat-mdc-input-element" type="text" maxlength="5" placeholder="hh:mm" value="" />
+                    </bexio-time-entry-hh-mm-input>
+                  </mat-form-field>
+                  <mat-form-field class="mat-mdc-form-field">
+                    <mat-label>Ende</mat-label>
+                    <bexio-time-entry-hh-mm-input>
+                      <input data-for-test="time-entry-editor-end" class="mat-mdc-input-element" type="text" maxlength="5" placeholder="hh:mm" value="" />
+                    </bexio-time-entry-hh-mm-input>
+                  </mat-form-field>
+                </div>
+                <mat-form-field class="mat-mdc-form-field">
+                  <mat-label>Tätigkeit</mat-label>
+                  <bexio-simple-autocomplete-select>
+                    <mat-select data-for-test="time-entry-editor-activity" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-disabled="false" class="mat-mdc-select">
+                      <div class="mat-mdc-select-trigger">
+                        <div class="mat-mdc-select-value"><span class="mat-mdc-select-placeholder mat-mdc-select-min-line">Tätigkeit</span></div>
+                        <div class="mat-mdc-select-arrow-wrapper"><div class="mat-mdc-select-arrow"></div></div>
+                      </div>
+                    </mat-select>
+                  </bexio-simple-autocomplete-select>
+                </mat-form-field>
+                <mat-form-field class="mat-mdc-form-field">
+                  <mat-label>Kontakt</mat-label>
+                  <bexio-simple-autocomplete-select>
+                    <mat-select data-for-test="time-entry-editor-contact" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-disabled="false" class="mat-mdc-select">
+                      <div class="mat-mdc-select-trigger">
+                        <div class="mat-mdc-select-value"><span class="mat-mdc-select-placeholder mat-mdc-select-min-line">Kontakt</span></div>
+                        <div class="mat-mdc-select-arrow-wrapper"><div class="mat-mdc-select-arrow"></div></div>
+                      </div>
+                    </mat-select>
+                  </bexio-simple-autocomplete-select>
+                </mat-form-field>
+                <mat-form-field class="mat-mdc-form-field">
+                  <mat-label>Status</mat-label>
+                  <bexio-simple-autocomplete-select>
+                    <mat-select data-for-test="time-entry-editor-status" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-disabled="false" class="mat-mdc-select">
+                      <div class="mat-mdc-select-trigger">
+                        <div class="mat-mdc-select-value"><span class="mat-mdc-select-placeholder mat-mdc-select-min-line">Status</span></div>
+                        <div class="mat-mdc-select-arrow-wrapper"><div class="mat-mdc-select-arrow"></div></div>
+                      </div>
+                    </mat-select>
+                  </bexio-simple-autocomplete-select>
+                </mat-form-field>
+                <mat-form-field class="mat-mdc-form-field">
+                  <mat-label>Projekt</mat-label>
+                  <bexio-simple-autocomplete-select>
+                    <mat-select data-for-test="time-entry-editor-project" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-disabled="true" class="mat-mdc-select mat-mdc-select-disabled">
+                      <div class="mat-mdc-select-trigger">
+                        <div class="mat-mdc-select-value"><span class="mat-mdc-select-placeholder mat-mdc-select-min-line">Projekt</span></div>
+                        <div class="mat-mdc-select-arrow-wrapper"><div class="mat-mdc-select-arrow"></div></div>
+                      </div>
+                    </mat-select>
+                  </bexio-simple-autocomplete-select>
+                </mat-form-field>
+                <mat-form-field class="mat-mdc-form-field">
+                  <mat-label>Ansprechpartner</mat-label>
+                  <bexio-simple-autocomplete-select>
+                    <mat-select data-for-test="time-entry-editor-sub-contact" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-disabled="false" class="mat-mdc-select">
+                      <div class="mat-mdc-select-trigger">
+                        <div class="mat-mdc-select-value"><span class="mat-mdc-select-value-text"><span class="mat-mdc-select-min-line">Muster Max</span></span></div>
+                        <div class="mat-mdc-select-arrow-wrapper"><div class="mat-mdc-select-arrow"></div></div>
+                      </div>
+                    </mat-select>
+                  </bexio-simple-autocomplete-select>
+                </mat-form-field>
+                <mat-form-field class="mat-mdc-form-field">
+                  <mat-label>Arbeitspaket</mat-label>
+                  <bexio-simple-autocomplete-select>
+                    <mat-select data-for-test="time-entry-editor-work-package" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-disabled="true" class="mat-mdc-select mat-mdc-select-disabled">
+                      <div class="mat-mdc-select-trigger">
+                        <div class="mat-mdc-select-value"><span class="mat-mdc-select-placeholder mat-mdc-select-min-line">Arbeitspaket</span></div>
+                        <div class="mat-mdc-select-arrow-wrapper"><div class="mat-mdc-select-arrow"></div></div>
+                      </div>
+                    </mat-select>
+                  </bexio-simple-autocomplete-select>
+                </mat-form-field>
+                <div class="time-entries-modal__field-full">
+                  <mat-label>Bemerkungen</mat-label>
+                  <bexio-ngx-editor data-for-test="time-entry-editor-remarks">
+                    <div class="NgxEditor">
+                      <div class="NgxEditor__Content ngx-editor-textarea">
+                        <div contenteditable="true" translate="no" class="ProseMirror"><p><br class="ProseMirror-trailingBreak" /></p></div>
+                      </div>
+                    </div>
+                  </bexio-ngx-editor>
+                  <small class="time-entries-modal__hint">0 / 1000</small>
+                </div>
+                <div class="time-entries-modal__toggle-row">
+                  <span>Eintrag ist verrechenbar</span>
+                  <bexio-slide-toggle>
+                    <label class="Switch"><input type="checkbox" checked /><span class="slider"></span></label>
+                  </bexio-slide-toggle>
+                </div>
+                <mat-form-field class="mat-mdc-form-field">
+                  <mat-label>Betrag</mat-label>
+                  <input data-for-test="time-entry-editor-amount" class="mat-mdc-input-element" type="text" value="" />
+                </mat-form-field>
+              </div>
+              <footer class="time-entries-dialog__actions">
+                <bexio-new-button><button type="button" class="mdc-button Button Button--normal"><span class="Button-label">Abbrechen</span></button></bexio-new-button>
+                <bexio-new-button><button type="button" class="mdc-button Button Button--primary mat-mdc-button-disabled" disabled><span class="Button-label">Eintrag speichern</span></button></bexio-new-button>
+              </footer>
+            </div>
+          </div>
+        </div>
+      </mat-dialog-container>
+    </div>
+  </div>
+</div>

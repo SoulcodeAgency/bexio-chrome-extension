@@ -1,5 +1,6 @@
 import { chromeStorageSettings } from "@bexio-chrome-extension/shared";
 import convertPopover from "../../utils/convertPopover";
+import convertGridRemarks from "../../utils/convertGridRemarks";
 import { getPrimaryActionBlock } from "../../selectors/pageTitleBar";
 
 type NotesDisplayMode = "text" | "tooltip";
@@ -67,6 +68,8 @@ async function renderHtml() {
     showActiveMode(isTextMode);
     await chromeStorageSettings.saveRemovePopoversSetting(isTextMode);
     convertPopover();
+    // A work package page lists its time entries in a new grid (#168); this toggle drives it too.
+    void convertGridRemarks();
   });
 
   showActiveMode(await chromeStorageSettings.loadRemovePopoversSetting());

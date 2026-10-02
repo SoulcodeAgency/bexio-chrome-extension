@@ -57,6 +57,18 @@ vi.mock("@bexio-chrome-extension/chrome-extension/src/selectors/billableCheckbox
   billableCheckbox: null,
 }));
 
+// The new UI's dialog (#168) — its DOM work is covered by test/utils/timeEntryModal.test.ts.
+vi.mock("@bexio-chrome-extension/chrome-extension/src/utils/timeEntryModal/editorModal", () => ({
+  applyEntryToEditorModal: vi.fn(
+    async (entry: { date: string; duration: string; billable?: boolean; notes?: string }) => {
+      calls.push(`modal-entry:${entry.date}:${entry.duration}:${String(entry.billable)}:${String(entry.notes)}`);
+    },
+  ),
+  submitEditorModal: vi.fn(() => {
+    calls.push("modal-submit");
+  }),
+}));
+
 // The real module calls initializeExtension() at import time.
 vi.mock("@bexio-chrome-extension/chrome-extension/src/apps/bexioTimetrackingTemplates/index", () => ({
   initializeExtension: vi.fn(() => {
@@ -92,7 +104,9 @@ describe("onMessage listener", () => {
   beforeEach(() => {
     calls.length = 0;
     vi.resetModules();
-    document.body.innerHTML = "";
+    // The old monitoring/edit page. Its fields are mocked above; only the form's presence matters,
+    // it is what tells the old page from bexio's new time tracking (see the describe block below).
+    document.body.innerHTML = `<form id="MonitoringForm"></form>`;
   });
 
   it("returns true synchronously so the message channel stays open", async () => {
@@ -326,5 +340,65 @@ describe("onMessage listener", () => {
     });
 
     expect(response).toEqual({ ok: false, error: "Description field not found" });
+  });
+
+  describe("on a page of bexio's new time tracking (no #MonitoringForm, #168)", () => {
+    beforeEach(() => {
+      document.body.innerHTML = `<bexio-time-tracking-grid></bexio-time-tracking-grid>`;
+    });
+
+    it("applies an entry to the time entry dialog, with the notes after both settings", async () => {
+      const listener = await loadListener();
+
+      const { response } = await dispatch(listener, {
+        mode: "time+duration",
+        duration: "1:30",
+        date: "01.07.2026",
+        billable: false,
+        notes: "did stuff",
+      });
+
+      expect(calls).toEqual(["modal-entry:01.07.2026:1:30:false:Did stuff"]);
+      expect(response).toEqual({ ok: true });
+    });
+
+    it("leaves the remarks alone when notes are switched off", async () => {
+      await chrome.storage.local.set({ applyNotesSetting: false });
+      const listener = await loadListener();
+
+      await dispatch(listener, { mode: "time+duration", duration: "1:30", date: "01.07.2026", notes: "did stuff" });
+
+      expect(calls).toEqual(["modal-entry:01.07.2026:1:30:undefined:undefined"]);
+    });
+
+    it("answers { ok: false } with the dialog's reason when the entry cannot be applied", async () => {
+      const editorModal = await import("@bexio-chrome-extension/chrome-extension/src/utils/timeEntryModal/editorModal");
+      vi.mocked(editorModal.applyEntryToEditorModal).mockRejectedValueOnce(new Error("edit dialog is open"));
+      const listener = await loadListener();
+
+      const { response } = await dispatch(listener, { mode: "time+duration", duration: "1:30", date: "01.07.2026" });
+
+      expect(response).toEqual({ ok: false, error: "edit dialog is open" });
+    });
+
+    it("submits through the dialog's save button", async () => {
+      const listener = await loadListener();
+
+      const { response } = await dispatch(listener, { mode: "submit" });
+
+      expect(calls).toEqual(["modal-submit"]);
+      expect(response).toEqual({ ok: true });
+    });
+
+    it("still hands a template to fillForm, which dispatches itself", async () => {
+      const listener = await loadListener();
+
+      const responded = dispatch(listener, { mode: "template", templateId: "tmpl1" });
+      await Promise.resolve();
+      fillFormControl.resolve(true);
+
+      expect((await responded).response).toEqual({ ok: true });
+      expect(calls).toEqual(["fillForm:tmpl1:undefined"]);
+    });
   });
 });

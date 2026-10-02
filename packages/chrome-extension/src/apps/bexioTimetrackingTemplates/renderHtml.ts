@@ -68,12 +68,18 @@ function setActiveChip(panel: HTMLElement, button: HTMLButtonElement): void {
   if (update) update.hidden = false;
 }
 
-// Renders the whole template panel into the monitoring/edit page.
-async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
+/**
+ * Renders the whole template panel into the monitoring/edit page — or, when `placement` is given,
+ * into that element: the Templates column of bexio's new time entry dialog (#168, see
+ * `editorModalColumn.ts`), where the panel carries `template-panel--modal` because bexio's old
+ * stylesheet (`btn`, `row-fluid`) does not exist there.
+ */
+async function renderHtml(templateEntries: TemplateEntry[] | undefined, placement?: HTMLElement) {
   // Remove the panel if it already exists (re-render after storage changes)
   document.getElementById("SoulcodeExtensionTemplates")?.remove();
 
-  const templatePlacement = document.getElementById("pr_package")?.parentNode?.parentNode?.parentNode as HTMLElement;
+  const templatePlacement =
+    placement ?? (document.getElementById("pr_package")?.parentNode?.parentNode?.parentNode as HTMLElement);
 
   // Static markup only — template-derived strings are appended as DOM nodes below. The
   // icon SVGs are static too (a closed set of names, see icons.ts). The manage button
@@ -129,6 +135,7 @@ async function renderHtml(templateEntries: TemplateEntry[] | undefined) {
   );
 
   const panel = document.getElementById("SoulcodeExtensionTemplates")!;
+  if (placement) panel.classList.add("template-panel--modal");
   // Resolved before any chip exists — a template id may be an arbitrary string and
   // would otherwise shadow these lookups. See panelElements.ts.
   const elements = resolvePanelElements(panel);
