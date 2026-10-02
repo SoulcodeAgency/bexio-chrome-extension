@@ -128,17 +128,20 @@ test("the Templates column sits right of the dialog's form and applies a templat
   await serveFixture(page, TIME_TRACKING, "time-tracking-modal.synthetic", MAT_SELECT_STUB);
   await page.goto(TIME_TRACKING);
 
-  const column = page.locator("bexio-time-entry-editor-modal + #SoulcodeExtensionModalColumn");
+  const column = page.locator(".time-entries-dialog--editor + #SoulcodeExtensionModalColumn");
   await expect(column.locator(`button#${TEMPLATE.id}`)).toBeVisible({ timeout: 10_000 });
 
   // Real layout: the pane is wider than bexio's inline 720px, the form keeps at most 720px and the
   // column sits to its right.
-  const form = await page.locator("bexio-time-entry-editor-modal").boundingBox();
+  const form = await page.locator(".time-entries-dialog--editor").boundingBox();
   const templates = await column.boundingBox();
   const pane = await page.locator(".cdk-overlay-pane").boundingBox();
   expect(pane!.width).toBeGreaterThan(720);
   expect(form!.width).toBeLessThanOrEqual(720);
   expect(templates!.x).toBeGreaterThanOrEqual(form!.x + form!.width - 1);
+  // A narrow column, no taller than bexio's form: it scrolls on its own.
+  expect(templates!.width).toBeLessThanOrEqual(301);
+  expect(templates!.height).toBeLessThanOrEqual(form!.height + 1);
 
   await column.locator(`button#${TEMPLATE.id}`).click();
 
