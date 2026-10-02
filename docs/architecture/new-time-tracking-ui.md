@@ -53,8 +53,10 @@ Content scripts are injected on page loads only. If bexio's Angular shell ever r
 
 ## The time entry dialog
 
-`mat-dialog-container > … > bexio-time-entry-editor-modal`, title "Neue Zeiterfassung" or
-"Zeiterfassung bearbeiten". Everything is plain Angular in the light DOM — no shadow DOM, no
+`mat-dialog-container > … > div.time-entries-dialog--editor` (header with the title, body with the
+fields, footer with "Eintrag speichern"), title "Neue Zeiterfassung" or "Zeiterfassung bearbeiten".
+`bexio-time-entry-editor-modal` is **not** the dialog: that component stays an empty host in the
+page, outside the overlay, and renders the dialog through a portal (verified live 2026-10-02). Everything is plain Angular in the light DOM — no shadow DOM, no
 iframe — so the isolated-world content script drives it with DOM events. Selectors live in
 `src/selectors/timeEntryModal.ts` and are all resolved **at call time** (no module-load capture):
 the dialog comes and goes without a page load.
@@ -142,7 +144,7 @@ the old `/edit/id/…` page.
 
 A `MutationObserver` on `document.body` (one `querySelectorAll` per mutation batch) calls
 `renderHtml` for every dialog that opens, into a `#SoulcodeExtensionModalColumn` inserted right after
-`bexio-time-entry-editor-modal`. Classes do the layout (`bexioTimetrackingTemplates.css`): the pane
+`.time-entries-dialog--editor`. Classes do the layout (`bexioTimetrackingTemplates.css`): the pane
 (`.soulcode-modal-pane`) is widened past its inline `max-width: 720px` with `!important`, the dialog
 surface becomes a row, bexio's form keeps `flex: 0 1 720px`, the column takes the rest and scrolls
 on its own. The panel carries `template-panel--modal`, which styles its buttons and inputs itself —
@@ -170,7 +172,8 @@ the grid uses the infinite row model, where `setRowHeight` grows one row and ove
 (verified live).
 
 The toggle: on the new pages there is no old title bar, so a separate "Text | Tooltip" group
-(`renderGridNotesToggle.ts`, `#GridNotesTextSwitcher`) goes left of the grid's "Spalten" button,
+(`renderGridNotesToggle.ts`, `#GridNotesTextSwitcher`) goes left of the grid's "Spalten" button
+(labelled with the column count, "Spalten (8/9)"),
 with its own styles. Same setting (`removePopoversSetting`). A work package page still has the old
 title bar and toggle; that toggle drives the grid there as well.
 

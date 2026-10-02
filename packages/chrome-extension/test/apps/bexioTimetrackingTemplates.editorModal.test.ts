@@ -63,7 +63,7 @@ describe("Templates column in the time entry dialog", () => {
     await loadContentScript();
     await vi.waitFor(() => expect(panel()).not.toBeNull());
 
-    const modal = document.querySelector("bexio-time-entry-editor-modal")!;
+    const modal = document.querySelector("mat-dialog-container .time-entries-dialog--editor")!;
     const column = modal.nextElementSibling!;
     expect(column.id).toBe("SoulcodeExtensionModalColumn");
     expect(column.contains(panel())).toBe(true);
@@ -82,7 +82,7 @@ describe("Templates column in the time entry dialog", () => {
     loadFixture("time-tracking-modal.synthetic"); // bexio opens the next dialog
 
     await vi.waitFor(() => expect(panel()).not.toBeNull());
-    expect(document.querySelector("bexio-time-entry-editor-modal")!.nextElementSibling!.id).toBe(
+    expect(document.querySelector("mat-dialog-container .time-entries-dialog--editor")!.nextElementSibling!.id).toBe(
       "SoulcodeExtensionModalColumn",
     );
   });

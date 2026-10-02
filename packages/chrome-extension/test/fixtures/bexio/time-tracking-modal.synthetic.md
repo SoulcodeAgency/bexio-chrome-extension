@@ -4,8 +4,10 @@
 in issue #168 (2026-09-30): the `data-for-test` names, the widget element names, the dialog title,
 the button texts and the disabled states are the ones listed there. The surrounding Angular
 Material markup (`mat-dialog-container`, `.mat-mdc-dialog-surface`, `.mat-mdc-select-trigger`,
-`.mat-mdc-select-value(-text)`) follows Angular Material's MDC components; bexio's exact nesting
-was not recorded.
+`.mat-mdc-select-value(-text)`) follows Angular Material's MDC components. The dialog skeleton — `div.time-entries-dialog--editor` with its
+header / body / footer, `data-for-test` on the `<input>` of the hh:mm fields, the verrechenbar
+label outside `bexio-slide-toggle`, the empty `bexio-time-entry-editor-modal` host outside the
+overlay — follows a live probe of 2026-10-02.
 
 - Page: `/index.php/time-tracking` → "Zeit erfassen" → "Neue Zeiterfassung" (dialog open, empty).
 - The `.cdk-overlay-container` holds no option panels: `mat-select` panels only exist while a

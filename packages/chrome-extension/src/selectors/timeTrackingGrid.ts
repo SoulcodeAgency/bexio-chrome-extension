@@ -28,10 +28,13 @@ export const REMARKS_RENDERER_SELECTOR = "bexio-time-entry-remarks-cell-renderer
 export const getGridRemarkIcons = (root: ParentNode = document) =>
   Array.from(root.querySelectorAll<HTMLElement>(`${REMARKS_RENDERER_SELECTOR} fa-icon[aria-label]`));
 
-/** The grid's "Spalten" (columns) button, next to which the "Text | Tooltip" toggle goes. */
+/**
+ * The grid's "Spalten" (columns) button, next to which the "Text | Tooltip" toggle goes. Its label
+ * carries the visible / total column count: "Spalten (8/9)" (verified live 2026-10-02).
+ */
 export const getGridColumnsButton = (): HTMLElement | null =>
-  Array.from(document.querySelectorAll<HTMLElement>("button")).find(
-    (button) => button.textContent?.replace(/\s+/g, " ").trim() === "Spalten",
+  Array.from(document.querySelectorAll<HTMLElement>("button")).find((button) =>
+    /^Spalten(?: \(\d+\/\d+\))?$/.test(button.textContent?.replace(/\s+/g, " ").trim() ?? ""),
   ) ?? null;
 
 /**

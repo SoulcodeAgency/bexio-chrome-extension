@@ -2,7 +2,7 @@
  * Selectors for bexio's new time entry modal (#168).
  *
  * Since 2026-09 bexio creates and edits time entries in an Angular Material dialog —
- * `mat-dialog-container > … > bexio-time-entry-editor-modal` — opened by "Zeit erfassen" on
+ * `mat-dialog-container > … > div.time-entries-dialog--editor` — opened by "Zeit erfassen" on
  * `/index.php/time-tracking` and on the project / work package pages. The old `monitoring/edit`
  * form is still served; `hasMonitoringForm()` tells the two apart, and every caller that works on
  * both dispatches on it.
@@ -18,7 +18,12 @@
 /** `true` on the old `monitoring/edit` pages, which carry the server-rendered `#MonitoringForm`. */
 export const hasMonitoringForm = () => document.getElementById("MonitoringForm") !== null;
 
-export const EDITOR_MODAL_SELECTOR = "mat-dialog-container bexio-time-entry-editor-modal";
+/**
+ * The dialog's content: header (title), body (the fields) and footer ("Eintrag speichern"). Not
+ * `bexio-time-entry-editor-modal`: that component stays an empty host in the page, outside the
+ * overlay, and renders the dialog through a portal (verified live 2026-10-02).
+ */
+export const EDITOR_MODAL_SELECTOR = "mat-dialog-container .time-entries-dialog--editor";
 
 /**
  * The open time entry dialog, or `null`. The last match wins: a dialog that is closing stays in the

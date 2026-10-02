@@ -107,7 +107,7 @@ describe("time entry dialog selectors", () => {
 
   it("find the open dialog and read its title", () => {
     const modal = getOpenEditorModal()!;
-    expect(modal.tagName.toLowerCase()).toBe("bexio-time-entry-editor-modal");
+    expect(modal.classList.contains("time-entries-dialog--editor")).toBe(true);
     expect(getEditorModalTitle(modal)).toBe("Neue Zeiterfassung");
     expect(isEditModal(modal)).toBe(false);
   });

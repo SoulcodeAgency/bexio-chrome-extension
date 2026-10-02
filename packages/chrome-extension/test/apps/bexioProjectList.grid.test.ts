@@ -97,7 +97,7 @@ describe("remarks in bexio's new time tracking grid", () => {
     it("sits left of the grid's 'Spalten' button and shows the stored mode", async () => {
       await openTimeTrackingList();
 
-      expect(gridToggle()!.nextElementSibling!.textContent).toBe("Spalten");
+      expect(gridToggle()!.nextElementSibling!.textContent).toBe("Spalten (8/9)");
       expect(gridOption("tooltip").getAttribute("aria-pressed")).toBe("true");
       expect(gridOption("text").getAttribute("aria-pressed")).toBe("false");
     });
