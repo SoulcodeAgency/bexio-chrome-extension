@@ -83,36 +83,49 @@
   box-shadow: 0 6px 18px rgba(20, 40, 60, 0.18);
 }
 
-/* The grid's own "Text | Tooltip" toggle, left of its "Spalten" button
-   (bexioProjectList/renderGridNotesToggle.ts). The new pages do not load bexio's old `.btn`. */
+/* The grid's own "Text | Tooltip" toggle, left of its "Spalten" menu
+   (bexioProjectList/renderGridNotesToggle.ts). The new pages do not load bexio's old `.btn`.
+   Soulcode green (as the active template chip in bexioTimetrackingTemplates.css) rather than
+   bexio's blue, so the extension's control is not taken for one of bexio's own buttons. The colours
+   are spelled out: that file's `--soulcode*` variables are not loaded on every page this one is. */
 #GridNotesTextSwitcher {
   display: inline-flex;
-  margin-right: 8px;
+  align-items: stretch;
+  height: 32px; /* bexio's toolbar buttons */
+  box-sizing: border-box;
+  border: 1px solid #33b7a3;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #effaf8;
   vertical-align: middle;
 }
 
 #GridNotesTextSwitcher button {
-  border: 1px solid #c3cdd6;
-  background: #fff;
-  color: #2c3540;
+  border: none;
+  background: transparent;
+  color: #1f7a6c;
   font: inherit;
   font-size: 13px;
-  padding: 5px 10px;
+  padding: 0 10px;
   cursor: pointer;
 }
 
-#GridNotesTextSwitcher button:first-child {
-  border-radius: 4px 0 0 4px;
+#GridNotesTextSwitcher button + button {
+  border-left: 1px solid #33b7a3;
 }
 
-#GridNotesTextSwitcher button:last-child {
-  border-left: none;
-  border-radius: 0 4px 4px 0;
+#GridNotesTextSwitcher button:hover {
+  background: #d9f2ed;
+}
+
+#GridNotesTextSwitcher button:focus-visible {
+  outline: 2px solid #1f7a6c;
+  outline-offset: -2px;
 }
 
 #GridNotesTextSwitcher button[aria-pressed="true"] {
-  background: #00acf0;
-  border-color: #00acf0;
+  background: #33b7a3;
   color: #fff;
+  font-weight: 600;
   cursor: default;
 }

@@ -94,12 +94,27 @@ describe("remarks in bexio's new time tracking grid", () => {
   });
 
   describe("the grid's Text | Tooltip toggle", () => {
-    it("sits left of the grid's 'Spalten' button and shows the stored mode", async () => {
+    it("sits left of the grid's 'Spalten' menu trigger and shows the stored mode", async () => {
       await openTimeTrackingList();
 
-      expect(gridToggle()!.nextElementSibling!.textContent).toBe("Spalten (8/9)");
+      expect(gridToggle()!.nextElementSibling!.matches(".mat-mdc-menu-trigger")).toBe(true);
+      expect(gridToggle()!.nextElementSibling!.textContent!.trim()).toBe("Spalten (8/9)");
       expect(gridOption("tooltip").getAttribute("aria-pressed")).toBe("true");
       expect(gridOption("text").getAttribute("aria-pressed")).toBe("false");
+    });
+
+    it("does not open the column menu: its clicks never reach bexio's menu trigger", async () => {
+      await openTimeTrackingList();
+      const trigger = document.querySelector(".time-tracking-grid__columns-trigger")!;
+      const menuClicks = vi.fn();
+      trigger.addEventListener("click", menuClicks);
+
+      gridOption("text").click();
+      gridOption("tooltip").click();
+      await settle();
+
+      expect(trigger.contains(gridToggle())).toBe(false);
+      expect(menuClicks).not.toHaveBeenCalled();
     });
 
     it("switches to text and back, storing the shared setting", async () => {

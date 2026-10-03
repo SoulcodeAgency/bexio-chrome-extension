@@ -4,9 +4,13 @@
     <button type="button" class="Button Button--primary"><span class="Button-label">Zeit erfassen</span></button>
   </bexio-page-heading>
   <bexio-time-tracking-grid>
-    <div class="GridToolbar">
-      <button type="button" class="Button Button--secondary">Filtern</button>
-      <button type="button" class="Button Button--secondary">Spalten (8/9)</button>
+    <div class="time-tracking-grid__toolbar-row time-tracking-grid__toolbar-row--meta">
+      <div class="time-tracking-grid__toolbar-end">
+        <bexio-new-button><button type="button" class="Button Button--tertiary">Lohnbuchhaltung</button></bexio-new-button>
+        <div class="mat-mdc-menu-trigger time-tracking-grid__columns-trigger" aria-haspopup="menu" aria-expanded="false">
+          <bexio-new-button><button type="button" class="Button Button--tertiary">Spalten (8/9)</button></bexio-new-button>
+        </div>
+      </div>
     </div>
     <ag-grid-angular class="ag-theme-bexio">
       <div class="ag-root-wrapper ag-layout-normal">

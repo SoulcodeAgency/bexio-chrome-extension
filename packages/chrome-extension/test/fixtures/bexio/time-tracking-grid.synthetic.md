@@ -4,8 +4,9 @@
 in issue #168 (2026-09-30): `bexio-time-tracking-grid`, ag-grid's `.ag-row` / `.ag-cell[col-id]`,
 the `date` / `activity` / `text` column ids, the "Spalten" button, and the remarks cell renderer
 `bexio-time-entry-remarks-cell-renderer fa-icon[aria-label]` whose `aria-label` holds the full
-remark as plain text with `\n` line breaks. bexio's toolbar markup around the "Spalten" button was
-not recorded.
+remark as plain text with `\n` line breaks. The toolbar around the "Spalten" button follows the live
+page (2026-10-03): the button sits in a `bexio-new-button` inside `div.mat-mdc-menu-trigger`, which
+opens the column menu on any click within it, in the flex row `.time-tracking-grid__toolbar-end`.
 
 - Page: `/index.php/time-tracking?sortBy=date:desc&filter=all&filterBy=`, three rows.
 - Row 1: a one-line remark with an `&`. Row 2: three lines, one of them containing markup-like

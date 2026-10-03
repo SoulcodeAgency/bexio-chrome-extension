@@ -6,7 +6,7 @@ export const GRID_NOTES_TOGGLE_ID = "GridNotesTextSwitcher";
 
 /**
  * The "Text | Tooltip" toggle for bexio's new time tracking grids (#168), placed left of the grid's
- * "Spalten" button — the new pages have no old title bar to put it in. Same setting
+ * "Spalten" menu — the new pages have no old title bar to put it in. Same setting
  * (`removePopoversSetting`) and same behaviour as the old toggle (`renderHtml.ts`); styled by
  * `public/bexioProjectList.css`, without bexio's old `.btn` / halflings classes, which the new
  * pages do not load.
@@ -32,8 +32,12 @@ async function renderGridNotesToggle() {
     return button;
   });
   group.append(...buttons);
+  // Next to the menu trigger, not inside it: bexio wraps the "Spalten" button in the
+  // `div.mat-mdc-menu-trigger` that opens the column menu on any click within it (seen live
+  // 2026-10-03), so a toggle placed beside the button itself opened that menu on every click.
+  const anchor = columnsButton.closest<HTMLElement>(".mat-mdc-menu-trigger, [aria-haspopup]") ?? columnsButton;
   // Inserted before the first await, so a second call cannot pass the guard above in the meantime.
-  columnsButton.insertAdjacentElement("beforebegin", group);
+  anchor.insertAdjacentElement("beforebegin", group);
 
   const showActiveMode = (isTextMode: boolean) => {
     for (const button of buttons) {

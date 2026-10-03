@@ -194,8 +194,11 @@ the grid uses the infinite row model, where `setRowHeight` grows one row and ove
 
 The toggle: on the new pages there is no old title bar, so a separate "Text | Tooltip" group
 (`renderGridNotesToggle.ts`, `#GridNotesTextSwitcher`) goes left of the grid's "Spalten" button
-(labelled with the column count, "Spalten (8/9)"),
-with its own styles. Same setting (`removePopoversSetting`). A work package page still has the old
+(labelled with the column count, "Spalten (8/9)"). It goes before the button's
+`div.mat-mdc-menu-trigger`, not next to the button: that wrapper opens the column menu on any click
+inside it, so a toggle placed beside the button opened the menu on every switch (seen live
+2026-10-03). It is styled in Soulcode green, not bexio's blue, so it reads as the extension's
+control. Same setting (`removePopoversSetting`). A work package page still has the old
 title bar and toggle; that toggle drives the grid there as well.
 
 ### Column widths (MAIN world, `apps/bexioGridColumns/`)
