@@ -183,7 +183,10 @@ The remarks column renders `bexio-time-entry-remarks-cell-renderer fa-icon[aria-
 and the label printed into a `.soulcode-grid-remarks` div (`textContent` only): `white-space:
 pre-line`, 12px/15px, clamped to three lines — what fits the 56px row. A clipped text gets
 `.soulcode-grid-remarks--clipped` (a dotted underline) and on hover expands in place as a floating
-box over the rows below (`:has()` lifts the row's `z-index` and its cells' `overflow`).
+box over the rows below (`:has()` lifts the row's `z-index` and its cells' `overflow`). A cell
+with a printed remark gets the old pages' colours (`convertPopover.ts`), `#ffe2bc` / `antiquewhite`,
+picked by the row's `ag-row-even` / `ag-row-odd` class — ag-grid keeps that class current on a
+recycled row, where a counter would not be (checked live 2026-10-03: the rule beats the theme).
 
 ag-grid renders rows lazily and **recycles** them on scroll, paging and filtering, updating a
 recycled icon's `aria-label` in place. So the conversion is a sync: one observer on the body

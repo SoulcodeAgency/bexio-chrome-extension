@@ -173,6 +173,13 @@ test("the grid prints remarks as text and the MAIN-world script widens their col
     timeout: 10_000,
   });
   await expect(page.locator("#GridNotesTextSwitcher button[data-mode='text']")).toHaveAttribute("aria-pressed", "true");
+  // The old pages' remark colours, by row parity (the fixture's first row is ag-row-even).
+  const firstRemarkCell = page.locator(".ag-row-even .ag-cell[col-id='text']").first();
+  await expect(firstRemarkCell).toHaveCSS("background-color", "rgb(255, 226, 188)");
+  await expect(page.locator(".ag-row-odd .ag-cell[col-id='text']").first()).toHaveCSS(
+    "background-color",
+    "rgb(250, 235, 215)",
+  );
 
   // MAIN world: the stub API received the widened definitions.
   await expect
@@ -188,6 +195,7 @@ test("the grid prints remarks as text and the MAIN-world script widens their col
   // Back to tooltips: icons back, bexio's widths back.
   await page.locator("#GridNotesTextSwitcher button[data-mode='tooltip']").click();
   await expect(page.locator(".soulcode-grid-remarks")).toHaveCount(0);
+  await expect(firstRemarkCell).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   await expect
     .poll(() =>
       page.evaluate(

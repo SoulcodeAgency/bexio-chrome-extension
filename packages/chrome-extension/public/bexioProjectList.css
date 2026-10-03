@@ -37,6 +37,17 @@
   height: 100%;
 }
 
+/* The old pages' remark colours (utils/convertPopover.ts), alternating by row. By the row's own
+   even/odd class rather than a counter: ag-grid recycles rows and keeps that class current. The host
+   class is gone in "Tooltip" mode, and so is the colour. */
+.ag-row-even .ag-cell:has(.soulcode-grid-remarks-host) {
+  background-color: #ffe2bc;
+}
+
+.ag-row-odd .ag-cell:has(.soulcode-grid-remarks-host) {
+  background-color: antiquewhite;
+}
+
 .soulcode-grid-remarks {
   display: -webkit-box;
   -webkit-box-orient: vertical;
