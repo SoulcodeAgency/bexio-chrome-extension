@@ -202,6 +202,8 @@ export interface ChromeFake {
     getURL: (path: string) => string;
     getManifest: () => { version: string };
     lastError?: unknown;
+    /** `undefined` once the extension was reloaded or removed and this content script is orphaned. */
+    id: string | undefined;
   };
 }
 
@@ -242,6 +244,8 @@ export function installChromeFake(): ChromeFake {
       // chrome.runtime.lastError to *check* for an error, and it is undefined
       // whenever there is none.
       lastError: undefined,
+      // Mirrors chrome.runtime.id, which becomes undefined in an orphaned content script.
+      id: "fake-extension-id",
     },
   };
   // anything not implemented → throw, at every level we stub (chrome.sidePanel,
@@ -273,6 +277,8 @@ export function resetChromeFake(): void {
     current.tabs = new FakeTabsApi();
   }
   current.runtime.onMessage.__listeners.length = 0;
+  // A test may orphan the content script (id → undefined).
+  current.runtime.id = "fake-extension-id";
 }
 
 export function getChromeFake(): ChromeFake {

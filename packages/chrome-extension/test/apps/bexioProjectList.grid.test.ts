@@ -86,6 +86,21 @@ describe("remarks in bexio's new time tracking grid", () => {
     expect(remarkTexts()).toContain("Neue Zeile");
   });
 
+  it("stops once the extension was reloaded and this script is orphaned, instead of throwing", async () => {
+    await openTimeTrackingList();
+    const storageReads = vi.spyOn(chrome.storage.local, "get");
+    (chrome.runtime as { id?: string }).id = undefined; // what Chrome leaves an orphaned content script
+
+    document.querySelector(".ag-center-cols-container")!.insertAdjacentHTML(
+      "beforeend",
+      `<div class="ag-row"><div class="ag-cell" col-id="text"><bexio-time-entry-remarks-cell-renderer>
+        <fa-icon aria-label="Nach dem Reload"></fa-icon></bexio-time-entry-remarks-cell-renderer></div></div>`,
+    );
+    await settle();
+
+    expect(storageReads).not.toHaveBeenCalled();
+  });
+
   it("puts no old title-bar toggles on the page", async () => {
     await openTimeTrackingList();
 
