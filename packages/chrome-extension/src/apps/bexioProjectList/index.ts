@@ -7,6 +7,7 @@ import { getProjectTimesList } from "../../selectors/projectTimesList";
 import { getTimeTrackingList } from "../../selectors/timeTrackingList";
 import { isNewGridPage, mayShowNewGrid } from "../../selectors/timeTrackingGrid";
 import convertGridRemarks from "../../utils/convertGridRemarks";
+import { isExtensionContextValid } from "../../utils/extensionContext";
 import renderGridNotesToggle from "./renderGridNotesToggle";
 
 const observerOptions = { attributes: false, childList: true, subtree: false };
@@ -60,6 +61,10 @@ export async function initializeExtension() {
  */
 function createObserverWithCallback(callback: () => void, mutationType: MutationRecordType = "childList") {
   return new MutationObserver((mutationsList, observer) => {
+    if (!isExtensionContextValid()) {
+      observer.disconnect();
+      return;
+    }
     // Only execute the callback ONCE if we detect changes in the jqDialog
     let changeDetected = false;
     for (let mutation of mutationsList) {
@@ -141,7 +146,11 @@ function observeTimeTrackingGrids() {
     void convertGridRemarks();
     if (!document.getElementById("PopoverTextSwitcher")) void renderGridNotesToggle();
   };
-  new MutationObserver(() => {
+  new MutationObserver((_mutations, observer) => {
+    if (!isExtensionContextValid()) {
+      observer.disconnect();
+      return;
+    }
     if (scheduled) return;
     scheduled = true;
     requestAnimationFrame(onGridRendered);

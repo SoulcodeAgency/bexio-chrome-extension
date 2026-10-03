@@ -42,10 +42,42 @@ export async function setModalDate(value: string): Promise<void> {
   writeInput(input, toModalDate(value));
 }
 
+const typeDigit = (input: HTMLInputElement, digit: string) =>
+  !input.dispatchEvent(
+    new KeyboardEvent("keydown", { key: digit, code: `Digit${digit}`, bubbles: true, cancelable: true }),
+  );
+
+/**
+ * Types a `hh:mm` value into one of bexio's time inputs (Dauer, Start, Ende — `.time-entry-hh-mm-i`).
+ * They handle typing themselves: a digit's `keydown` is cancelled and written into the field's own
+ * model, which is what the dialog saves and what Ende is derived from when Dauer loses focus. A value
+ * set through `.value` and `input` is only displayed — the entry was saved as 0:01 with Ende
+ * unchanged (seen live 2026-10-03). With the whole field selected, the four digits of `hhmm` replace
+ * it; the blur then commits it.
+ *
+ * Where nothing cancels the first keystroke (no such handler, as in jsdom), the value is written as
+ * for any other input.
+ */
+function typeTime(input: HTMLInputElement, value: string) {
+  input.focus();
+  input.select();
+  const [first, ...rest] = value.replace(":", "");
+  if (!typeDigit(input, first)) {
+    writeInput(input, value);
+    return;
+  }
+  for (const digit of rest) typeDigit(input, digit);
+  input.dispatchEvent(new FocusEvent("blur"));
+  input.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+  if (input.value !== value) {
+    throw new Error(`bexio did not take the time ${value} (the field shows ${input.value}).`);
+  }
+}
+
 export async function setModalDuration(value: string): Promise<void> {
   const input = getModalDurationInput();
   if (!input) throw new Error("The duration field of the time entry dialog was not found.");
-  writeInput(input, toModalDuration(value));
+  typeTime(input, toModalDuration(value));
 }
 
 // Whitespace-free: `textContent` joins paragraphs without a separator.

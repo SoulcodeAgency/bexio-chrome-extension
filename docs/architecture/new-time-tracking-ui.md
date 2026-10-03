@@ -83,6 +83,14 @@ the dialog comes and goes without a page load.
   `focusout`. Angular's value accessors read the DOM value on `input`; the datepicker also parses on
   `change` / `blur`. ManicTime's `dd/MM/yyyy` becomes `dd.MM.yyyy`, a one-digit hour is padded
   (`1:30` → `01:30`).
+- **Dauer is typed, not set.** bexio's hh:mm inputs (Dauer, Start, Ende) cancel each digit's
+  `keydown` and write it into their own model; that model is what gets saved, and Ende is derived
+  from it when Dauer loses focus. A `.value` write plus `input` is only displayed — such entries
+  were saved as 0:01 with Ende unchanged (verified live 2026-10-03, as was the fix: an entry typed
+  this way saved as 1:15, "Bis 01:15"). So `setModalDuration` selects the field, dispatches one
+  `keydown` per digit of `hhmm`, then `blur` / `focusout`, and throws when the field does not show
+  the value afterwards. Where nothing cancels the first keystroke (jsdom) it falls back to the input
+  recipe.
 - **Remarks**: a selection over the whole editor, then `document.execCommand("insertText")` per line
   and `insertParagraph` between lines — ProseMirror handles that like typing, and bexio's character
   counter follows. When `execCommand` is missing or the text did not arrive, the paragraphs are
@@ -183,7 +191,10 @@ The remarks column renders `bexio-time-entry-remarks-cell-renderer fa-icon[aria-
 and the label printed into a `.soulcode-grid-remarks` div (`textContent` only): `white-space:
 pre-line`, 12px/15px, clamped to three lines — what fits the 56px row. A clipped text gets
 `.soulcode-grid-remarks--clipped` (a dotted underline) and on hover expands in place as a floating
-box over the rows below (`:has()` lifts the row's `z-index` and its cells' `overflow`).
+box over the rows below (`:has()` lifts the row's `z-index` and its cells' `overflow`). A cell
+with a printed remark gets the old pages' colours (`convertPopover.ts`), `#ffe2bc` / `antiquewhite`,
+picked by the row's `ag-row-even` / `ag-row-odd` class — ag-grid keeps that class current on a
+recycled row, where a counter would not be (checked live 2026-10-03: the rule beats the theme).
 
 ag-grid renders rows lazily and **recycles** them on scroll, paging and filtering, updating a
 recycled icon's `aria-label` in place. So the conversion is a sync: one observer on the body
@@ -194,8 +205,11 @@ the grid uses the infinite row model, where `setRowHeight` grows one row and ove
 
 The toggle: on the new pages there is no old title bar, so a separate "Text | Tooltip" group
 (`renderGridNotesToggle.ts`, `#GridNotesTextSwitcher`) goes left of the grid's "Spalten" button
-(labelled with the column count, "Spalten (8/9)"),
-with its own styles. Same setting (`removePopoversSetting`). A work package page still has the old
+(labelled with the column count, "Spalten (8/9)"). It goes before the button's
+`div.mat-mdc-menu-trigger`, not next to the button: that wrapper opens the column menu on any click
+inside it, so a toggle placed beside the button opened the menu on every switch (seen live
+2026-10-03). It is styled in Soulcode green, not bexio's blue, so it reads as the extension's
+control. Same setting (`removePopoversSetting`). A work package page still has the old
 title bar and toggle; that toggle drives the grid there as well.
 
 ### Column widths (MAIN world, `apps/bexioGridColumns/`)

@@ -258,6 +258,45 @@ describe("dialog field setters", () => {
     expect(events).toEqual(["input", "change", "blur"]);
   });
 
+  /**
+   * bexio's hh:mm inputs as seen live (2026-10-03): a digit's keydown is cancelled and goes into the
+   * field's own model, `.value` writes never reach it, and on blur Ende is set from the model.
+   */
+  function installHhMmHandler(input: HTMLInputElement, end: HTMLInputElement) {
+    let typed = "";
+    let model = "00:00";
+    input.addEventListener("focus", () => (typed = ""));
+    input.addEventListener("keydown", (event) => {
+      if (!/^\d$/.test(event.key)) return;
+      event.preventDefault();
+      typed = (typed + event.key).slice(0, 4);
+      model = `${typed.padEnd(4, "0").slice(0, 2)}:${typed.padEnd(4, "0").slice(2)}`;
+      input.value = model;
+    });
+    input.addEventListener("blur", () => (end.value = model));
+    return { model: () => model };
+  }
+
+  it("type the duration into bexio's hh:mm field, so its model and Ende follow", async () => {
+    setup();
+    const end = document.querySelector<HTMLInputElement>('[data-for-test="time-entry-editor-end"]')!;
+    const field = installHhMmHandler(getModalDurationInput()!, end);
+
+    await setModalDuration("1:15");
+
+    expect(field.model()).toBe("01:15");
+    expect(getModalDurationInput()!.value).toBe("01:15");
+    expect(end.value).toBe("01:15");
+  });
+
+  it("report a duration bexio's field did not take", async () => {
+    setup();
+    const input = getModalDurationInput()!;
+    input.addEventListener("keydown", (event) => event.preventDefault()); // swallows every digit
+
+    await expect(setModalDuration("1:15")).rejects.toThrow(/did not take the time 01:15/);
+  });
+
   it("insert the remarks through execCommand where the browser has it", async () => {
     setup();
     const editor = getModalRemarksEditor()!;
