@@ -83,6 +83,14 @@ the dialog comes and goes without a page load.
   `focusout`. Angular's value accessors read the DOM value on `input`; the datepicker also parses on
   `change` / `blur`. ManicTime's `dd/MM/yyyy` becomes `dd.MM.yyyy`, a one-digit hour is padded
   (`1:30` → `01:30`).
+- **Dauer is typed, not set.** bexio's hh:mm inputs (Dauer, Start, Ende) cancel each digit's
+  `keydown` and write it into their own model; that model is what gets saved, and Ende is derived
+  from it when Dauer loses focus. A `.value` write plus `input` is only displayed — such entries
+  were saved as 0:01 with Ende unchanged (verified live 2026-10-03, as was the fix: an entry typed
+  this way saved as 1:15, "Bis 01:15"). So `setModalDuration` selects the field, dispatches one
+  `keydown` per digit of `hhmm`, then `blur` / `focusout`, and throws when the field does not show
+  the value afterwards. Where nothing cancels the first keystroke (jsdom) it falls back to the input
+  recipe.
 - **Remarks**: a selection over the whole editor, then `document.execCommand("insertText")` per line
   and `insertParagraph` between lines — ProseMirror handles that like typing, and bexio's character
   counter follows. When `execCommand` is missing or the text did not arrive, the paragraphs are
