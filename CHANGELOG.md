@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.9.0...1.10.0) (2026-10-05)
+
+
+### Features
+
+* fill, save and apply templates in bexio's new time entry dialog ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([5e13086](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/5e13086bd732df8a3e5e729e9e964eb127a29768))
+* show remarks as text in bexio's new time tracking grids ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([8940686](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/894068640011624875398e6a5f065d73272846a1))
+* sort date columns newest first, with an opt-in "Newest first" toggle ([ce43a1a](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/ce43a1ab890e6c15f8e97d9def3277ca224c3258))
+
+
+### Bug Fixes
+
+* colour remark cells in the new grid as on the old pages ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([0764835](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/0764835ed5b8868ae509e81af4aa7d87bff5170c))
+* ellipsize long template names in the dialog column ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([e8a8a12](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/e8a8a12d74510012bb175298392959fad0be99b6))
+* find bexio's real time entry dialog and the counted Spalten button ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([c939b1e](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/c939b1eaf6e1836360f4c6902d4d05951f6a25b1))
+* keep the grid's Text | Tooltip toggle out of bexio's column menu trigger ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([3fdf40e](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/3fdf40e53afc29ce64c386b2610db3d40e023db4))
+* lay the dialog's Templates out as a compact column next to the form ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([93d5e89](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/93d5e89fa0d0213fbb346bf0fb3952208cae0ea7))
+* new UI follow-ups: column menu toggle, remark colours, typed duration, orphaned scripts ([2d777d5](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/2d777d567d4a7effa242f5b7f5957642787211a4))
+* stamp the "last update" date at build time instead of in package.json ([e660603](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/e660603274b8916319bd20c90df129ad5af643e4))
+* stop the content scripts' observers once the extension context is gone ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([18227d9](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/18227d937f1ba1d919895be0c086e7f1c655b518))
+* type the duration into the new dialog so bexio saves it and updates Ende ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([390e2c8](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/390e2c8cebe9a45965921ff76166fa5738489242))
+* wait for a changed contact's projects before picking the project ([#168](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/168)) ([3c72a73](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/3c72a7331a740125494ad97ed81166a0ce8c435a))
+
+
+### Build System
+
+* make vite config compatible with the native config loader ([ec90d54](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/ec90d54523591b11201abc36687c36a40454b6e4))
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump @crxjs/vite-plugin from 2.7.1 to 3.0.0 ([c622033](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/c6220331aa41d221f781c30114c0c71fd7b38814))
+* **deps-dev:** bump brace-expansion from 5.0.9 to 5.0.12 ([94f4a2d](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/94f4a2d47f813fd1ed23cba2f5ce2dfcf628ff11))
+* **deps-dev:** bump the npm-minor-patch group with 8 updates ([#171](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/171)) ([2a2acab](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/2a2acab3ae9bca442d6357f9ed8b9c5b51b792dd))
+* **deps-dev:** bump the npm-minor-patch group with 9 updates ([#162](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/162)) ([22b1854](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/22b18547f10791665a9af5b02a9bc0d3e97b0735))
+* **deps:** bump the npm-minor-patch group with 13 updates ([#163](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/163)) ([6b1e0c1](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/6b1e0c100ad4d124f6c5879784220004dc2e4f27))
+
 ## [1.9.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.8.0...1.9.0) (2026-09-17)
 
 
