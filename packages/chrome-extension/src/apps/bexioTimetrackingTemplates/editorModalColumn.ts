@@ -1,4 +1,5 @@
 import { getOpenEditorModal } from "../../selectors/timeEntryModal";
+import { isExtensionContextValid } from "../../utils/extensionContext";
 
 /**
  * The Templates block in bexio's new time entry dialog (#168).
@@ -42,6 +43,10 @@ let lastModal: HTMLElement | null = null;
 export function watchEditorModal(onOpen: (modal: HTMLElement) => void): void {
   if (observer) return;
   const check = () => {
+    if (!isExtensionContextValid()) {
+      observer?.disconnect();
+      return;
+    }
     const modal = getOpenEditorModal();
     if (modal === lastModal) return;
     lastModal = modal;
