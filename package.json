@@ -48,13 +48,13 @@
   },
   "homepage": "https://github.com/SoulcodeAgency/bexio-chrome-extension#readme",
   "devDependencies": {
-    "@playwright/test": "1.63.0",
-    "@types/node": "26.6.4",
+    "@playwright/test": "1.64.0",
+    "@types/node": "26.6.5",
     "fs-extra": "11.4.1",
     "git-cliff": "2.14.2",
-    "jsdom": "30.1.1",
-    "prettier": "3.9.9",
-    "vite": "8.3.2",
+    "jsdom": "30.1.2",
+    "prettier": "3.9.10",
+    "vite": "8.3.4",
     "vitest": "5.0.3"
   },
   "workspaces": [
