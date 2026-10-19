@@ -13,8 +13,8 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
   },
   "dependencies": {
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -24,15 +24,15 @@
     "@types/node": "26.6.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "@typescript-eslint/eslint-plugin": "8.71.1",
-    "@typescript-eslint/parser": "8.71.1",
+    "@typescript-eslint/eslint-plugin": "8.71.2",
+    "@typescript-eslint/parser": "8.71.2",
     "@vitejs/plugin-react": "6.1.2",
-    "antd": "6.6.5",
+    "antd": "6.6.6",
     "eslint": "10.12.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.7",
     "globals": "17.13.0",
-    "sass": "1.105.1",
+    "sass": "1.105.2",
     "typescript": "7.0.2",
     "vite": "8.3.4"
   },
