@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.10.0...1.11.0) (2026-10-27)
+
+
+### Bug Fixes
+
+* match the new dialog's two-line contact options by their name ([ef61100](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/ef61100db0eed174656aa0b55a4741b341921f53))
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump the npm-minor-patch group with 10 updates ([#172](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/172)) ([182647b](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/182647b86f7fdb13962029c7fbdad79f06fa795b))
+* **deps-dev:** bump the npm-minor-patch group with 7 updates ([#174](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/174)) ([a050bd7](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/a050bd798e413985993a0d0c1f5b6d961f45bd5f))
+* **deps-dev:** bump zod from 4.3.5 to 4.6.7 ([e55cb69](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/e55cb69fed98ddaf8946c6ae9b118ad58fb28177))
+* **deps:** bump the npm-minor-patch group with 10 updates ([#173](https://github.com/SoulcodeAgency/bexio-chrome-extension/issues/173)) ([4fb0446](https://github.com/SoulcodeAgency/bexio-chrome-extension/commit/4fb0446164307c756d260543c0d129e19f1836b7))
+
 ## [1.10.0](https://github.com/SoulcodeAgency/bexio-chrome-extension/compare/1.9.0...1.10.0) (2026-10-05)
 
 
