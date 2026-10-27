@@ -8,6 +8,7 @@ import {
   MODAL_SELECT_LABELS,
   ModalSelectKey,
   readModalSelectText,
+  readPanelOptionText,
 } from "../../selectors/timeEntryModal";
 import { findBestOption, matchOption, normalizeOptionText } from "../optionMatch";
 import pollUntil, { WaitForTimeoutError } from "../pollUntil";
@@ -19,9 +20,6 @@ import { VALUE_WAIT_BUDGET_MS } from "../waitForSelectOptions";
  * list that only shows what was searched for.
  */
 export const SEARCH_FALLBACK_AFTER_MS = 1_000;
-
-const optionText = (option: HTMLElement) =>
-  option.querySelector(".mdc-list-item__primary-text")?.textContent ?? option.textContent ?? "";
 
 /** Best effort: closes a panel the fill gives up on, so the dialog is left usable. */
 function closePanel(select: HTMLElement, panel: HTMLElement | null) {
@@ -73,7 +71,7 @@ export async function selectMatOption(key: ModalSelectKey, value: string | null 
   const found = await pollUntil(`the "${label}" options to load`, (): HTMLElement | "missing" | false => {
     const livePanel = getLiveSelectPanel(select) ?? panel;
     const options = getPanelOptions(livePanel);
-    const best = findBestOption(options, value, optionText);
+    const best = findBestOption(options, value, readPanelOptionText);
     if (best) return best;
     // The budget runs from the first time any option showed up, so a search that leaves no
     // option at all still ends in "missing" rather than in the much longer overall deadline.
@@ -99,7 +97,7 @@ export async function selectMatOption(key: ModalSelectKey, value: string | null 
   }
   const option = found;
 
-  const chosen = normalizeOptionText(optionText(option));
+  const chosen = normalizeOptionText(readPanelOptionText(option));
   option.click();
   await pollUntil(
     `the "${label}" field to show "${chosen}"`,

@@ -183,6 +183,18 @@ describe("selectMatOption", () => {
     expect(log).toContain("select:sub-contact:Beispiel Erika");
   });
 
+  it("matches a two-line option by its name and waits for the field to show the name only", async () => {
+    // Live 2026-10-27: Kontakt lists the name over the country; the field shows the name only.
+    const { log } = setup({ secondLines: { contact: { "Muster AG": "Schweiz", "Muster AG Zürich": "Schweiz" } } });
+
+    await settle(selectMatOption("contact", "Muster AG"));
+    // A second fill sees the field already showing the value and does nothing.
+    await settle(selectMatOption("contact", "Muster AG"));
+
+    expect(log).toEqual(["open:contact", "select:contact:Muster AG"]);
+    expect(readModalSelectText(select("contact"))).toBe("Muster AG");
+  });
+
   it("ignores stale panels with the same id", async () => {
     const { log } = setup();
     await settle(selectMatOption("status", "Offen"));
