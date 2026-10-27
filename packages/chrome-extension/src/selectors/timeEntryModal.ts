@@ -112,6 +112,19 @@ export const getPanelOptions = (panel: HTMLElement): HTMLElement[] =>
   );
 
 /**
+ * The text an option stands for — what the field shows once it is picked.
+ *
+ * bexio renders some options as a two-line "rich view": Kontakt lists the name over the contact's
+ * country (`<div>Muster AG</div><span>Schweiz</span>`, live 2026-10-27), while the field shows the
+ * name only. Only the first line counts; the whole `textContent` would read "Muster AGSchweiz".
+ */
+export const readPanelOptionText = (option: HTMLElement): string => {
+  const primary = option.querySelector(".mdc-list-item__primary-text") ?? option;
+  const richViewName = primary.querySelector(".SimpleAutocompleteSelect-rich-view > :first-child");
+  return (richViewName ?? primary).textContent ?? "";
+};
+
+/**
  * The ngx-mat-select-search input of an open panel. ngx-mat-select-search keeps a hidden twin
  * (`.mat-select-search-hidden`), which is never the one to type into.
  */

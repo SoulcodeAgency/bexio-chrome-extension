@@ -11,7 +11,10 @@
  * - Kontakt enables Projekt, Projekt enables Arbeitspaket (after `enableDelayMs`);
  * - optional `loadDelayMs` per field: the panel's options appear that long after it opened;
  * - optional `serverSearch` per field: the panel lists only the first option until something is
- *   typed into the search, like a list that is searched server-side.
+ *   typed into the search, like a list that is searched server-side;
+ * - optional `secondLines` per field: options with an entry render bexio's two-line "rich view"
+ *   (name, then e.g. the contact's country — seen live on Kontakt, 2026-10-27), while the field
+ *   shows the name only.
  *
  * Every select interaction is appended to `log` (`open:<key>`, `select:<key>:<text>`).
  */
@@ -21,6 +24,7 @@ export type FakeMatSelectOptions = {
   options: Partial<Record<ModalSelectKey, string[]>>;
   loadDelayMs?: Partial<Record<ModalSelectKey, number>>;
   serverSearch?: ModalSelectKey[];
+  secondLines?: Partial<Record<ModalSelectKey, Record<string, string>>>;
   enableDelayMs?: number;
 };
 
@@ -89,7 +93,16 @@ export function installFakeMatSelects(config: FakeMatSelectOptions): { log: stri
           const option = document.createElement("mat-option");
           option.className = "mat-mdc-option mdc-list-item";
           option.innerHTML = `<span class="mdc-list-item__primary-text"></span>`;
-          option.querySelector("span")!.textContent = ` ${text} `;
+          const primary = option.querySelector("span")!;
+          const secondLine = config.secondLines?.[key]?.[text];
+          if (secondLine) {
+            // bexio's markup, no whitespace between the lines: textContent reads "NameCountry".
+            primary.innerHTML = `<div class="SimpleAutocompleteSelect-rich-view SimpleAutocompleteSelect-rich-view--stacked"><div></div><span></span></div>`;
+            primary.querySelector(".SimpleAutocompleteSelect-rich-view > div")!.textContent = text;
+            primary.querySelector(".SimpleAutocompleteSelect-rich-view > span")!.textContent = secondLine;
+          } else {
+            primary.textContent = ` ${text} `;
+          }
           option.addEventListener("click", () => {
             log.push(`select:${key}:${text}`);
             setValue(text);

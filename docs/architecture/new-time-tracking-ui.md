@@ -117,6 +117,11 @@ the dialog comes and goes without a page load.
 - Closed `mat-select` panels stay in `.cdk-overlay-container` **with the same id** as the next one.
   `getLiveSelectPanel` looks the `aria-controls` id up among all overlay panels and takes the last.
 - `mat-option-N` / `mat-input-N` / `mat-select-N` ids are generated per render; never select by them.
+- Some options are two lines (`.SimpleAutocompleteSelect-rich-view--stacked`): Kontakt lists the name
+  over the contact's country, `<div>Muster AG</div><span>Schweiz</span>`, while the field shows
+  only the name (live 2026-10-27). `readPanelOptionText` takes the first line;
+  the option's `textContent` ("Muster AGSchweiz") never equals what the field shows, and the fill
+  timed out waiting for it.
 - The dialog has no `<form>` and fires no `submit`. "Saved" is a click on "Eintrag speichern"
   followed by the dialog leaving the DOM within 15 s (`watchEditorModalSave`, one capture-phase
   click listener on the document). A dialog that stays open — bexio rejected the entry — reports
